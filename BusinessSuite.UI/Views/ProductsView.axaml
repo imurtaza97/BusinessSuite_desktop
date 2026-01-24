@@ -1,0 +1,67 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:BusinessSuite.UI.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="1000" d:DesignHeight="600"
+             x:Class="BusinessSuite.UI.Views.ProductsView"
+             x:DataType="vm:ProductsViewModel">
+
+    <Grid RowDefinitions="Auto, *">
+        <!-- Header Actions -->
+        <Border Grid.Row="0" Background="White" BorderBrush="#E5E7EB" BorderThickness="0,0,0,1" Padding="20,15">
+            <Grid ColumnDefinitions="*, Auto">
+                <StackPanel Orientation="Horizontal" Spacing="15">
+                    <TextBox Width="300" 
+                             Watermark="Search products by name or SKU..." 
+                             Text="{Binding SearchQuery}"/>
+                    <Button Classes="Primary" Content="Add New Product" Command="{Binding AddProductCommand}"/>
+                </StackPanel>
+                
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10">
+                    <Button Content="Edit" Command="{Binding EditProductCommand}" IsEnabled="{Binding !!SelectedProduct}" />
+                    <Button Classes="Danger" Content="Delete" Command="{Binding DeleteProductCommand}" IsEnabled="{Binding !!SelectedProduct}" />
+                    <Button Content="Refresh" Command="{Binding LoadProductsCommand}"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Product List -->
+        <Grid Grid.Row="1" Margin="20">
+            <DataGrid ItemsSource="{Binding Products}" 
+                      SelectedItem="{Binding SelectedProduct}"
+                      IsReadOnly="True" 
+                      CanUserReorderColumns="True"
+                      CanUserResizeColumns="True"
+                      BorderThickness="1"
+                      BorderBrush="#E5E7EB"
+                      GridLinesVisibility="All"
+                      DoubleTapped="DataGrid_DoubleTapped">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Product Name" Binding="{Binding ProductName}" Width="*"/>
+                    <DataGridTextColumn Header="Category" Binding="{Binding Category}" Width="150"/>
+                    <DataGridTextColumn Header="SKU" Binding="{Binding SKU}" Width="100"/>
+                    <DataGridTextColumn Header="HSN Code" Binding="{Binding HSNCode}" Width="100"/>
+                    <DataGridTextColumn Header="Purchase Price" Binding="{Binding PurchasePrice, StringFormat=\{0:C\}}" Width="120"/>
+                    <DataGridTextColumn Header="Sale Price" Binding="{Binding SalePrice, StringFormat=\{0:C\}}" Width="120"/>
+                    <DataGridTextColumn Header="Stock" Binding="{Binding StockQty}" Width="80"/>
+                    <DataGridTextColumn Header="Tax Rate (GST %)" Binding="{Binding TaxRate, StringFormat=\{0\}%}" Width="110"/>
+                </DataGrid.Columns>
+            </DataGrid>
+            
+            <ProgressBar IsVisible="{Binding IsBusy}" IsIndeterminate="True" VerticalAlignment="Top"/>
+        </Grid>
+    </Grid>
+    
+    <UserControl.Styles>
+        <Style Selector="Button.Primary">
+            <Setter Property="Background" Value="#2563EB"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+        </Style>
+        <Style Selector="Button.Danger">
+            <Setter Property="Background" Value="#EF4444"/>
+            <Setter Property="Foreground" Value="White"/>
+        </Style>
+    </UserControl.Styles>
+</UserControl>

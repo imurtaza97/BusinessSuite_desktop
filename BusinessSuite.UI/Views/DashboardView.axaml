@@ -1,0 +1,170 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:BusinessSuite.UI.ViewModels"
+             xmlns:Views="clr-namespace:BusinessSuite.UI.Views"
+             mc:Ignorable="d" d:DesignWidth="1200" d:DesignHeight="800"
+             x:Class="BusinessSuite.UI.Views.DashboardView"
+             x:DataType="vm:DashboardViewModel">
+
+    <Grid ColumnDefinitions="250, *">
+        <!-- Sidebar -->
+        <Border Grid.Column="0" Background="#F3F4F6" BorderBrush="#E5E7EB" BorderThickness="0,0,1,0">
+            <DockPanel>
+                <StackPanel DockPanel.Dock="Top" Margin="20,40,20,40">
+                    <TextBlock Text="{Binding BusinessName}" 
+                               FontSize="20" 
+                               FontWeight="Bold"
+                               Foreground="#111827" 
+                               HorizontalAlignment="Center"/>
+                    <TextBlock Text="Smart GST Billing" 
+                               FontSize="12" 
+                               Foreground="#6B7280" 
+                               HorizontalAlignment="Center"/>
+                </StackPanel>
+
+                <StackPanel Spacing="5" Margin="0,0,0,0">
+                    <Button Classes="MenuButton" Classes.active="{Binding IsDashboardActive}" Command="{Binding NavigateCommand}" CommandParameter="Dashboard" Content="Dashboard"/>
+                    <Button Classes="MenuButton" Classes.active="{Binding IsProductsActive}" Command="{Binding NavigateCommand}" CommandParameter="Products" Content="Products"/>
+                    <Button Classes="MenuButton" Classes.active="{Binding IsCustomersActive}" Command="{Binding NavigateCommand}" CommandParameter="Customers" Content="Customers"/>
+                    <Button Classes="MenuButton" Classes.active="{Binding IsVendorsActive}" Command="{Binding NavigateCommand}" CommandParameter="Vendors" Content="Vendors"/>
+                    <Button Classes="MenuButton" Classes.active="{Binding IsSalesActive}" Command="{Binding NavigateCommand}" CommandParameter="Sales" Content="Sales"/>
+                    <Button Classes="MenuButton" Classes.active="{Binding IsPurchasesActive}" Command="{Binding NavigateCommand}" CommandParameter="Purchases" Content="Purchases"/>
+                    <Button Classes="MenuButton" Classes.active="{Binding IsReportsActive}" Command="{Binding NavigateCommand}" CommandParameter="Reports" Content="Reports"/>
+                    <Button Classes="MenuButton" Classes.active="{Binding IsSettingsActive}" Command="{Binding NavigateCommand}" CommandParameter="Settings" Content="Settings"/>
+                </StackPanel>
+
+                <Button DockPanel.Dock="Bottom" 
+                        Classes="MenuButtonLogout" 
+                        Content="Logout" 
+                        VerticalAlignment="Bottom" 
+                        Margin="0,0,0,20"/>
+            </DockPanel>
+        </Border>
+
+        <!-- Main Content -->
+        <Grid Grid.Column="1" RowDefinitions="70, *">
+            <!-- Header -->
+            <Border Grid.Row="0" Background="White" BorderBrush="#E5E7EB" BorderThickness="0,0,0,1">
+                <DockPanel Margin="20,0">
+                    <TextBlock Text="{Binding CurrentViewTitle}" 
+                               VerticalAlignment="Center" 
+                               FontSize="22" 
+                               FontWeight="SemiBold" 
+                               HorizontalAlignment="Left" 
+                               Foreground="#333333"/>
+                    
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Spacing="15">
+                        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Right">
+                            <TextBlock Text="{Binding CurrentUserName}" FontWeight="Bold" Foreground="#333333"/>
+                            <TextBlock Text="{Binding CurrentUserType}" HorizontalAlignment="Right" FontSize="11" Foreground="#888888"/>
+                        </StackPanel>
+                        <Border Width="40" Height="40" Background="#2563EB" CornerRadius="20" VerticalAlignment="Center" HorizontalAlignment="Right">
+                            <TextBlock Text="{Binding CurrentUserInitials}" 
+                                       Foreground="White" 
+                                       FontWeight="Bold" 
+                                       FontSize="16" 
+                                       VerticalAlignment="Center" 
+                                       HorizontalAlignment="Center"/>
+                        </Border>
+                    </StackPanel>
+                </DockPanel>
+            </Border>
+
+            <!-- Dynamic Content Area -->
+            <ContentControl Grid.Row="1" Content="{Binding CurrentView}">
+                <ContentControl.DataTemplates>
+                    <DataTemplate DataType="vm:HomeViewModel">
+                        <Views:HomeView/>
+                    </DataTemplate>
+                    <DataTemplate DataType="vm:ProductsViewModel">
+                        <Views:ProductsView/>
+                    </DataTemplate>
+                    <DataTemplate DataType="vm:CustomersViewModel">
+                        <Views:CustomersView/>
+                    </DataTemplate>
+                    <DataTemplate DataType="vm:VendorsViewModel">
+                        <Views:VendorsView/>
+                    </DataTemplate>
+                    <DataTemplate DataType="vm:InvoicesViewModel">
+                        <Views:InvoicesView/>
+                    </DataTemplate>
+                    <DataTemplate DataType="vm:InvoiceFormViewModel">
+                        <Views:InvoiceFormView/>
+                    </DataTemplate>
+                    <DataTemplate DataType="vm:SettingsViewModel">
+                        <Views:SettingsView/>
+                    </DataTemplate>
+                </ContentControl.DataTemplates>
+            </ContentControl>
+        </Grid>
+    </Grid>
+
+    <UserControl.Styles>
+        <Style Selector="Button.MenuButtonLogout">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="#EF4444"/>
+            <Setter Property="HorizontalAlignment" Value="Stretch"/>
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            <Setter Property="Padding" Value="24,12"/>
+            <Setter Property="CornerRadius" Value="0"/>
+            <Setter Property="Margin" Value="0,0"/>
+        </Style> 
+        <Style Selector="Button.MenuButtonLogout:pointerover">
+            <Setter Property="Background" Value="#B91C1C"/>
+            <Setter Property="Foreground" Value="#FFFFFF"/>
+        </Style>
+        <Style Selector="Button.MenuButtonLogout:pressed">
+            <Setter Property="Background" Value="#7F1D1D"/>
+            <Setter Property="Foreground" Value="#FFFFFF"/>
+        </Style>
+        <Style Selector="Button.MenuButton">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="#111827"/>
+            <Setter Property="HorizontalAlignment" Value="Stretch"/>
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            <Setter Property="Padding" Value="24,12"/>
+            <Setter Property="CornerRadius" Value="0"/>
+            <Setter Property="Margin" Value="0,0"/>
+        </Style>
+        <Style Selector="Button.MenuButton:pointerover">
+            <Setter Property="Background" Value="#2563EB22"/>
+            <Setter Property="Foreground" Value="White"/>
+        </Style>
+        <Style Selector="Button.MenuButton.active">
+            <Setter Property="Background" Value="#2563EB"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+        </Style>
+        
+        <Style Selector="Border.StatCard">
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="CornerRadius" Value="12"/>
+            <Setter Property="Padding" Value="20"/>
+            <Setter Property="Margin" Value="10"/>
+            <Setter Property="BoxShadow" Value="0 4 15 0 #0A000000"/>
+        </Style>
+        
+        <Style Selector="TextBlock.StatLabel">
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Foreground" Value="#888888"/>
+            <Setter Property="Margin" Value="0,0,0,5"/>
+        </Style>
+        <Style Selector="TextBlock.StatValue">
+            <Setter Property="FontSize" Value="22"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Foreground" Value="#333333"/>
+            <Setter Property="Margin" Value="0,0,0,5"/>
+        </Style>
+        <Style Selector="TextBlock.StatTrend">
+            <Setter Property="FontSize" Value="11"/>
+        </Style>
+        <Style Selector="TextBlock.Positive">
+            <Setter Property="Foreground" Value="#10B981"/>
+        </Style>
+        <Style Selector="TextBlock.Negative">
+            <Setter Property="Foreground" Value="#EF4444"/>
+        </Style>
+    </UserControl.Styles>
+</UserControl>

@@ -1,0 +1,107 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="1000" d:DesignHeight="800"
+             x:Class="BusinessSuite.UI.Views.HomeView">
+
+    <ScrollViewer Background="#F8F9FA">
+        <StackPanel Margin="30" Spacing="30">
+            <!-- Stats Section -->
+            <UniformGrid Columns="4" Rows="1">
+                <Border Classes="StatCard">
+                    <StackPanel>
+                        <TextBlock Text="Total Sales" Classes="StatLabel"/>
+                        <TextBlock Text="₹ 1,24,500" Classes="StatValue"/>
+                        <TextBlock Text="+12% from last month" Classes="StatTrend Positive"/>
+                    </StackPanel>
+                </Border>
+                <Border Classes="StatCard">
+                    <StackPanel>
+                        <TextBlock Text="Total GST" Classes="StatLabel"/>
+                        <TextBlock Text="₹ 22,410" Classes="StatValue"/>
+                        <TextBlock Text="+5.2% from last month" Classes="StatTrend Positive"/>
+                    </StackPanel>
+                </Border>
+                <Border Classes="StatCard">
+                    <StackPanel>
+                        <TextBlock Text="New Orders" Classes="StatLabel"/>
+                        <TextBlock Text="48" Classes="StatValue"/>
+                        <TextBlock Text="-2% from yesterday" Classes="StatTrend Negative"/>
+                    </StackPanel>
+                </Border>
+                <Border Classes="StatCard">
+                    <StackPanel>
+                        <TextBlock Text="Customer Growth" Classes="StatLabel"/>
+                        <TextBlock Text="128" Classes="StatValue"/>
+                        <TextBlock Text="+18% from last month" Classes="StatTrend Positive"/>
+                    </StackPanel>
+                </Border>
+            </UniformGrid>
+
+            <!-- Recent Activity Section -->
+            <Border Background="White" CornerRadius="12" BoxShadow="0 4 15 0 #0A000000" Padding="25">
+                <StackPanel Spacing="20">
+                    <TextBlock Text="Recent Transactions" FontSize="18" FontWeight="SemiBold" Foreground="#333333"/>
+                    <Separator Background="#EEEEEE" Height="1"/>
+                    <Grid ColumnDefinitions="*, *, *, *, *">
+                        <TextBlock Grid.Column="0" Text="Invoice #" FontWeight="Medium" Foreground="#666666"/>
+                        <TextBlock Grid.Column="1" Text="Customer" FontWeight="Medium" Foreground="#666666"/>
+                        <TextBlock Grid.Column="2" Text="Date" FontWeight="Medium" Foreground="#666666"/>
+                        <TextBlock Grid.Column="3" Text="Amount" FontWeight="Medium" Foreground="#666666"/>
+                        <TextBlock Grid.Column="4" Text="Status" FontWeight="Medium" Foreground="#666666"/>
+                    </Grid>
+                    <!-- Mock Data Rows -->
+                    <Grid ColumnDefinitions="*, *, *, *, *" Margin="0,5">
+                        <TextBlock Grid.Column="0" Text="INV-2024-001" Foreground="#333333"/>
+                        <TextBlock Grid.Column="1" Text="Anil Sharma" Foreground="#333333"/>
+                        <TextBlock Grid.Column="2" Text="Jan 05, 2024" Foreground="#333333"/>
+                        <TextBlock Grid.Column="3" Text="₹ 12,500" Foreground="#333333" FontWeight="Bold"/>
+                        <Border Grid.Column="4" Background="#E1F5FE" CornerRadius="10" HorizontalAlignment="Left" Padding="10,2">
+                            <TextBlock Text="Paid" FontSize="12" Foreground="#0288D1"/>
+                        </Border>
+                    </Grid>
+                    <Grid ColumnDefinitions="*, *, *, *, *" Margin="0,5">
+                        <TextBlock Grid.Column="0" Text="INV-2024-002" Foreground="#333333"/>
+                        <TextBlock Grid.Column="1" Text="Suresh Kumar" Foreground="#333333"/>
+                        <TextBlock Grid.Column="2" Text="Jan 05, 2024" Foreground="#333333"/>
+                        <TextBlock Grid.Column="3" Text="₹ 8,240" Foreground="#333333" FontWeight="Bold"/>
+                        <Border Grid.Column="4" Background="#FFF9C4" CornerRadius="10" HorizontalAlignment="Left" Padding="10,2">
+                            <TextBlock Text="Pending" FontSize="12" Foreground="#FBC02D"/>
+                        </Border>
+                    </Grid>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+
+    <UserControl.Styles>
+        <Style Selector="Border.StatCard">
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="CornerRadius" Value="12"/>
+            <Setter Property="Padding" Value="20"/>
+            <Setter Property="Margin" Value="10"/>
+            <Setter Property="BoxShadow" Value="0 4 15 0 #0A000000"/>
+        </Style>
+        <Style Selector="TextBlock.StatLabel">
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Foreground" Value="#888888"/>
+            <Setter Property="Margin" Value="0,0,0,5"/>
+        </Style>
+        <Style Selector="TextBlock.StatValue">
+            <Setter Property="FontSize" Value="22"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Foreground" Value="#333333"/>
+            <Setter Property="Margin" Value="0,0,0,5"/>
+        </Style>
+        <Style Selector="TextBlock.StatTrend">
+            <Setter Property="FontSize" Value="11"/>
+        </Style>
+        <Style Selector="TextBlock.Positive">
+            <Setter Property="Foreground" Value="#10B981"/>
+        </Style>
+        <Style Selector="TextBlock.Negative">
+            <Setter Property="Foreground" Value="#EF4444"/>
+        </Style>
+    </UserControl.Styles>
+</UserControl>

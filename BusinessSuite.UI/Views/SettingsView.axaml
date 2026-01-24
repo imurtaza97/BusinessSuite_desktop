@@ -1,0 +1,188 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:BusinessSuite.UI.ViewModels"
+             xmlns:conv="clr-namespace:BusinessSuite.UI.Converters"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="600"
+             x:Class="BusinessSuite.UI.Views.SettingsView"
+             x:DataType="vm:SettingsViewModel">
+
+    <Grid ColumnDefinitions="250, *">
+        <!-- Sidebar Navigation -->
+        <Border Background="#F9FAFB" BorderBrush="#E5E7EB" BorderThickness="0,0,1,0">
+            <StackPanel Margin="0,20">
+                <TextBlock Text="Settings" FontSize="20" FontWeight="Bold" Margin="20,0,20,20" Foreground="#111827"/>
+                
+                <ListBox ItemsSource="{Binding SettingsSections}"
+                         SelectedItem="{Binding SelectedSection}" 
+                         Background="Transparent" BorderThickness="0">
+                    <ListBox.Styles>
+                        <Style Selector="ListBoxItem">
+                            <Setter Property="Padding" Value="20,12"/>
+                            <Setter Property="Background" Value="Transparent"/>
+                        </Style>
+                        <Style Selector="ListBoxItem:pointerover /template/ ContentPresenter">
+                            <Setter Property="Background" Value="#F3F4F6"/>
+                        </Style>
+                        <Style Selector="ListBoxItem:selected /template/ ContentPresenter">
+                            <Setter Property="Background" Value="#EFF6FF"/>
+                            <Setter Property="TextBlock.Foreground" Value="#2563EB"/>
+                            <Setter Property="TextBlock.FontWeight" Value="SemiBold"/>
+                        </Style>
+                    </ListBox.Styles>
+                </ListBox>
+            </StackPanel>
+        </Border>
+
+        <!-- Main Content Area -->
+        <Grid Grid.Column="1" RowDefinitions="*, Auto">
+            <ScrollViewer Grid.Row="0">
+                <StackPanel Margin="40" Spacing="25">
+                    <!-- Status Message -->
+                    <Border IsVisible="{Binding StatusMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                            Background="#DCFCE7" BorderBrush="#22C55E" BorderThickness="1" CornerRadius="4" Padding="12">
+                        <TextBlock Text="{Binding StatusMessage}" Foreground="#166534" FontSize="14"/>
+                    </Border>
+
+                    <!-- Profile Section -->
+                    <StackPanel Spacing="20" IsVisible="{Binding SelectedSection, Converter={x:Static conv:StringEqualityConverter.Instance}, ConverterParameter=Profile}">
+                        <TextBlock Text="Business Profile" FontSize="22" FontWeight="Bold"/>
+                        <TextBlock Text="Update your business identity and location." Foreground="#6B7280"/>
+                        
+                        <Border Background="White" BorderBrush="#E5E7EB" BorderThickness="1" CornerRadius="8" Padding="25">
+                            <StackPanel Spacing="15">
+                                <StackPanel Spacing="5">
+                                    <TextBlock Text="Business Name" FontWeight="Medium"/>
+                                    <TextBox Text="{Binding BusinessName}"/>
+                                </StackPanel>
+                                <StackPanel Spacing="5">
+                                    <TextBlock Text="Address" FontWeight="Medium"/>
+                                    <TextBox Text="{Binding Address}" AcceptsReturn="True" Height="80"/>
+                                </StackPanel>
+                                <StackPanel Spacing="5">
+                                    <TextBlock Text="State" FontWeight="Medium"/>
+                                    <ComboBox ItemsSource="{Binding States}"
+                                              SelectedItem="{Binding State}"
+                                              HorizontalAlignment="Stretch"/>
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+
+                    <!-- Tax & GST Section -->
+                    <StackPanel Spacing="20" IsVisible="{Binding SelectedSection, Converter={x:Static conv:StringEqualityConverter.Instance}, ConverterParameter='Tax &amp; GST'}">
+                        <TextBlock Text="Tax &amp; GST Settings" FontSize="22" FontWeight="Bold"/>
+                        <TextBlock Text="Configure your tax registration details." Foreground="#6B7280"/>
+                        
+                        <Border Background="White" BorderBrush="#E5E7EB" BorderThickness="1" CornerRadius="8" Padding="25">
+                            <StackPanel Spacing="20">
+                                <StackPanel Orientation="Horizontal" Spacing="10">
+                                    <CheckBox IsChecked="{Binding IsGstRegistered}"/>
+                                    <TextBlock Text="I am registered for GST" VerticalAlignment="Center" FontWeight="Medium"/>
+                                </StackPanel>
+
+                                <StackPanel Spacing="15" IsVisible="{Binding IsGstRegistered}">
+                                    <StackPanel Spacing="5">
+                                        <TextBlock Text="GSTIN" FontWeight="Medium"/>
+                                        <TextBox Text="{Binding Gstin}" Watermark="15-digit GST Number"/>
+                                    </StackPanel>
+                                    <StackPanel Spacing="5">
+                                        <TextBlock Text="GST Type" FontWeight="Medium"/>
+                                        <ComboBox ItemsSource="{Binding GstTypesList}"
+                                                  SelectedItem="{Binding GstType}"
+                                                  HorizontalAlignment="Stretch"/>
+                                    </StackPanel>
+                                </StackPanel>
+
+                                <Border IsVisible="{Binding !IsGstRegistered}" Background="#F3F4F6" Padding="15" CornerRadius="4">
+                                    <TextBlock Text="You are currently in Non-GST mode. GST related fields will be hidden on invoices." 
+                                               FontStyle="Italic" Foreground="#4B5563" TextWrapping="Wrap"/>
+                                </Border>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+
+                    <!-- Bank Details Section -->
+                    <StackPanel Spacing="20" IsVisible="{Binding SelectedSection, Converter={x:Static conv:StringEqualityConverter.Instance}, ConverterParameter='Bank Details'}">
+                        <TextBlock Text="Bank Account Details" FontSize="22" FontWeight="Bold"/>
+                        <TextBlock Text="These details will be printed on your invoices for payments." Foreground="#6B7280"/>
+                        
+                        <Border Background="White" BorderBrush="#E5E7EB" BorderThickness="1" CornerRadius="8" Padding="25">
+                            <StackPanel Spacing="15">
+                                <StackPanel Spacing="5">
+                                    <TextBlock Text="Bank Name" FontWeight="Medium"/>
+                                    <TextBox Text="{Binding BankName}" Watermark="e.g. HDFC Bank"/>
+                                </StackPanel>
+                                <StackPanel Spacing="5">
+                                    <TextBlock Text="Account Number" FontWeight="Medium"/>
+                                    <TextBox Text="{Binding AccountNumber}" Watermark="Enter account number"/>
+                                </StackPanel>
+                                <StackPanel Spacing="5">
+                                    <TextBlock Text="IFSC Code" FontWeight="Medium"/>
+                                    <TextBox Text="{Binding Ifsc}" Watermark="e.g. HDFC0001234"/>
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+
+                    <!-- Units of Measure Section -->
+                    <StackPanel Spacing="20" IsVisible="{Binding SelectedSection, Converter={x:Static conv:StringEqualityConverter.Instance}, ConverterParameter='Units of Measure'}">
+                        <TextBlock Text="Units of Measure" FontSize="22" FontWeight="Bold"/>
+                        <TextBlock Text="Manage the units used for your products (e.g. PCS, BOX, KG)." Foreground="#6B7280"/>
+                        
+                        <Border Background="White" BorderBrush="#E5E7EB" BorderThickness="1" CornerRadius="8" Padding="25">
+                            <StackPanel Spacing="15">
+                                <Grid ColumnDefinitions="*, Auto">
+                                    <TextBox Text="{Binding NewUomName}" Watermark="New UOM name..." 
+                                             KeyUp="Uom_KeyUp"/>
+                                    <Button Grid.Column="1" Content="Add UOM" Command="{Binding AddUomCommand}" 
+                                            Margin="10,0,0,0" Classes="Primary"/>
+                                </Grid>
+
+                                <ListBox ItemsSource="{Binding Uoms}" Height="300" BorderThickness="1" BorderBrush="#E5E7EB">
+                                    <ListBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <Grid ColumnDefinitions="*, Auto">
+                                                <TextBlock Text="{Binding Name}" VerticalAlignment="Center"/>
+                                                <Button Grid.Column="1" Content="Delete" 
+                                                        Command="{Binding ((vm:SettingsViewModel)DataContext).RemoveUomCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                        CommandParameter="{Binding}"
+                                                        Classes="Danger"
+                                                        IsVisible="{Binding BusinessId, Converter={x:Static conv:DecimalToBoolConverter.Instance}, ConverterParameter=0}"/>
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ListBox.ItemTemplate>
+                                </ListBox>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </StackPanel>
+            </ScrollViewer>
+
+            <!-- Bottom Action Bar -->
+            <Border Grid.Row="1" Background="White" BorderBrush="#E5E7EB" BorderThickness="0,1,0,0" Padding="20">
+                <Grid ColumnDefinitions="*, Auto">
+                    <TextBlock Text="Tip: Don't forget to save after making changes." VerticalAlignment="Center" Foreground="#6B7280" FontSize="13"/>
+                    <Button Grid.Column="1" Content="Save All Changes" 
+                            Command="{Binding SaveCommand}"
+                            Classes="Primary" Padding="30,12"/>
+                </Grid>
+            </Border>
+        </Grid>
+    </Grid>
+
+    <UserControl.Styles>
+        <Style Selector="Button.Primary">
+            <Setter Property="Background" Value="#2563EB"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+        </Style>
+        <Style Selector="Button.Danger">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="#EF4444"/>
+            <Setter Property="BorderBrush" Value="#EF4444"/>
+            <Setter Property="BorderThickness" Value="1"/>
+        </Style>
+    </UserControl.Styles>
+</UserControl>

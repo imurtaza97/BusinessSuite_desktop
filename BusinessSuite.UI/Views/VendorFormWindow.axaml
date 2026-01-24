@@ -1,0 +1,96 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="clr-namespace:BusinessSuite.UI.ViewModels"
+        xmlns:conv="clr-namespace:BusinessSuite.UI.Converters"
+        mc:Ignorable="d" d:DesignWidth="450" d:DesignHeight="600"
+        x:Class="BusinessSuite.UI.Views.VendorFormWindow"
+        x:DataType="vm:VendorFormViewModel"
+        Title="{Binding Title}"
+        Width="450" Height="600"
+        WindowStartupLocation="CenterOwner"
+        CanResize="False"
+        Background="#F9FAFB">
+
+    <Grid RowDefinitions="Auto, *, Auto" Margin="25">
+        <!-- Header -->
+        <StackPanel Grid.Row="0" Margin="0,0,0,10">
+            <TextBlock Text="{Binding Title}" 
+                       FontSize="24" 
+                       FontWeight="Bold" 
+                       Foreground="#111827" />
+            
+            <Border Background="#FEE2E2" 
+                    BorderBrush="#EF4444" 
+                    BorderThickness="1" 
+                    CornerRadius="4" 
+                    Padding="10" 
+                    Margin="0,15,0,0"
+                    IsVisible="{Binding GeneralErrorMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                <TextBlock Text="{Binding GeneralErrorMessage}" 
+                           Foreground="#B91C1C" 
+                           FontSize="12"
+                           TextWrapping="Wrap"/>
+            </Border>
+        </StackPanel>
+
+        <!-- Form Fields -->
+        <ScrollViewer Grid.Row="1">
+            <StackPanel Spacing="15">
+                <StackPanel>
+                    <TextBlock Text="Vendor Name *" Margin="0,0,0,5" FontWeight="Medium" Foreground="#374151"/>
+                    <TextBox Text="{Binding VendorName}" Watermark="Enter vendor or company name"/>
+                </StackPanel>
+
+                <StackPanel IsVisible="{Binding IsGstRegistered}">
+                    <TextBlock Text="GSTIN" Margin="0,0,0,5" FontWeight="Medium" Foreground="#374151"/>
+                    <TextBox Text="{Binding GSTIN}" Watermark="15-digit GSTIN"/>
+                </StackPanel>
+
+                <StackPanel>
+                    <TextBlock Text="Contact No" Margin="0,0,0,5" FontWeight="Medium" Foreground="#374151"/>
+                    <TextBox Text="{Binding ContactNo}" Watermark="Phone number"/>
+                </StackPanel>
+
+                <StackPanel>
+                    <TextBlock Text="Email" Margin="0,0,0,5" FontWeight="Medium" Foreground="#374151"/>
+                    <TextBox Text="{Binding Email}" Watermark="Email address"/>
+                </StackPanel>
+
+                <StackPanel>
+                    <TextBlock Text="Address" Margin="0,0,0,5" FontWeight="Medium" Foreground="#374151"/>
+                    <TextBox Text="{Binding Address}" Watermark="Detailed address" AcceptsReturn="True" Height="80" TextWrapping="Wrap"/>
+                </StackPanel>
+
+                <Grid ColumnDefinitions="*, *">
+                    <StackPanel Grid.Column="0" Margin="0,0,7,0">
+                        <TextBlock Text="State" Margin="0,0,0,5" FontWeight="Medium" Foreground="#374151"/>
+                        <ComboBox ItemsSource="{Binding States}" 
+                                  SelectedItem="{Binding State}"
+                                  HorizontalAlignment="Stretch"
+                                  PlaceholderText="Select state"/>
+                    </StackPanel>
+                    <StackPanel Grid.Column="1" Margin="7,0,0,0">
+                        <TextBlock Text="GST Treatment" Margin="0,0,0,5" FontWeight="Medium" Foreground="#374151"/>
+                        <ComboBox ItemsSource="{Binding GstTreatments}" 
+                                  SelectedItem="{Binding GstTreatment}"
+                                  HorizontalAlignment="Stretch"/>
+                    </StackPanel>
+                </Grid>
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- Footer Actions -->
+        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10" Margin="0,20,0,0">
+            <Button Content="Cancel" Command="{Binding CancelCommand}" Width="100" HorizontalContentAlignment="Center"/>
+            <Button Content="Save Vendor" 
+                    Command="{Binding SaveCommand}" 
+                    Width="140" 
+                    HorizontalContentAlignment="Center" 
+                    Background="#2563EB" 
+                    Foreground="White" 
+                    FontWeight="SemiBold"/>
+        </StackPanel>
+    </Grid>
+</Window>

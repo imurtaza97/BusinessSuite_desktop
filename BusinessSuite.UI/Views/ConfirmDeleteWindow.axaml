@@ -1,0 +1,38 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="200"
+        x:Class="BusinessSuite.UI.Views.ConfirmDeleteWindow"
+        Title="Delete Product"
+        Width="400" Height="180"
+        WindowStartupLocation="CenterOwner"
+        CanResize="False"
+        Background="White">
+
+    <Grid RowDefinitions="*, Auto" Margin="20">
+        <StackPanel Grid.Row="0" Spacing="10">
+            <TextBlock Text="Are you sure you want to delete this product?" 
+                       FontSize="16" 
+                       FontWeight="SemiBold" 
+                       Foreground="#111827"/>
+            <TextBlock Text="This action cannot be undone." 
+                       Foreground="#6B7280" 
+                       TextWrapping="Wrap"/>
+        </StackPanel>
+
+        <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10">
+            <Button Content="Cancel" 
+                    Click="Cancel_Click"
+                    Width="80" 
+                    HorizontalContentAlignment="Center"/>
+            <Button Content="Delete" 
+                    Click="Delete_Click"
+                    Classes="Danger"
+                    Width="80" 
+                    HorizontalContentAlignment="Center"
+                    Background="#EF4444"
+                    Foreground="White"/>
+        </StackPanel>
+    </Grid>
+</Window>

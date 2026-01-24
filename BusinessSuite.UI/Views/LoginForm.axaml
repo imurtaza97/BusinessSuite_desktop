@@ -1,0 +1,60 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:BusinessSuite.UI.ViewModels"
+        x:Class="BusinessSuite.UI.Views.LoginForm"
+        x:DataType="vm:LoginFormViewModel"
+        Title="Login - BusinessSuite"
+        Height="400" Width="350"
+        WindowStartupLocation="CenterScreen"
+        CanResize="False"
+        Background="#F3F4F6">
+
+    <Border Padding="30" VerticalAlignment="Center">
+        <StackPanel Spacing="15">
+            <TextBlock Text="Welcome Back"
+                       FontSize="24"
+                       FontWeight="Bold"
+                       HorizontalAlignment="Center"
+                       Foreground="#111827"/>
+
+            <TextBlock Text="Login to your account"
+                       FontSize="13"
+                       Foreground="#6B7280"
+                       HorizontalAlignment="Center"
+                       Margin="0,0,0,10"/>
+
+            <StackPanel Spacing="5">
+                <TextBlock Text="Username" FontSize="12" FontWeight="Medium" Foreground="#374151"/>
+                <TextBox Text="{Binding Username}"
+                         Watermark="Enter username"
+                         Height="40"
+                         VerticalContentAlignment="Center"/>
+            </StackPanel>
+
+            <StackPanel Spacing="5">
+                <TextBlock Text="Password" FontSize="12" FontWeight="Medium" Foreground="#374151"/>
+                <TextBox Text="{Binding Password}"
+                         Watermark="Enter password"
+                         PasswordChar="*"
+                         Height="40"
+                         VerticalContentAlignment="Center"/>
+            </StackPanel>
+
+            <Button Content="Login"
+                    Command="{Binding LoginCommand}"
+                    HorizontalAlignment="Stretch"
+                    HorizontalContentAlignment="Center"
+                    Background="#2563EB"
+                    Foreground="White"
+                    Padding="10"
+                    Height="40"
+                    Margin="0,10,0,0"/>
+
+            <TextBlock Text="{Binding ErrorMessage}"
+                       Foreground="#DC2626"
+                       FontSize="12"
+                       HorizontalAlignment="Center"
+                       TextWrapping="Wrap"/>
+        </StackPanel>
+    </Border>
+</Window>

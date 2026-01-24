@@ -1,0 +1,101 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:BusinessSuite.UI.ViewModels"
+        x:Class="BusinessSuite.UI.Views.RegisterForm"
+        x:DataType="vm:RegisterFormViewModel"
+        Title="Business Registration - BusinessSuite"
+        Height="650" Width="450"
+        WindowStartupLocation="CenterScreen"
+        CanResize="False">
+
+    <ScrollViewer>
+        <StackPanel Margin="30" Spacing="12">
+
+            <!-- HEADER -->
+            <TextBlock Text="Initial Setup Wizard"
+                       FontSize="24"
+                       FontWeight="Bold"
+                       HorizontalAlignment="Center"/>
+
+            <TextBlock Text="Setup your business &amp; admin account"
+                       FontSize="12"
+                       Foreground="Gray"
+                       HorizontalAlignment="Center"
+                       Margin="0,0,0,20"/>
+
+            <!-- ===================== -->
+            <!-- PART 1: BUSINESS INFO -->
+            <!-- ===================== -->
+            <TextBlock Text="Business Details"
+                       FontWeight="SemiBold"
+                       FontSize="14"/>
+
+            <TextBox Text="{Binding Request.BusinessName}"
+                     Watermark="Business Name *"/>
+
+            <TextBox Text="{Binding Request.OwnerName}"
+                     Watermark="Owner Full Name *"/>
+
+            <TextBox Text="{Binding Request.Email}"
+                     Watermark="Business Email *"/>
+
+            <TextBox Text="{Binding Request.Address}"
+                     Watermark="Address Line 1 *"/>
+
+            <ComboBox ItemsSource="{Binding States}"
+                      SelectedItem="{Binding Request.State}"
+                      PlaceholderText="Select State *"
+                      HorizontalAlignment="Stretch"/>
+
+            <CheckBox x:Name="GstCheckBox"
+                      Content="GST Registered?"
+                      IsChecked="{Binding IsGstRegistered}"/>
+
+            <!-- GST SECTION (Visible Only If Checked) -->
+            <StackPanel IsVisible="{Binding #GstCheckBox.IsChecked}" Spacing="8">
+                <TextBox Text="{Binding Request.GSTIN}"
+                         Watermark="GSTIN * (15 Characters)"/>
+
+                <ComboBox ItemsSource="{Binding GstTypes}"
+                          SelectedItem="{Binding Request.GstType}"
+                          PlaceholderText="GST Type *"
+                          HorizontalAlignment="Stretch"/>
+            </StackPanel>
+
+            <Separator Margin="0,15"/>
+
+            <!-- ================= -->
+            <!-- PART 2: ADMIN USER -->
+            <!-- ================= -->
+            <TextBlock Text="Admin Login"
+                       FontWeight="SemiBold"
+                       FontSize="14"/>
+
+            <TextBox Text="{Binding Request.UserName}"
+                     Watermark="Username *"/>
+
+            <TextBox Text="{Binding Request.Password}"
+                     PasswordChar="*"
+                     Watermark="Password * (min 6 chars)"/>
+
+            <!-- SUBMIT -->
+            <Button Content="Register Business"
+                    Command="{Binding RegisterCommand}"
+                    IsEnabled="{Binding !IsBusy}"
+                    HorizontalAlignment="Stretch" 
+                    HorizontalContentAlignment="Center"
+                    VerticalContentAlignment="Center" 
+                    Background="#2563EB"
+                    Foreground="White"
+                    Padding="10"
+                    Height="40"/>
+
+            <TextBlock Text="{Binding StatusMessage}"
+                       Foreground="{Binding StatusColor}"
+                       FontSize="12"
+                       HorizontalAlignment="Center"
+                       TextWrapping="Wrap"
+                       Margin="0,10,0,0"/>
+        </StackPanel>
+    </ScrollViewer>
+</Window>

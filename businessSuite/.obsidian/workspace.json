@@ -1,0 +1,194 @@
+{
+  "main": {
+    "id": "b6ef0302cfb7d05c",
+    "type": "split",
+    "children": [
+      {
+        "id": "a62d9139b7268eea",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "c51f6aab300d2fd9",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "SRS(Requirements)/BusinessSuite – Smart GST Billing & Business Management System (SRS Document).md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "BusinessSuite – Smart GST Billing & Business Management System (SRS Document)"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "65db76077fdd61fd",
+    "type": "split",
+    "children": [
+      {
+        "id": "d69ed1695b26b94e",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "001e7708c97249b3",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical",
+                "autoReveal": false
+              },
+              "icon": "lucide-folder-closed",
+              "title": "Files"
+            }
+          },
+          {
+            "id": "d200042b7ba37fd4",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "Search"
+            }
+          },
+          {
+            "id": "c6b1a915fefbf21a",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {},
+              "icon": "lucide-bookmark",
+              "title": "Bookmarks"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "right": {
+    "id": "f2b07f671e480cd6",
+    "type": "split",
+    "children": [
+      {
+        "id": "84d01b052791feaf",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "be94f4dfcc5c8cd0",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "Implementation Readiness Checklist & Schedule.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-coming-in",
+              "title": "Backlinks for Implementation Readiness Checklist & Schedule"
+            }
+          },
+          {
+            "id": "0794b5a51d575d2b",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "Implementation Readiness Checklist & Schedule.md",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "Outgoing links from Implementation Readiness Checklist & Schedule"
+            }
+          },
+          {
+            "id": "3c1162ab553713af",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-tags",
+              "title": "Tags"
+            }
+          },
+          {
+            "id": "c99217bbffe6f140",
+            "type": "leaf",
+            "state": {
+              "type": "all-properties",
+              "state": {
+                "sortOrder": "frequency",
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-ghost",
+              "title": "all-properties"
+            }
+          },
+          {
+            "id": "d6149e68e539f72e",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "Implementation Readiness Checklist & Schedule.md",
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "Outline of Implementation Readiness Checklist & Schedule"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:Open quick switcher": false,
+      "graph:Open graph view": false,
+      "canvas:Create new canvas": false,
+      "daily-notes:Open today's daily note": false,
+      "templates:Insert template": false,
+      "command-palette:Open command palette": false,
+      "bases:Create new base": false
+    }
+  },
+  "active": "c51f6aab300d2fd9",
+  "lastOpenFiles": [
+    "SRS(Requirements)/BusinessSuite – Smart GST Billing & Business Management System (SRS Document).md",
+    "SDD(Design)/BusinessSuite – Smart GST Billing & Business Management SystemSoftware Design Document (SDD).md",
+    "Implementation Readiness Checklist & Schedule.md",
+    "SDD(Design)/Sequence.png",
+    "SDD(Design)/Class Diagram.jpeg"
+  ]
+}

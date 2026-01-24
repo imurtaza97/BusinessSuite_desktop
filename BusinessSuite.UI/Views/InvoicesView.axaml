@@ -1,0 +1,65 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:BusinessSuite.UI.ViewModels"
+             xmlns:conv="clr-namespace:BusinessSuite.UI.Converters"
+             mc:Ignorable="d" d:DesignWidth="1000" d:DesignHeight="600"
+             x:Class="BusinessSuite.UI.Views.InvoicesView"
+             x:DataType="vm:InvoicesViewModel">
+
+    <Grid RowDefinitions="Auto, *">
+        <!-- Header Actions -->
+        <Border Grid.Row="0" Background="White" BorderBrush="#E5E7EB" BorderThickness="0,0,0,1" Padding="20,15">
+            <Grid ColumnDefinitions="*, Auto">
+                <StackPanel Orientation="Horizontal" Spacing="15">
+                    <TextBox Width="300" 
+                             Watermark="Search invoices by number or customer..." 
+                             Text="{Binding SearchQuery, UpdateSourceTrigger=PropertyChanged}"/>
+                    <Button Classes="Primary" Content="Create New Invoice" Command="{Binding AddInvoiceCommand}"/>
+                    <Button Content="Edit" Command="{Binding EditInvoiceCommand}" IsEnabled="{Binding !!SelectedInvoice}"/>
+                    <Button Content="Delete" Command="{Binding DeleteInvoiceCommand}" IsEnabled="{Binding !!SelectedInvoice}" Background="#EF4444" Foreground="White"/>
+                    <Button Content="Print Selected" 
+                            Command="{Binding PrintInvoiceCommand}"
+                            IsEnabled="{Binding !!SelectedInvoice}"/>
+                </StackPanel>
+                
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10">
+                    <Button Content="Refresh" Command="{Binding RefreshCommand}"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Invoice List -->
+        <Grid Grid.Row="1" Margin="20">
+            <DataGrid ItemsSource="{Binding Invoices}" 
+                      SelectedItem="{Binding SelectedInvoice}"
+                      IsReadOnly="True" 
+                      CanUserReorderColumns="True"
+                      CanUserResizeColumns="True"
+                      BorderThickness="1"
+                      BorderBrush="#E5E7EB"
+                      GridLinesVisibility="All">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Inv Number" Binding="{Binding InvoiceNumber}" Width="120"/>
+                    <DataGridTextColumn Header="Date" Binding="{Binding InvoiceDate, Converter={x:Static conv:SafeDisplayConverter.Instance}, ConverterParameter=\{0:dd/MM/yyyy\}}" Width="120"/>
+                    <DataGridTextColumn Header="Customer" Binding="{Binding Customer, Converter={x:Static conv:SafeDisplayConverter.Instance}, ConverterParameter=Customer}" Width="*"/>
+                    <DataGridTextColumn Header="Amount" Binding="{Binding TotalAmount, Converter={x:Static conv:SafeDisplayConverter.Instance}, ConverterParameter='₹ {0:N2}'}" Width="120"/>
+                    <DataGridTextColumn Header="Tax" Binding="{Binding TotalTax, Converter={x:Static conv:SafeDisplayConverter.Instance}, ConverterParameter='₹ {0:N2}'}" Width="120"/>
+                    <DataGridTextColumn Header="Grand Total" Binding="{Binding GrandTotal, Converter={x:Static conv:SafeDisplayConverter.Instance}, ConverterParameter='₹ {0:N2}'}" Width="130"/>
+                    <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="100"/>
+                </DataGrid.Columns>
+            </DataGrid>
+            
+            <ProgressBar IsVisible="{Binding IsBusy}" IsIndeterminate="True" VerticalAlignment="Top"/>
+        </Grid>
+    </Grid>
+
+    <UserControl.Styles>
+        <Style Selector="Button.Primary">
+            <Setter Property="Background" Value="#2563EB"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+        </Style>
+    </UserControl.Styles>
+</UserControl>

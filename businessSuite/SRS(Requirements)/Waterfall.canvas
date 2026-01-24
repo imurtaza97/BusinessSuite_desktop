@@ -1,0 +1,15 @@
+{
+	"nodes":[
+		{"id":"f50fdb9cd5e39365","x":-660,"y":-360,"width":250,"height":60,"type":"text","text":"Requirements"},
+		{"id":"63a56b40ef7cafbc","x":-440,"y":-260,"width":250,"height":60,"type":"text","text":"Design"},
+		{"id":"630d0bada29a3004","x":-220,"y":-160,"width":250,"height":60,"type":"text","text":"Implementation"},
+		{"id":"7629e6986cfbcd04","x":0,"y":-60,"width":250,"height":60,"type":"text","text":"Testing"},
+		{"id":"026c759502ffc248","x":220,"y":40,"width":250,"height":60,"type":"text","text":"Deployment"}
+	],
+	"edges":[
+		{"id":"1c99a87ba9d9b359","fromNode":"f50fdb9cd5e39365","fromSide":"right","toNode":"63a56b40ef7cafbc","toSide":"top"},
+		{"id":"0bba50ee4739fb7d","fromNode":"63a56b40ef7cafbc","fromSide":"right","toNode":"630d0bada29a3004","toSide":"top"},
+		{"id":"a0e2c03f452747be","fromNode":"630d0bada29a3004","fromSide":"right","toNode":"7629e6986cfbcd04","toSide":"top"},
+		{"id":"7a218e33df180120","fromNode":"7629e6986cfbcd04","fromSide":"right","toNode":"026c759502ffc248","toSide":"top"}
+	]
+}

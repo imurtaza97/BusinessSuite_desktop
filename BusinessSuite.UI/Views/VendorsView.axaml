@@ -1,0 +1,64 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:BusinessSuite.UI.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="1000" d:DesignHeight="600"
+             x:Class="BusinessSuite.UI.Views.VendorsView"
+             x:DataType="vm:VendorsViewModel">
+
+    <Grid RowDefinitions="Auto, *">
+        <!-- Header Actions -->
+        <Border Grid.Row="0" Background="White" BorderBrush="#E5E7EB" BorderThickness="0,0,0,1" Padding="20,15">
+            <Grid ColumnDefinitions="*, Auto">
+                <StackPanel Orientation="Horizontal" Spacing="15">
+                    <TextBox Width="300" 
+                             Watermark="Search vendors by name or GSTIN..." 
+                             Text="{Binding SearchQuery, UpdateSourceTrigger=PropertyChanged}"/>
+                    <Button Classes="Primary" Content="Add New Vendor" Command="{Binding AddVendorCommand}"/>
+                </StackPanel>
+                
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10">
+                    <Button Content="Edit" Command="{Binding EditVendorCommand}" IsEnabled="{Binding !!SelectedVendor}" />
+                    <Button Classes="Danger" Content="Delete" Command="{Binding DeleteVendorCommand}" IsEnabled="{Binding !!SelectedVendor}" />
+                    <Button Content="Refresh" Command="{Binding LoadVendorsCommand}"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Vendor List -->
+        <Grid Grid.Row="1" Margin="20">
+            <DataGrid ItemsSource="{Binding Vendors}" 
+                      SelectedItem="{Binding SelectedVendor}"
+                      IsReadOnly="True" 
+                      CanUserReorderColumns="True"
+                      CanUserResizeColumns="True"
+                      BorderThickness="1"
+                      BorderBrush="#E5E7EB"
+                      GridLinesVisibility="All"
+                      DoubleTapped="DataGrid_DoubleTapped">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Vendor Name" Binding="{Binding VendorName}" Width="*"/>
+                    <DataGridTextColumn Header="GSTIN" Binding="{Binding GSTIN}" Width="150"/>
+                    <DataGridTextColumn Header="Contact" Binding="{Binding ContactNo}" Width="130"/>
+                    <DataGridTextColumn Header="Email" Binding="{Binding Email}" Width="180"/>
+                    <DataGridTextColumn Header="State" Binding="{Binding State}" Width="120"/>
+                </DataGrid.Columns>
+            </DataGrid>
+            
+            <ProgressBar IsVisible="{Binding IsBusy}" IsIndeterminate="True" VerticalAlignment="Top"/>
+        </Grid>
+    </Grid>
+    
+    <UserControl.Styles>
+        <Style Selector="Button.Primary">
+            <Setter Property="Background" Value="#2563EB"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+        </Style>
+        <Style Selector="Button.Danger">
+            <Setter Property="Background" Value="#EF4444"/>
+            <Setter Property="Foreground" Value="White"/>
+        </Style>
+    </UserControl.Styles>
+</UserControl>

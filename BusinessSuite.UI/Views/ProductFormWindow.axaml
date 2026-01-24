@@ -1,0 +1,103 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="clr-namespace:BusinessSuite.UI.ViewModels"
+        mc:Ignorable="d" d:DesignWidth="450" d:DesignHeight="600"
+        x:Class="BusinessSuite.UI.Views.ProductFormWindow"
+        x:DataType="vm:ProductFormViewModel"
+        Title="{Binding Title}"
+        Width="450" Height="600"
+        WindowStartupLocation="CenterOwner"
+        CanResize="False"
+        Background="#F9FAFB">
+
+    <Grid RowDefinitions="Auto, *, Auto" Margin="25">
+        <!-- Header -->
+        <StackPanel Grid.Row="0" Margin="0,0,0,10">
+            <TextBlock Text="{Binding Title}" 
+                       FontSize="24" 
+                       FontWeight="Bold" 
+                       Foreground="#111827" />
+            
+            <Border Background="#FEE2E2" 
+                    BorderBrush="#EF4444" 
+                    BorderThickness="1" 
+                    CornerRadius="4" 
+                    Padding="10" 
+                    Margin="0,15,0,0"
+                    IsVisible="{Binding GeneralErrorMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                <TextBlock Text="{Binding GeneralErrorMessage}" 
+                           Foreground="#B91C1C" 
+                           FontSize="12"
+                           TextWrapping="Wrap"/>
+            </Border>
+        </StackPanel>
+
+        <!-- Form Fields -->
+        <ScrollViewer Grid.Row="1">
+            <StackPanel Spacing="15">
+                <StackPanel>
+                    <TextBlock Text="Product Name *" Margin="0,0,0,5" FontWeight="Medium" Foreground="#374151"/>
+                    <TextBox Text="{Binding ProductName}" Watermark="Enter product name"/>
+                </StackPanel>
+
+                <Grid ColumnDefinitions="*, *, *">
+                    <StackPanel Grid.Column="0" Margin="0,0,5,0">
+                        <TextBlock Text="SKU" Margin="0,0,0,5" FontWeight="Medium" Foreground="#374151"/>
+                        <TextBox Text="{Binding ProductSku}" Watermark="SKU code"/>
+                    </StackPanel>
+                    <StackPanel Grid.Column="1" Margin="5,0,5,0">
+                        <TextBlock Text="HSN Code" Margin="0,0,0,5" FontWeight="Medium" Foreground="#374151"/>
+                        <TextBox Text="{Binding ProductHsnCode}" Watermark="HSN code"/>
+                    </StackPanel>
+                    <StackPanel Grid.Column="2" Margin="5,0,0,0">
+                        <TextBlock Text="UOM" Margin="0,0,0,5" FontWeight="Medium" Foreground="#374151"/>
+                        <TextBox Text="{Binding Uom}" Watermark="e.g. PCS, BOX"/>
+                    </StackPanel>
+                </Grid>
+
+                <StackPanel>
+                    <TextBlock Text="Category" Margin="0,0,0,5" FontWeight="Medium" Foreground="#374151"/>
+                    <TextBox Text="{Binding Category}" Watermark="e.g. Electronics, Grocery"/>
+                </StackPanel>
+
+                <Grid ColumnDefinitions="*, *">
+                    <StackPanel Grid.Column="0" Margin="0,0,7,0">
+                        <TextBlock Text="Purchase Price *" Margin="0,0,0,5" FontWeight="Medium" Foreground="#374151"/>
+                        <NumericUpDown Value="{Binding PurchasePrice}" Minimum="0" FormatString="0.00"/>
+                    </StackPanel>
+                    <StackPanel Grid.Column="1" Margin="7,0,0,0">
+                        <TextBlock Text="Sale Price *" Margin="0,0,0,5" FontWeight="Medium" Foreground="#374151"/>
+                        <NumericUpDown Value="{Binding SalePrice}" Minimum="0" FormatString="0.00"/>
+                    </StackPanel>
+                </Grid>
+
+                <Grid ColumnDefinitions="*, *">
+                    <StackPanel Grid.Column="0" Margin="0,0,7,0">
+                        <TextBlock Text="Initial Stock" Margin="0,0,0,5" FontWeight="Medium" Foreground="#374151"/>
+                        <NumericUpDown Value="{Binding StockQty}" Minimum="0"/>
+                    </StackPanel>
+                    <StackPanel Grid.Column="1" Margin="7,0,0,0">
+                        <TextBlock Text="Tax Rate (GST %) *" Margin="0,0,0,5" FontWeight="Medium" Foreground="#374151"/>
+                        <ComboBox ItemsSource="{Binding AvailableTaxRates}" 
+                                  SelectedItem="{Binding TaxRate}"
+                                  HorizontalAlignment="Stretch"/>
+                    </StackPanel>
+                </Grid>
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- Footer Actions -->
+        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10" Margin="0,20,0,0">
+            <Button Content="Cancel" Command="{Binding CancelCommand}" Width="100" HorizontalContentAlignment="Center"/>
+            <Button Content="Save Product" 
+                    Command="{Binding SaveCommand}" 
+                    Width="140" 
+                    HorizontalContentAlignment="Center" 
+                    Background="#2563EB" 
+                    Foreground="White" 
+                    FontWeight="SemiBold"/>
+        </StackPanel>
+    </Grid>
+</Window>

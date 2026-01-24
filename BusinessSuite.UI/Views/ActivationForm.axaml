@@ -1,0 +1,60 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:BusinessSuite.UI.ViewModels"
+        x:Class="BusinessSuite.UI.Views.ActivationForm"
+        x:DataType="vm:ActivationFormViewModel"
+        Width="450" Height="360" 
+        Title="Product Activation"
+        WindowStartupLocation="CenterScreen"
+        CanResize="False"
+        Background="#F9F9F9">
+
+    <Border Padding="30">
+        <StackPanel Spacing="15">
+            <StackPanel Spacing="5">
+                <TextBlock Text="Activate BusinessSuite" FontSize="20" FontWeight="SemiBold"/>
+                <TextBlock Text="Please enter your license key to continue." Foreground="Gray" FontSize="12"/>
+            </StackPanel>
+
+            <Separator Margin="0,5"/>
+
+            <StackPanel Spacing="5">
+                <TextBlock Text="Your Hardware ID" FontSize="12" FontWeight="Medium" Foreground="#555"/>
+                <Border Background="#EEE" CornerRadius="4" Padding="10,8">
+                    <SelectableTextBlock Text="{Binding HardwareId}" 
+                                       FontFamily="Consolas" 
+                                       FontSize="13"
+                                       HorizontalAlignment="Center"/>
+                </Border>
+            </StackPanel>
+            
+            <StackPanel Spacing="5">
+                <TextBlock Text="License Key" FontSize="12" FontWeight="Medium" Foreground="#555"/>
+                <TextBox Text="{Binding LicenseKey}" 
+                         Watermark="XXXX-XXXX-XXXX-XXXX"
+                         FontSize="14"
+                         Height="40"
+                         VerticalContentAlignment="Center"/>
+            </StackPanel>
+            
+            <StackPanel Spacing="10">
+                <Button Content="{Binding ActivationButtonText}" 
+                        Command="{Binding ActivateCommand}"
+                        IsEnabled="{Binding !IsBusy}"
+                        HorizontalAlignment="Stretch" 
+                        HorizontalContentAlignment="Center"
+                        VerticalContentAlignment="Center" 
+                        Background="#2563EB"
+                        Foreground="White"
+                        Padding="10"
+                        Height="40"/>
+                
+                <TextBlock Text="{Binding StatusMessage}" 
+                           Foreground="#DC2626" 
+                           FontSize="12"
+                           HorizontalAlignment="Center"
+                           TextWrapping="Wrap"/>
+            </StackPanel>
+        </StackPanel>
+    </Border>
+</Window>
