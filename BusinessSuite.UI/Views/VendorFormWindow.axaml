@@ -8,7 +8,7 @@
         x:Class="BusinessSuite.UI.Views.VendorFormWindow"
         x:DataType="vm:VendorFormViewModel"
         Title="{Binding Title}"
-        Width="450" Height="600"
+        Width="450" Height="650"
         WindowStartupLocation="CenterOwner"
         CanResize="False"
         Background="#F9FAFB">
@@ -43,8 +43,24 @@
                     <TextBox Text="{Binding VendorName}" Watermark="Enter vendor or company name"/>
                 </StackPanel>
 
+                <Grid ColumnDefinitions="*, *">
+                    <StackPanel Grid.Column="0" Margin="0,0,7,0">
+                        <TextBlock Text="State *" Margin="0,0,0,5" FontWeight="Medium" Foreground="#374151"/>
+                        <ComboBox ItemsSource="{Binding States}" 
+                                  SelectedItem="{Binding State}"
+                                  HorizontalAlignment="Stretch"
+                                  PlaceholderText="Select state"/>
+                    </StackPanel>
+                    <StackPanel Grid.Column="1" Margin="7,0,0,0">
+                        <TextBlock Text="GST Treatment *" Margin="0,0,0,5" FontWeight="Medium" Foreground="#374151"/>
+                        <ComboBox ItemsSource="{Binding GstTreatments}" 
+                                  SelectedItem="{Binding GstTreatment}"
+                                  HorizontalAlignment="Stretch"/>
+                    </StackPanel>
+                </Grid>
+
                 <StackPanel IsVisible="{Binding IsGstRegistered}">
-                    <TextBlock Text="GSTIN" Margin="0,0,0,5" FontWeight="Medium" Foreground="#374151"/>
+                    <TextBlock Text="GSTIN *" Margin="0,0,0,5" FontWeight="Medium" Foreground="#374151"/>
                     <TextBox Text="{Binding GSTIN}" Watermark="15-digit GSTIN"/>
                 </StackPanel>
 
@@ -60,24 +76,30 @@
 
                 <StackPanel>
                     <TextBlock Text="Address" Margin="0,0,0,5" FontWeight="Medium" Foreground="#374151"/>
-                    <TextBox Text="{Binding Address}" Watermark="Detailed address" AcceptsReturn="True" Height="80" TextWrapping="Wrap"/>
+                    <TextBox Text="{Binding Address}" Watermark="Detailed address" AcceptsReturn="True" Height="60" TextWrapping="Wrap"/>
                 </StackPanel>
 
-                <Grid ColumnDefinitions="*, *">
-                    <StackPanel Grid.Column="0" Margin="0,0,7,0">
-                        <TextBlock Text="State" Margin="0,0,0,5" FontWeight="Medium" Foreground="#374151"/>
-                        <ComboBox ItemsSource="{Binding States}" 
-                                  SelectedItem="{Binding State}"
-                                  HorizontalAlignment="Stretch"
-                                  PlaceholderText="Select state"/>
+                <!-- Bank Details -->
+                <Border Background="White" BorderBrush="#E5E7EB" BorderThickness="1" CornerRadius="8" Padding="15">
+                    <StackPanel Spacing="10">
+                        <TextBlock Text="Bank Details" FontWeight="Bold" Foreground="#374151"/>
+                        
+                        <StackPanel>
+                            <TextBlock Text="Bank Name" Margin="0,0,0,5" FontSize="12" Foreground="#374151"/>
+                            <TextBox Text="{Binding BankName}" Watermark="e.g. HDFC Bank"/>
+                        </StackPanel>
+                        <Grid ColumnDefinitions="*, *">
+                            <StackPanel Grid.Column="0" Margin="0,0,5,0">
+                                <TextBlock Text="Account No" Margin="0,0,0,5" FontSize="12" Foreground="#374151"/>
+                                <TextBox Text="{Binding AccountNumber}" Watermark="Account number"/>
+                            </StackPanel>
+                            <StackPanel Grid.Column="1" Margin="5,0,0,0">
+                                <TextBlock Text="IFSC Code" Margin="0,0,0,5" FontSize="12" Foreground="#374151"/>
+                                <TextBox Text="{Binding Ifsc}" Watermark="IFSC"/>
+                            </StackPanel>
+                        </Grid>
                     </StackPanel>
-                    <StackPanel Grid.Column="1" Margin="7,0,0,0">
-                        <TextBlock Text="GST Treatment" Margin="0,0,0,5" FontWeight="Medium" Foreground="#374151"/>
-                        <ComboBox ItemsSource="{Binding GstTreatments}" 
-                                  SelectedItem="{Binding GstTreatment}"
-                                  HorizontalAlignment="Stretch"/>
-                    </StackPanel>
-                </Grid>
+                </Border>
             </StackPanel>
         </ScrollViewer>
 

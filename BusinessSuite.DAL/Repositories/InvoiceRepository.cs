@@ -105,20 +105,20 @@ public class InvoiceRepository
         return await _context.SaveChangesAsync() > 0;
     }
 
-    public async Task<string> GetNextInvoiceNumberAsync(int businessId)
+    public async Task<string> GetNextInvoiceNumberAsync(int businessId, string prefix = "INV-")
     {
         var lastInvoice = await _context.Invoices
-            .Where(i => i.BusinessID == businessId)
+            .Where(i => i.BusinessID == businessId && i.InvoiceNumber.StartsWith(prefix))
             .OrderByDescending(i => i.InvoiceID)
             .FirstOrDefaultAsync();
 
-        if (lastInvoice == null) return "INV-0001";
+        if (lastInvoice == null) return $"{prefix}0001";
 
-        if (lastInvoice.InvoiceNumber.StartsWith("INV-") && int.TryParse(lastInvoice.InvoiceNumber.Substring(4), out int lastNum))
+        if (lastInvoice.InvoiceNumber.StartsWith(prefix) && int.TryParse(lastInvoice.InvoiceNumber.Substring(prefix.Length), out int lastNum))
         {
-            return $"INV-{(lastNum + 1):D4}";
+            return $"{prefix}{(lastNum + 1):D4}";
         }
 
-        return $"INV-{(lastInvoice.InvoiceID + 1):D4}";
+        return $"{prefix}{(lastInvoice.InvoiceID + 1):D4}";
     }
 }

@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "l5lrxwnf7eM=",
+  "dgSpecHash": "kB1i3Zp3Vmo=",
   "success": true,
-  "projectFilePath": "/Users/murtaza/Desktop/BusinessSuite/BusinessSuite.BLL/BusinessSuite.BLL.csproj",
+  "projectFilePath": "/Users/murtaza/Desktop/BusinessSuite_desktop/BusinessSuite.BLL/BusinessSuite.BLL.csproj",
   "expectedPackageFiles": [
     "/Users/murtaza/.nuget/packages/bcrypt.net-next/4.0.3/bcrypt.net-next.4.0.3.nupkg.sha512",
     "/Users/murtaza/.nuget/packages/microsoft.data.sqlite.core/8.0.4/microsoft.data.sqlite.core.8.0.4.nupkg.sha512",

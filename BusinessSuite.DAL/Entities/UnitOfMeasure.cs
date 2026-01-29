@@ -5,7 +5,7 @@ namespace BusinessSuite.DAL.Entities;
 public class UnitOfMeasure
 {
     [Key]
-    public int UomID { get; set; }
+    public int UnitID { get; set; }
     
     [Required]
     public int BusinessId { get; set; }
@@ -16,4 +16,6 @@ public class UnitOfMeasure
     
     [MaxLength(50)]
     public string? Description { get; set; }
+
+    public override string ToString() => Name;
 }

@@ -165,7 +165,7 @@ public partial class InvoicesViewModel : ViewModelBase
                     var file = await topLevel.StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
                     {
                         Title = "Save Invoice PDF",
-                        SuggestedFileName = $"Invoice_{fullInvoice.InvoiceNumber}.pdf",
+                        SuggestedFileName = $"{fullInvoice.InvoiceNumber}.pdf",
                         FileTypeChoices = new[] { new FilePickerFileType("PDF Files") { Patterns = new[] { "*.pdf" } } }
                     });
 
@@ -175,7 +175,7 @@ public partial class InvoicesViewModel : ViewModelBase
             }
             else
             {
-                finalPath = Path.Combine(Path.GetTempPath(), $"Invoice_{fullInvoice.InvoiceNumber}_{DateTime.Now:yyyyMMddHHmmss}.pdf");
+                finalPath = Path.Combine(Path.GetTempPath(), $"{fullInvoice.InvoiceNumber}_{DateTime.Now:yyyyMMddHHmmss}.pdf");
             }
 
             if (string.IsNullOrEmpty(finalPath)) return;

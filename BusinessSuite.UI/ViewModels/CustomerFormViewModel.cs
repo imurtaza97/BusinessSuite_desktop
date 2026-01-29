@@ -48,18 +48,28 @@ public partial class CustomerFormViewModel : ViewModelBase, INotifyDataErrorInfo
     private void ValidateAll()
     {
         ClearAllErrors();
-        
+
         if (string.IsNullOrWhiteSpace(CustomerName))
             AddError(nameof(CustomerName), "Customer Name is required");
         else if (CustomerName.Length > 100)
             AddError(nameof(CustomerName), "Customer Name cannot exceed 100 characters");
 
-        if (GSTIN?.Length > 15)
-            AddError(nameof(GSTIN), "GSTIN cannot exceed 15 characters");
+        if (string.IsNullOrWhiteSpace(GstTreatment))
+            AddError(nameof(GstTreatment), "GST Treatment is required");
 
-        // Simple GSTIN format check if provided
-        if (!string.IsNullOrWhiteSpace(GSTIN) && GSTIN.Length != 15)
-            AddError(nameof(GSTIN), "GSTIN must be 15 characters long");
+        if (IsGstRegistered)
+        {
+            if (string.IsNullOrWhiteSpace(GSTIN))
+                AddError(nameof(GSTIN), "GSTIN is required for registered customers");
+            else if (GSTIN.Length != 15)
+                AddError(nameof(GSTIN), "GSTIN must be 15 characters long");
+            else if (GSTIN?.Length > 15)
+                AddError(nameof(GSTIN), "GSTIN cannot exceed 15 characters");
+        }
+        else if (!string.IsNullOrWhiteSpace(GSTIN))
+        {
+            AddError(nameof(GSTIN), "GSTIN should only be entered for registered customers");
+        }
 
         if (ContactNo?.Length > 15)
             AddError(nameof(ContactNo), "Contact No cannot exceed 15 characters");
@@ -67,13 +77,17 @@ public partial class CustomerFormViewModel : ViewModelBase, INotifyDataErrorInfo
         if (Email?.Length > 100)
             AddError(nameof(Email), "Email cannot exceed 100 characters");
 
-        if (BillingAddress?.Length > 255)
+        if (string.IsNullOrWhiteSpace(BillingAddress))
+            AddError(nameof(BillingAddress), "Billing Address is required");
+        else if (BillingAddress?.Length > 255)
             AddError(nameof(BillingAddress), "Billing Address cannot exceed 255 characters");
 
         if (ShippingAddress?.Length > 255)
             AddError(nameof(ShippingAddress), "Shipping Address cannot exceed 255 characters");
 
-        if (State?.Length > 50)
+        if (string.IsNullOrWhiteSpace(State))
+            AddError(nameof(State), "State is required");
+        else if (State?.Length > 50)
             AddError(nameof(State), "State cannot exceed 50 characters");
 
         OnPropertyChanged(nameof(HasErrors));

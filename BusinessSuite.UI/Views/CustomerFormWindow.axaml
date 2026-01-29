@@ -43,8 +43,23 @@
                     <TextBox Text="{Binding CustomerName}" Watermark="Enter customer or company name"/>
                 </StackPanel>
 
+                <Grid ColumnDefinitions="*, *">
+                    <StackPanel Grid.Column="0" Margin="0,0,7,0">
+                        <TextBlock Text="State *" Margin="0,0,0,5" FontWeight="Medium" Foreground="#374151"/>
+                        <ComboBox ItemsSource="{Binding States}" 
+                                  SelectedItem="{Binding State}"
+                                  HorizontalAlignment="Stretch"
+                                  PlaceholderText="Select state"/>
+                    </StackPanel>
+                    <StackPanel Grid.Column="1" Margin="7,0,0,0">
+                        <TextBlock Text="GST Treatment *" Margin="0,0,0,5" FontWeight="Medium" Foreground="#374151"/>
+                        <ComboBox ItemsSource="{Binding GstTreatments}" 
+                                  SelectedItem="{Binding GstTreatment}"
+                                  HorizontalAlignment="Stretch"/>
+                    </StackPanel>
+                </Grid>
                 <StackPanel IsVisible="{Binding IsGstRegistered}">
-                    <TextBlock Text="GSTIN" Margin="0,0,0,5" FontWeight="Medium" Foreground="#374151"/>
+                    <TextBlock Text="GSTIN *" Margin="0,0,0,5" FontWeight="Medium" Foreground="#374151"/>
                     <TextBox Text="{Binding GSTIN}" Watermark="15-digit GSTIN"/>
                 </StackPanel>
 
@@ -68,21 +83,7 @@
                     <TextBox Text="{Binding ShippingAddress}" Watermark="Detailed shipping address" AcceptsReturn="True" Height="60" TextWrapping="Wrap"/>
                 </StackPanel>
 
-                <Grid ColumnDefinitions="*, *">
-                    <StackPanel Grid.Column="0" Margin="0,0,7,0">
-                        <TextBlock Text="State" Margin="0,0,0,5" FontWeight="Medium" Foreground="#374151"/>
-                        <ComboBox ItemsSource="{Binding States}" 
-                                  SelectedItem="{Binding State}"
-                                  HorizontalAlignment="Stretch"
-                                  PlaceholderText="Select state"/>
-                    </StackPanel>
-                    <StackPanel Grid.Column="1" Margin="7,0,0,0">
-                        <TextBlock Text="GST Treatment" Margin="0,0,0,5" FontWeight="Medium" Foreground="#374151"/>
-                        <ComboBox ItemsSource="{Binding GstTreatments}" 
-                                  SelectedItem="{Binding GstTreatment}"
-                                  HorizontalAlignment="Stretch"/>
-                    </StackPanel>
-                </Grid>
+                <!-- State and GST Treatment fields removed from here as per new design -->
 
                 <!-- Bank Details -->
                 <Border Background="White" BorderBrush="#E5E7EB" BorderThickness="1" CornerRadius="8" Padding="15">

@@ -346,7 +346,7 @@ namespace BusinessSuite.DAL.Migrations
                     b.Property<decimal>("TotalAmount")
                         .HasColumnType("decimal(18, 2)");
 
-                    b.Property<string>("UOM")
+                    b.Property<string>("Unit")
                         .HasMaxLength(10)
                         .HasColumnType("TEXT");
 
@@ -434,7 +434,8 @@ namespace BusinessSuite.DAL.Migrations
                     b.Property<decimal>("TaxRate")
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("UOM")
+                    b.Property<string>("Unit")
+                        .IsRequired()
                         .HasMaxLength(10)
                         .HasColumnType("TEXT");
 
@@ -443,6 +444,166 @@ namespace BusinessSuite.DAL.Migrations
                     b.HasIndex("BusinessID");
 
                     b.ToTable("Products");
+                });
+
+            modelBuilder.Entity("BusinessSuite.DAL.Entities.PurchaseOrder", b =>
+                {
+                    b.Property<int>("PurchaseOrderID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("BusinessId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("Discount")
+                        .HasColumnType("decimal(18, 2)");
+
+                    b.Property<DateTime?>("ExpectedDeliveryDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("GrandTotal")
+                        .HasColumnType("decimal(18, 2)");
+
+                    b.Property<bool>("IsAutoRoundOff")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("IsItemLevelDiscount")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(500)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("PODate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("PONumber")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("PaymentMethod")
+                        .HasMaxLength(50)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("PaymentTerms")
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("PlaceOfSupply")
+                        .HasMaxLength(50)
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("ReverseCharge")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<decimal>("RoundOff")
+                        .HasColumnType("decimal(18, 2)");
+
+                    b.Property<decimal>("ShippingCharges")
+                        .HasColumnType("decimal(18, 2)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("TermsAndConditions")
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("TotalAmount")
+                        .HasColumnType("decimal(18, 2)");
+
+                    b.Property<decimal>("TotalCGST")
+                        .HasColumnType("decimal(18, 2)");
+
+                    b.Property<decimal>("TotalIGST")
+                        .HasColumnType("decimal(18, 2)");
+
+                    b.Property<decimal>("TotalSGST")
+                        .HasColumnType("decimal(18, 2)");
+
+                    b.Property<decimal>("TotalTax")
+                        .HasColumnType("decimal(18, 2)");
+
+                    b.Property<int>("VendorId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("PurchaseOrderID");
+
+                    b.HasIndex("BusinessId");
+
+                    b.HasIndex("VendorId");
+
+                    b.ToTable("PurchaseOrders");
+                });
+
+            modelBuilder.Entity("BusinessSuite.DAL.Entities.PurchaseOrderItem", b =>
+                {
+                    b.Property<int>("PurchaseOrderItemID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<decimal>("CGST_Amount")
+                        .HasColumnType("decimal(18, 2)");
+
+                    b.Property<decimal>("CGST_Rate")
+                        .HasColumnType("decimal(5, 2)");
+
+                    b.Property<decimal>("Discount")
+                        .HasColumnType("decimal(18, 2)");
+
+                    b.Property<string>("HSNCode")
+                        .HasMaxLength(20)
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("IGST_Amount")
+                        .HasColumnType("decimal(18, 2)");
+
+                    b.Property<decimal>("IGST_Rate")
+                        .HasColumnType("decimal(5, 2)");
+
+                    b.Property<int>("ProductID")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("PurchaseOrderID")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<decimal>("SGST_Amount")
+                        .HasColumnType("decimal(18, 2)");
+
+                    b.Property<decimal>("SGST_Rate")
+                        .HasColumnType("decimal(5, 2)");
+
+                    b.Property<decimal>("TaxAmount")
+                        .HasColumnType("decimal(18, 2)");
+
+                    b.Property<decimal>("TaxRate")
+                        .HasColumnType("decimal(5, 2)");
+
+                    b.Property<decimal>("TotalAmount")
+                        .HasColumnType("decimal(18, 2)");
+
+                    b.Property<string>("Unit")
+                        .HasMaxLength(10)
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("UnitPrice")
+                        .HasColumnType("decimal(18, 2)");
+
+                    b.HasKey("PurchaseOrderItemID");
+
+                    b.HasIndex("ProductID");
+
+                    b.HasIndex("PurchaseOrderID");
+
+                    b.ToTable("PurchaseOrderItems");
                 });
 
             modelBuilder.Entity("BusinessSuite.DAL.Entities.Settings", b =>
@@ -490,7 +651,7 @@ namespace BusinessSuite.DAL.Migrations
 
             modelBuilder.Entity("BusinessSuite.DAL.Entities.UnitOfMeasure", b =>
                 {
-                    b.Property<int>("UomID")
+                    b.Property<int>("UnitID")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
@@ -506,45 +667,178 @@ namespace BusinessSuite.DAL.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("TEXT");
 
-                    b.HasKey("UomID");
+                    b.HasKey("UnitID");
 
                     b.ToTable("UnitsOfMeasure");
 
                     b.HasData(
                         new
                         {
-                            UomID = 1,
+                            UnitID = 1,
                             BusinessId = 0,
                             Description = "Pieces",
                             Name = "PCS"
                         },
                         new
                         {
-                            UomID = 2,
+                            UnitID = 2,
                             BusinessId = 0,
                             Description = "Box",
                             Name = "BOX"
                         },
                         new
                         {
-                            UomID = 3,
+                            UnitID = 3,
                             BusinessId = 0,
                             Description = "Kilograms",
                             Name = "KG"
                         },
                         new
                         {
-                            UomID = 4,
+                            UnitID = 4,
                             BusinessId = 0,
                             Description = "Meters",
                             Name = "MTR"
                         },
                         new
                         {
-                            UomID = 5,
+                            UnitID = 5,
                             BusinessId = 0,
                             Description = "Numbers",
                             Name = "NOS"
+                        },
+                        new
+                        {
+                            UnitID = 6,
+                            BusinessId = 0,
+                            Description = "Litres",
+                            Name = "LTR"
+                        },
+                        new
+                        {
+                            UnitID = 7,
+                            BusinessId = 0,
+                            Description = "Grams",
+                            Name = "GMS"
+                        },
+                        new
+                        {
+                            UnitID = 8,
+                            BusinessId = 0,
+                            Description = "Millilitres",
+                            Name = "ML"
+                        },
+                        new
+                        {
+                            UnitID = 9,
+                            BusinessId = 0,
+                            Description = "Dozen",
+                            Name = "DOZ"
+                        },
+                        new
+                        {
+                            UnitID = 10,
+                            BusinessId = 0,
+                            Description = "Pair",
+                            Name = "PAIR"
+                        },
+                        new
+                        {
+                            UnitID = 11,
+                            BusinessId = 0,
+                            Description = "Set",
+                            Name = "SET"
+                        },
+                        new
+                        {
+                            UnitID = 12,
+                            BusinessId = 0,
+                            Description = "Packet",
+                            Name = "PKT"
+                        },
+                        new
+                        {
+                            UnitID = 13,
+                            BusinessId = 0,
+                            Description = "Tin",
+                            Name = "TIN"
+                        },
+                        new
+                        {
+                            UnitID = 14,
+                            BusinessId = 0,
+                            Description = "Bag",
+                            Name = "BAG"
+                        },
+                        new
+                        {
+                            UnitID = 15,
+                            BusinessId = 0,
+                            Description = "Bottle",
+                            Name = "BTL"
+                        },
+                        new
+                        {
+                            UnitID = 16,
+                            BusinessId = 0,
+                            Description = "Jar",
+                            Name = "JAR"
+                        },
+                        new
+                        {
+                            UnitID = 17,
+                            BusinessId = 0,
+                            Description = "Can",
+                            Name = "CAN"
+                        },
+                        new
+                        {
+                            UnitID = 18,
+                            BusinessId = 0,
+                            Description = "Tube",
+                            Name = "TUBE"
+                        },
+                        new
+                        {
+                            UnitID = 19,
+                            BusinessId = 0,
+                            Description = "Roll",
+                            Name = "ROLL"
+                        },
+                        new
+                        {
+                            UnitID = 20,
+                            BusinessId = 0,
+                            Description = "Sheet",
+                            Name = "SHEET"
+                        },
+                        new
+                        {
+                            UnitID = 21,
+                            BusinessId = 0,
+                            Description = "Square Feet",
+                            Name = "SQFT"
+                        },
+                        new
+                        {
+                            UnitID = 22,
+                            BusinessId = 0,
+                            Description = "Square Meter",
+                            Name = "SQM"
+                        },
+                        new
+                        {
+                            UnitID = 23,
+                            BusinessId = 0,
+                            Description = "Cubic Feet",
+                            Name = "CFT"
+                        },
+                        new
+                        {
+                            UnitID = 24,
+                            BusinessId = 0,
+                            Description = "Cubic Meter",
+                            Name = "CUM"
                         });
                 });
 
@@ -593,8 +887,16 @@ namespace BusinessSuite.DAL.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
+                    b.Property<string>("AccountNumber")
+                        .HasMaxLength(50)
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("Address")
                         .HasMaxLength(255)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("BankName")
+                        .HasMaxLength(100)
                         .HasColumnType("TEXT");
 
                     b.Property<int>("BusinessId")
@@ -622,6 +924,10 @@ namespace BusinessSuite.DAL.Migrations
 
                     b.Property<string>("GstTreatment")
                         .HasMaxLength(50)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("IFSC")
+                        .HasMaxLength(20)
                         .HasColumnType("TEXT");
 
                     b.Property<string>("State")
@@ -700,6 +1006,44 @@ namespace BusinessSuite.DAL.Migrations
                     b.Navigation("Business");
                 });
 
+            modelBuilder.Entity("BusinessSuite.DAL.Entities.PurchaseOrder", b =>
+                {
+                    b.HasOne("BusinessSuite.DAL.Entities.Business", "Business")
+                        .WithMany()
+                        .HasForeignKey("BusinessId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("BusinessSuite.DAL.Entities.Vendor", "Vendor")
+                        .WithMany()
+                        .HasForeignKey("VendorId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Business");
+
+                    b.Navigation("Vendor");
+                });
+
+            modelBuilder.Entity("BusinessSuite.DAL.Entities.PurchaseOrderItem", b =>
+                {
+                    b.HasOne("BusinessSuite.DAL.Entities.Product", "Product")
+                        .WithMany()
+                        .HasForeignKey("ProductID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("BusinessSuite.DAL.Entities.PurchaseOrder", "PurchaseOrder")
+                        .WithMany("Items")
+                        .HasForeignKey("PurchaseOrderID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Product");
+
+                    b.Navigation("PurchaseOrder");
+                });
+
             modelBuilder.Entity("BusinessSuite.DAL.Entities.Vendor", b =>
                 {
                     b.HasOne("BusinessSuite.DAL.Entities.Business", "Business")
@@ -712,6 +1056,11 @@ namespace BusinessSuite.DAL.Migrations
                 });
 
             modelBuilder.Entity("BusinessSuite.DAL.Entities.Invoice", b =>
+                {
+                    b.Navigation("Items");
+                });
+
+            modelBuilder.Entity("BusinessSuite.DAL.Entities.PurchaseOrder", b =>
                 {
                     b.Navigation("Items");
                 });

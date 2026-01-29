@@ -19,9 +19,10 @@
                     <Button Classes="Primary" Content="Create New Invoice" Command="{Binding AddInvoiceCommand}"/>
                     <Button Content="Edit" Command="{Binding EditInvoiceCommand}" IsEnabled="{Binding !!SelectedInvoice}"/>
                     <Button Content="Delete" Command="{Binding DeleteInvoiceCommand}" IsEnabled="{Binding !!SelectedInvoice}" Background="#EF4444" Foreground="White"/>
-                    <Button Content="Print Selected" 
+                    <Button  Content="Download/Print"
                             Command="{Binding PrintInvoiceCommand}"
-                            IsEnabled="{Binding !!SelectedInvoice}"/>
+                            IsEnabled="{Binding !!SelectedInvoice}"
+                            Background="#10B981" Foreground="White"/>
                 </StackPanel>
                 
                 <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10">
@@ -41,7 +42,7 @@
                       BorderBrush="#E5E7EB"
                       GridLinesVisibility="All">
                 <DataGrid.Columns>
-                    <DataGridTextColumn Header="Inv Number" Binding="{Binding InvoiceNumber}" Width="120"/>
+                    <DataGridTextColumn Header="Doc Number" Binding="{Binding InvoiceNumber}" Width="120"/>
                     <DataGridTextColumn Header="Date" Binding="{Binding InvoiceDate, Converter={x:Static conv:SafeDisplayConverter.Instance}, ConverterParameter=\{0:dd/MM/yyyy\}}" Width="120"/>
                     <DataGridTextColumn Header="Customer" Binding="{Binding Customer, Converter={x:Static conv:SafeDisplayConverter.Instance}, ConverterParameter=Customer}" Width="*"/>
                     <DataGridTextColumn Header="Amount" Binding="{Binding TotalAmount, Converter={x:Static conv:SafeDisplayConverter.Instance}, ConverterParameter='₹ {0:N2}'}" Width="120"/>

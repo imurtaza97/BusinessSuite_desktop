@@ -1,0 +1,63 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:BusinessSuite.UI.ViewModels"
+             xmlns:conv="clr-namespace:BusinessSuite.UI.Converters"
+             mc:Ignorable="d" d:DesignWidth="1000" d:DesignHeight="600"
+             x:Class="BusinessSuite.UI.Views.PurchaseOrdersView"
+             x:DataType="vm:PurchaseOrdersViewModel">
+
+    <Grid RowDefinitions="Auto, *">
+        <!-- Header Actions -->
+        <Border Grid.Row="0" Background="White" BorderBrush="#E5E7EB" BorderThickness="0,0,0,1" Padding="20,15">
+            <Grid ColumnDefinitions="*, Auto">
+                <StackPanel Orientation="Horizontal" Spacing="15">
+                    <TextBox Width="300" 
+                             Watermark="Search POs by number or vendor..." 
+                             Text="{Binding SearchQuery, UpdateSourceTrigger=PropertyChanged}"/>
+                    <Button Classes="Primary" Content="Create New PO" Command="{Binding AddPOCommand}"/>
+                    <Button Content="Edit" Command="{Binding EditPOCommand}" IsEnabled="{Binding !!SelectedPO}"/>
+                    <Button Content="Delete" Command="{Binding DeletePOCommand}" IsEnabled="{Binding !!SelectedPO}" Background="#EF4444" Foreground="White"/>
+                    <Button Content="Download/Print" Command="{Binding PrintPOCommand}" IsEnabled="{Binding !!SelectedPO}" Background="#10B981" Foreground="White"/>
+                </StackPanel>
+                
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10">
+                    <Button Content="Refresh" Command="{Binding RefreshCommand}"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- PO List -->
+        <Grid Grid.Row="1" Margin="20">
+            <DataGrid ItemsSource="{Binding PurchaseOrders}" 
+                      SelectedItem="{Binding SelectedPO}"
+                      IsReadOnly="True" 
+                      CanUserReorderColumns="True"
+                      CanUserResizeColumns="True"
+                      BorderThickness="1"
+                      BorderBrush="#E5E7EB"
+                      GridLinesVisibility="All">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="PO Number" Binding="{Binding PONumber}" Width="120"/>
+                    <DataGridTextColumn Header="Date" Binding="{Binding PODate, Converter={x:Static conv:SafeDisplayConverter.Instance}, ConverterParameter=\{0:dd/MM/yyyy\}}" Width="120"/>
+                    <DataGridTextColumn Header="Vendor" Binding="{Binding Vendor, Converter={x:Static conv:SafeDisplayConverter.Instance}, ConverterParameter=VendorName}" Width="*"/>
+                    <DataGridTextColumn Header="Amount" Binding="{Binding TotalAmount, Converter={x:Static conv:SafeDisplayConverter.Instance}, ConverterParameter='₹ {0:N2}'}" Width="120"/>
+                    <DataGridTextColumn Header="Tax" Binding="{Binding TotalTax, Converter={x:Static conv:SafeDisplayConverter.Instance}, ConverterParameter='₹ {0:N2}'}" Width="120"/>
+                    <DataGridTextColumn Header="Grand Total" Binding="{Binding GrandTotal, Converter={x:Static conv:SafeDisplayConverter.Instance}, ConverterParameter='₹ {0:N2}'}" Width="130"/>
+                    <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="100"/>
+                </DataGrid.Columns>
+            </DataGrid>
+            
+            <ProgressBar IsVisible="{Binding IsBusy}" IsIndeterminate="True" VerticalAlignment="Top"/>
+        </Grid>
+    </Grid>
+
+    <UserControl.Styles>
+        <Style Selector="Button.Primary">
+            <Setter Property="Background" Value="#2563EB"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+        </Style>
+    </UserControl.Styles>
+</UserControl>

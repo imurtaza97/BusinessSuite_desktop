@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "eMq52KEVkUc=",
+  "dgSpecHash": "y6k6ROQ7odA=",
   "success": true,
-  "projectFilePath": "/Users/murtaza/Desktop/BusinessSuite/BusinessSuite.UI/BusinessSuite.UI.csproj",
+  "projectFilePath": "/Users/murtaza/Desktop/BusinessSuite_desktop/BusinessSuite.UI/BusinessSuite.UI.csproj",
   "expectedPackageFiles": [
     "/Users/murtaza/.nuget/packages/avalonia/11.3.10/avalonia.11.3.10.nupkg.sha512",
     "/Users/murtaza/.nuget/packages/avalonia.angle.windows.natives/2.1.25547.20250602/avalonia.angle.windows.natives.2.1.25547.20250602.nupkg.sha512",

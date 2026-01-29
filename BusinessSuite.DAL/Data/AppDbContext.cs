@@ -12,6 +12,8 @@ public class AppDbContext : DbContext
     public DbSet<Vendor> Vendors => Set<Vendor>();
     public DbSet<Invoice> Invoices => Set<Invoice>();
     public DbSet<InvoiceItem> InvoiceItems => Set<InvoiceItem>();
+    public DbSet<PurchaseOrder> PurchaseOrders => Set<PurchaseOrder>();
+    public DbSet<PurchaseOrderItem> PurchaseOrderItems => Set<PurchaseOrderItem>();
     public DbSet<GstRate> GstRates => Set<GstRate>();
     public DbSet<LicenseActivation> LicenseActivations => Set<LicenseActivation>();
     public DbSet<Settings> Settings => Set<Settings>();
@@ -37,11 +39,30 @@ public class AppDbContext : DbContext
         );
         
         modelBuilder.Entity<UnitOfMeasure>().HasData(
-            new UnitOfMeasure { UomID = 1, BusinessId = 0, Name = "PCS", Description = "Pieces" },
-            new UnitOfMeasure { UomID = 2, BusinessId = 0, Name = "BOX", Description = "Box" },
-            new UnitOfMeasure { UomID = 3, BusinessId = 0, Name = "KG", Description = "Kilograms" },
-            new UnitOfMeasure { UomID = 4, BusinessId = 0, Name = "MTR", Description = "Meters" },
-            new UnitOfMeasure { UomID = 5, BusinessId = 0, Name = "NOS", Description = "Numbers" }
+            new UnitOfMeasure { UnitID = 1, BusinessId = 0, Name = "PCS", Description = "Pieces" },
+            new UnitOfMeasure { UnitID = 2, BusinessId = 0, Name = "BOX", Description = "Box" },
+            new UnitOfMeasure { UnitID = 3, BusinessId = 0, Name = "KG", Description = "Kilograms" },
+            new UnitOfMeasure { UnitID = 4, BusinessId = 0, Name = "MTR", Description = "Meters" },
+            new UnitOfMeasure { UnitID = 5, BusinessId = 0, Name = "NOS", Description = "Numbers" },
+            new UnitOfMeasure { UnitID = 6, BusinessId = 0, Name = "LTR", Description = "Litres" },
+            new UnitOfMeasure { UnitID = 7, BusinessId = 0, Name = "GMS", Description = "Grams" },
+            new UnitOfMeasure { UnitID = 8, BusinessId = 0, Name = "ML", Description = "Millilitres" },
+            new UnitOfMeasure { UnitID = 9, BusinessId = 0, Name = "DOZ", Description = "Dozen" },
+            new UnitOfMeasure { UnitID = 10, BusinessId = 0, Name = "PAIR", Description = "Pair" },
+            new UnitOfMeasure { UnitID = 11, BusinessId = 0, Name = "SET", Description = "Set" },
+            new UnitOfMeasure { UnitID = 12, BusinessId = 0, Name = "PKT", Description = "Packet" },
+            new UnitOfMeasure { UnitID = 13, BusinessId = 0, Name = "TIN", Description = "Tin" },
+            new UnitOfMeasure { UnitID = 14, BusinessId = 0, Name = "BAG", Description = "Bag" },
+            new UnitOfMeasure { UnitID = 15, BusinessId = 0, Name = "BTL", Description = "Bottle" },
+            new UnitOfMeasure { UnitID = 16, BusinessId = 0, Name = "JAR", Description = "Jar" },
+            new UnitOfMeasure { UnitID = 17, BusinessId = 0, Name = "CAN", Description = "Can" },
+            new UnitOfMeasure { UnitID = 18, BusinessId = 0, Name = "TUBE", Description = "Tube" },
+            new UnitOfMeasure { UnitID = 19, BusinessId = 0, Name = "ROLL", Description = "Roll" },
+            new UnitOfMeasure { UnitID = 20, BusinessId = 0, Name = "SHEET", Description = "Sheet" },
+            new UnitOfMeasure { UnitID = 21, BusinessId = 0, Name = "SQFT", Description = "Square Feet" },
+            new UnitOfMeasure { UnitID = 22, BusinessId = 0, Name = "SQM", Description = "Square Meter" },
+            new UnitOfMeasure { UnitID = 23, BusinessId = 0, Name = "CFT", Description = "Cubic Feet" },
+            new UnitOfMeasure { UnitID = 24, BusinessId = 0, Name = "CUM", Description = "Cubic Meter" }
         );
     }
 }

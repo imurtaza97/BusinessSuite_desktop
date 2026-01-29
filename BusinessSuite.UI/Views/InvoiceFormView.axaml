@@ -29,6 +29,7 @@
                                           SelectedItem="{Binding SelectedCustomer}"
                                           Text="{Binding CustomerSearchQuery, UpdateSourceTrigger=PropertyChanged}"
                                           IsDropDownOpen="{Binding IsCustomerDropDownOpen}"
+                                          MaxDropDownHeight="300"
                                           HorizontalAlignment="Stretch"
                                           IsEditable="True"
                                           IsTextSearchEnabled="False">
@@ -112,10 +113,11 @@
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
                                         <Grid ColumnDefinitions="*, Auto">
-                                            <ComboBox ItemsSource="{Binding FilteredProducts}" 
-                                                      SelectedItem="{Binding SelectedProduct}"
+                                            <ComboBox ItemsSource="{Binding FilteredProducts}"
+                                                      SelectedItem="{Binding SelectedProduct, Mode=TwoWay}"
                                                       Text="{Binding SearchQuery, UpdateSourceTrigger=PropertyChanged}"
                                                       IsDropDownOpen="{Binding IsDropDownOpen}"
+                                                      MaxDropDownHeight="300"
                                                       HorizontalAlignment="Stretch"
                                                       BorderThickness="0"
                                                       IsTextSearchEnabled="False"
@@ -144,8 +146,8 @@
                             <DataGridTemplateColumn Header="UOM" Width="80">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
-                                        <ComboBox ItemsSource="{Binding ((vm:InvoiceFormViewModel)DataContext).UomNames, RelativeSource={RelativeSource AncestorType=UserControl}}" 
-                                                  SelectedItem="{Binding Uom}"
+                                        <ComboBox ItemsSource="{Binding ((vm:InvoiceFormViewModel)DataContext).UnitNames, RelativeSource={RelativeSource AncestorType=UserControl}}" 
+                                                  SelectedItem="{Binding Unit}"
                                                   HorizontalAlignment="Stretch"
                                                   BorderThickness="0"/>
                                     </DataTemplate>
@@ -176,7 +178,7 @@
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
 
-                            <DataGridTemplateColumn Header="Tax %" Width="100">
+                            <DataGridTemplateColumn Header="Tax %" Width="100" IsVisible="{Binding IsRegularScheme}">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
                                         <ComboBox ItemsSource="{Binding TaxRates}" 
@@ -187,7 +189,7 @@
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
 
-                            <DataGridTextColumn Header="Tax Amt" Binding="{Binding TaxAmount, StringFormat=₹ \{0:N2\}}" IsReadOnly="True" Width="100"/>
+                            <DataGridTextColumn Header="Tax Amt" Binding="{Binding TaxAmount, StringFormat=₹ \{0:N2\}}" IsReadOnly="True" Width="100" IsVisible="{Binding IsRegularScheme}"/>
                             <DataGridTextColumn Header="Total" Binding="{Binding TotalAmount, StringFormat=₹ \{0:N2\}}" IsReadOnly="True" Width="120"/>
 
                             <DataGridTemplateColumn Width="50">
@@ -239,38 +241,40 @@
  
                 <!-- Right: Totals -->
                 <StackPanel Grid.Column="1" Spacing="10" Width="300">
-                    <Grid ColumnDefinitions="*, Auto" Margin="0,5">
+                    <Grid ColumnDefinitions="*, Auto" Margin="0,5" IsVisible="{Binding IsRegularScheme}">
                         <TextBlock Text="Taxable Amount:"/>
                         <TextBlock Grid.Column="1" Text="{Binding TotalAmount, StringFormat=₹ \{0:N2\}}" FontWeight="SemiBold"/>
                     </Grid>
 
                     <Separator Margin="0,5"/>
                     
-                    <StackPanel IsVisible="{Binding TotalCGST, Converter={StaticResource DecimalToBoolConverter}}">
-                        <TextBlock Text="Tax Type: CGST + SGST" FontSize="11" Foreground="#3B82F6" Margin="0,2"/>
-                        <Grid ColumnDefinitions="*, Auto">
-                            <TextBlock Text="CGST:" FontWeight="Medium"/>
-                            <TextBlock Grid.Column="1" Text="{Binding TotalCGST, StringFormat=₹ \{0:N2\}}" FontWeight="SemiBold"/>
-                        </Grid>
-                        <Grid ColumnDefinitions="*, Auto" Margin="0,2,0,5">
-                            <TextBlock Text="SGST:" FontWeight="Medium"/>
-                            <TextBlock Grid.Column="1" Text="{Binding TotalSGST, StringFormat=₹ \{0:N2\}}" FontWeight="SemiBold"/>
-                        </Grid>
-                    </StackPanel>
-                    
-                    <StackPanel IsVisible="{Binding TotalIGST, Converter={StaticResource DecimalToBoolConverter}}">
-                        <TextBlock Text="Tax Type: IGST" FontSize="11" Foreground="#3B82F6" Margin="0,2"/>
-                        <Grid ColumnDefinitions="*, Auto" Margin="0,0,0,5">
-                            <TextBlock Text="IGST:" FontWeight="Medium"/>
-                            <TextBlock Grid.Column="1" Text="{Binding TotalIGST, StringFormat=₹ \{0:N2\}}" FontWeight="SemiBold"/>
-                        </Grid>
+                    <StackPanel IsVisible="{Binding IsRegularScheme}">
+                        <StackPanel IsVisible="{Binding TotalCGST, Converter={StaticResource DecimalToBoolConverter}}">
+                            <TextBlock Text="Tax Type: CGST + SGST" FontSize="11" Foreground="#3B82F6" Margin="0,2"/>
+                            <Grid ColumnDefinitions="*, Auto">
+                                <TextBlock Text="CGST:" FontWeight="Medium"/>
+                                <TextBlock Grid.Column="1" Text="{Binding TotalCGST, StringFormat=₹ \{0:N2\}}" FontWeight="SemiBold"/>
+                            </Grid>
+                            <Grid ColumnDefinitions="*, Auto" Margin="0,2,0,5">
+                                <TextBlock Text="SGST:" FontWeight="Medium"/>
+                                <TextBlock Grid.Column="1" Text="{Binding TotalSGST, StringFormat=₹ \{0:N2\}}" FontWeight="SemiBold"/>
+                            </Grid>
+                        </StackPanel>
+                        
+                        <StackPanel IsVisible="{Binding TotalIGST, Converter={StaticResource DecimalToBoolConverter}}">
+                            <TextBlock Text="Tax Type: IGST" FontSize="11" Foreground="#3B82F6" Margin="0,2"/>
+                            <Grid ColumnDefinitions="*, Auto" Margin="0,0,0,5">
+                                <TextBlock Text="IGST:" FontWeight="Medium"/>
+                                <TextBlock Grid.Column="1" Text="{Binding TotalIGST, StringFormat=₹ \{0:N2\}}" FontWeight="SemiBold"/>
+                            </Grid>
+                        </StackPanel>
                     </StackPanel>
 
-                    <Grid ColumnDefinitions="*, Auto" Margin="0,5" IsVisible="{Binding IsGstRegistered}">
+                    <Grid ColumnDefinitions="*, Auto" Margin="0,5" IsVisible="{Binding IsRegularScheme}">
                         <TextBlock Text="Total Tax:" FontWeight="Medium"/>
                         <TextBlock Grid.Column="1" Text="{Binding TotalTax, StringFormat=₹ \{0:N2\}}" FontWeight="SemiBold"/>
                     </Grid>
-                    <Separator Margin="0,5" IsVisible="{Binding IsGstRegistered}"/>
+                    <Separator Margin="0,5" IsVisible="{Binding IsRegularScheme}"/>
 
                     <Grid ColumnDefinitions="*, Auto" Margin="0,5">
                         <TextBlock Text="Discount:"/>
@@ -284,16 +288,21 @@
 
                     <Grid ColumnDefinitions="*, Auto" Margin="0,5">
                         <TextBlock Text="Round Off:"/>
-                        <StackPanel Orientation="Horizontal" Spacing="10" Grid.Column="1">
-                            <CheckBox Content="Auto" IsChecked="{Binding IsAutoRoundOff}" VerticalAlignment="Center"/>
-                            <NumericUpDown Value="{Binding RoundOff, Converter={StaticResource NullToZeroConverter}}" Width="120" ShowButtonSpinner="True" Increment="0.01" IsEnabled="{Binding !IsAutoRoundOff}"/>
+                        <StackPanel Orientation="Horizontal" Spacing="10" Grid.Column="1" VerticalAlignment="Center">
+                            <CheckBox Content="Round off" IsChecked="{Binding IsAutoRoundOff}" VerticalAlignment="Center"/>
+                            <TextBlock Text="{Binding RoundOff, StringFormat=₹ \{0:N2\}}" VerticalAlignment="Center" FontWeight="SemiBold" Foreground="#6B7280"/>
                         </StackPanel>
                     </Grid>
                     <Separator/>
-                    <Grid ColumnDefinitions="*, Auto" Margin="0,10">
-                        <TextBlock Text="Grand Total:" FontSize="18" FontWeight="Bold"/>
-                        <TextBlock Grid.Column="1" Text="{Binding GrandTotal, StringFormat=₹ \{0:N2\}}" FontSize="18" FontWeight="Bold" Foreground="#2563EB"/>
-                    </Grid>
+                    <Border Background="#2563EB" CornerRadius="4" Padding="10" Margin="0,5">
+                        <StackPanel Grid.ColumnSpan="2">
+                            <Grid ColumnDefinitions="*, Auto">
+                                <TextBlock Text="Grand Total" Foreground="White" FontSize="16" FontWeight="Bold"/>
+                                <TextBlock Grid.Column="1" Text="{Binding GrandTotal, StringFormat=₹ \{0:N2\}}" Foreground="White" FontSize="16" FontWeight="Bold"/>
+                            </Grid>
+                            <TextBlock Text="{Binding TotalInWords}" Foreground="#BFDBFE" FontSize="10" TextWrapping="Wrap" Margin="0,5,0,0" FontStyle="Italic"/>
+                        </StackPanel>
+                    </Border>
  
                     <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Right" Margin="0,20,0,0">
                         <Button Content="Cancel" Command="{Binding CancelCommand}" Width="100" HorizontalContentAlignment="Center"/>

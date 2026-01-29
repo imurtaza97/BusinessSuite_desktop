@@ -57,6 +57,14 @@
                                     <TextBox Text="{Binding BusinessName}"/>
                                 </StackPanel>
                                 <StackPanel Spacing="5">
+                                    <TextBlock Text="Email" FontWeight="Medium"/>
+                                    <TextBox Text="{Binding Email}" Watermark="e.g. info@yourbusiness.com"/>
+                                </StackPanel>
+                                <StackPanel Spacing="5">
+                                    <TextBlock Text="Contact No" FontWeight="Medium"/>
+                                    <TextBox Text="{Binding ContactNo}" Watermark="e.g. +91-9876543210"/>
+                                </StackPanel>
+                                <StackPanel Spacing="5">
                                     <TextBlock Text="Address" FontWeight="Medium"/>
                                     <TextBox Text="{Binding Address}" AcceptsReturn="True" Height="80"/>
                                 </StackPanel>
@@ -134,22 +142,22 @@
                         <Border Background="White" BorderBrush="#E5E7EB" BorderThickness="1" CornerRadius="8" Padding="25">
                             <StackPanel Spacing="15">
                                 <Grid ColumnDefinitions="*, Auto">
-                                    <TextBox Text="{Binding NewUomName}" Watermark="New UOM name..." 
-                                             KeyUp="Uom_KeyUp"/>
-                                    <Button Grid.Column="1" Content="Add UOM" Command="{Binding AddUomCommand}" 
+                                        <TextBox Text="{Binding NewUnitName}" Watermark="New unit name..." 
+                                             KeyUp="Unit_KeyUp"/>
+                                        <Button Grid.Column="1" Content="Add Unit" Command="{Binding AddUnitCommand}" 
                                             Margin="10,0,0,0" Classes="Primary"/>
                                 </Grid>
 
-                                <ListBox ItemsSource="{Binding Uoms}" Height="300" BorderThickness="1" BorderBrush="#E5E7EB">
+                                <ListBox ItemsSource="{Binding Units}" Height="300" BorderThickness="1" BorderBrush="#E5E7EB">
                                     <ListBox.ItemTemplate>
                                         <DataTemplate>
                                             <Grid ColumnDefinitions="*, Auto">
                                                 <TextBlock Text="{Binding Name}" VerticalAlignment="Center"/>
                                                 <Button Grid.Column="1" Content="Delete" 
-                                                        Command="{Binding ((vm:SettingsViewModel)DataContext).RemoveUomCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                                        CommandParameter="{Binding}"
-                                                        Classes="Danger"
-                                                        IsVisible="{Binding BusinessId, Converter={x:Static conv:DecimalToBoolConverter.Instance}, ConverterParameter=0}"/>
+                                                    Command="{Binding ((vm:SettingsViewModel)DataContext).RemoveUnitCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                    CommandParameter="{Binding}"
+                                                    Classes="Danger"
+                                                    IsVisible="{Binding BusinessId, Converter={x:Static conv:DecimalToBoolConverter.Instance}, ConverterParameter=0}"/>
                                             </Grid>
                                         </DataTemplate>
                                     </ListBox.ItemTemplate>

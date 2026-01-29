@@ -33,7 +33,7 @@ public class InvoiceItem
     public string? HSNCode { get; set; }
 
     [MaxLength(10)]
-    public string? UOM { get; set; }
+    public string? Unit { get; set; }
 
     [Required]
     [Column(TypeName = "decimal(18, 2)")]

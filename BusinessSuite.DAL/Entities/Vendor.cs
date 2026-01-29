@@ -37,8 +37,19 @@ public class Vendor
     [MaxLength(50)]
     public string? GstTreatment { get; set; } = "Unregistered";
 
+    [MaxLength(100)]
+    public string? BankName { get; set; }
+
+    [MaxLength(50)]
+    public string? AccountNumber { get; set; }
+
+    [MaxLength(20)]
+    public string? IFSC { get; set; }
+
     public DateTime CreatedAt { get; set; } = DateTime.Now;
 
     [ForeignKey("BusinessId")]
     public Business? Business { get; set; }
+
+    public override string ToString() => VendorName;
 }

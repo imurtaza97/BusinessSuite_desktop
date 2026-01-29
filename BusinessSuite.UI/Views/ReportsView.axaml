@@ -1,0 +1,111 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:BusinessSuite.UI.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="1000" d:DesignHeight="800"
+             x:Class="BusinessSuite.UI.Views.ReportsView"
+             x:DataType="vm:ReportsViewModel">
+
+    <ScrollViewer Background="#F8F9FA">
+        <StackPanel Margin="30" Spacing="30">
+            <!-- Filter Section -->
+            <Border Background="White" CornerRadius="12" BoxShadow="0 4 15 0 #0A000000" Padding="20">
+                <StackPanel Orientation="Horizontal" Spacing="20" VerticalAlignment="Center">
+                    <StackPanel Spacing="5">
+                        <TextBlock Text="From Date" FontWeight="Medium" Foreground="#666666"/>
+                        <DatePicker SelectedDate="{Binding StartDate}"/>
+                    </StackPanel>
+                    <StackPanel Spacing="5">
+                        <TextBlock Text="To Date" FontWeight="Medium" Foreground="#666666"/>
+                        <DatePicker SelectedDate="{Binding EndDate}"/>
+                    </StackPanel>
+                    <Button Content="Refresh Report" Command="{Binding LoadReportCommand}" VerticalAlignment="Bottom" Classes="Primary" Margin="0,0,0,2"/>
+                </StackPanel>
+            </Border>
+
+            <!-- Summary Cards -->
+            <UniformGrid Columns="3" Rows="2">
+                <Border Classes="SummaryCard">
+                    <StackPanel>
+                        <TextBlock Text="Total Sales" Classes="CardLabel"/>
+                        <TextBlock Text="{Binding TotalSales, StringFormat=₹ \{0:N2\}}" Classes="CardValue" Foreground="#2563EB"/>
+                    </StackPanel>
+                </Border>
+                <Border Classes="SummaryCard">
+                    <StackPanel>
+                        <TextBlock Text="Total Purchases" Classes="CardLabel"/>
+                        <TextBlock Text="{Binding TotalPurchases, StringFormat=₹ \{0:N2\}}" Classes="CardValue" Foreground="#7C3AED"/>
+                    </StackPanel>
+                </Border>
+                <Border Classes="SummaryCard">
+                    <StackPanel>
+                        <TextBlock Text="Net Difference (P/L)" Classes="CardLabel"/>
+                        <TextBlock Text="{Binding NetProfit, StringFormat=₹ \{0:N2\}}" Classes="CardValue" Foreground="#10B981"/>
+                    </StackPanel>
+                </Border>
+                <Border Classes="SummaryCard">
+                    <StackPanel>
+                        <TextBlock Text="GST Collected (Output)" Classes="CardLabel"/>
+                        <TextBlock Text="{Binding TotalGstCollected, StringFormat=₹ \{0:N2\}}" Classes="CardValue" Foreground="#EF4444"/>
+                    </StackPanel>
+                </Border>
+                <Border Classes="SummaryCard">
+                    <StackPanel>
+                        <TextBlock Text="GST Paid (Input)" Classes="CardLabel"/>
+                        <TextBlock Text="{Binding TotalGstPaid, StringFormat=₹ \{0:N2\}}" Classes="CardValue" Foreground="#F59E0B"/>
+                    </StackPanel>
+                </Border>
+                <Border Classes="SummaryCard">
+                    <StackPanel>
+                        <TextBlock Text="Net GST Payable" Classes="CardLabel"/>
+                        <TextBlock Text="₹ 0.00" Classes="CardValue" Foreground="#333333"/>
+                    </StackPanel>
+                </Border>
+            </UniformGrid>
+
+            <!-- Detailed Breakdown Table -->
+            <Border Background="White" CornerRadius="12" BoxShadow="0 4 15 0 #0A000000" Padding="25">
+                <StackPanel Spacing="20">
+                    <TextBlock Text="Financial Breakdown by Month" FontSize="18" FontWeight="SemiBold" Foreground="#333333"/>
+                    <Separator Background="#EEEEEE" Height="1"/>
+                    
+                    <DataGrid ItemsSource="{Binding ReportRows}" AutoGenerateColumns="False" IsReadOnly="True" GridLinesVisibility="Horizontal" BorderThickness="0">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Month" Binding="{Binding Month}" Width="*"/>
+                            <DataGridTextColumn Header="Sales" Binding="{Binding SalesAmount, StringFormat=₹ \{0:N2\}}" Width="*"/>
+                            <DataGridTextColumn Header="Purchases" Binding="{Binding PurchaseAmount, StringFormat=₹ \{0:N2\}}" Width="*"/>
+                            <DataGridTextColumn Header="GST Coll." Binding="{Binding GstCollected, StringFormat=₹ \{0:N2\}}" Width="*"/>
+                            <DataGridTextColumn Header="GST Paid" Binding="{Binding GstPaid, StringFormat=₹ \{0:N2\}}" Width="*"/>
+                            <DataGridTextColumn Header="Difference" Binding="{Binding Profit, StringFormat=₹ \{0:N2\}}" Width="*"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+
+    <UserControl.Styles>
+        <Style Selector="Border.SummaryCard">
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="CornerRadius" Value="12"/>
+            <Setter Property="Padding" Value="20"/>
+            <Setter Property="Margin" Value="10"/>
+            <Setter Property="BoxShadow" Value="0 4 15 0 #0A000000"/>
+        </Style>
+        <Style Selector="TextBlock.CardLabel">
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Foreground" Value="#6B7280"/>
+            <Setter Property="Margin" Value="0,0,0,8"/>
+        </Style>
+        <Style Selector="TextBlock.CardValue">
+            <Setter Property="FontSize" Value="24"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+        </Style>
+        <Style Selector="Button.Primary">
+            <Setter Property="Background" Value="#2563EB"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Padding" Value="15,8"/>
+        </Style>
+    </UserControl.Styles>
+</UserControl>

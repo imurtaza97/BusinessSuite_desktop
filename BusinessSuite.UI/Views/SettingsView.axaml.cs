@@ -9,13 +9,13 @@ public partial class SettingsView : UserControl
         InitializeComponent();
     }
 
-    private void Uom_KeyUp(object? sender, Avalonia.Input.KeyEventArgs e)
+    private void Unit_KeyUp(object? sender, Avalonia.Input.KeyEventArgs e)
     {
         if (e.Key == Avalonia.Input.Key.Enter)
         {
             if (DataContext is ViewModels.SettingsViewModel vm)
             {
-                vm.AddUomCommand.Execute(null);
+                vm.AddUnitCommand.Execute(null);
             }
         }
     }

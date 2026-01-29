@@ -78,6 +78,9 @@ public partial class ProductFormViewModel : ViewModelBase, INotifyDataErrorInfo
         if (TaxRate < 0)
             AddError(nameof(TaxRate), "Tax Rate is required");
 
+        if (string.IsNullOrWhiteSpace(Unit))
+            AddError(nameof(Unit), "Unit (UOM) is required");
+
         OnPropertyChanged(nameof(HasErrors));
     }
 
@@ -196,31 +199,50 @@ public partial class ProductFormViewModel : ViewModelBase, INotifyDataErrorInfo
         }
     }
 
-    private string? _uom;
-    public string? Uom
+
+    private string? _unit;
+    public string? Unit
     {
-        get => _uom;
+        get => _unit;
         set 
         {
-            if (SetProperty(ref _uom, value))
+            var sanitized = value;
+            if (sanitized != null && sanitized.Contains("BusinessSuite.DAL.Entities")) sanitized = "PCS";
+
+            if (SetProperty(ref _unit, sanitized))
             {
                 if (ValidationVisible) ValidateAll();
             }
         }
     }
 
+    public ObservableCollection<UnitOfMeasure> Units { get; } = new();
+    public ObservableCollection<string> UnitNames { get; } = new();
+
     public ObservableCollection<decimal> AvailableTaxRates { get; } = new();
+
 
     public ProductFormViewModel(int businessId)
     {
         _businessId = businessId;
         var db = new AppDbContext();
         _gstRateRepository = new GstRateRepository(db);
-        
         SaveCommand = new RelayCommand(Save);
         CancelCommand = new RelayCommand(Cancel);
-        
+        LoadUnits(db);
         _ = LoadRatesAsync();
+    }
+
+    private void LoadUnits(AppDbContext db)
+    {
+        Units.Clear();
+        UnitNames.Clear();
+        var units = db.UnitsOfMeasure.Where(u => u.BusinessId == 0 || u.BusinessId == _businessId).ToList();
+        foreach (var u in units) 
+        {
+            Units.Add(u);
+            UnitNames.Add(u.Name);
+        }
     }
 
     public ProductFormViewModel(int businessId, Product product) : this(businessId)
@@ -235,7 +257,7 @@ public partial class ProductFormViewModel : ViewModelBase, INotifyDataErrorInfo
         SalePrice = product.SalePrice;
         StockQty = product.StockQty;
         TaxRate = product.TaxRate;
-        Uom = product.UOM;
+        Unit = product.Unit;
     }
 
     private async Task LoadRatesAsync()
@@ -295,14 +317,15 @@ public partial class ProductFormViewModel : ViewModelBase, INotifyDataErrorInfo
         ValidationVisible = true;
         ValidateAll();
         
-        foreach (var propertyName in new[] { nameof(ProductName), nameof(PurchasePrice), nameof(SalePrice), nameof(TaxRate), nameof(StockQty) })
+        foreach (var propertyName in new[] { nameof(ProductName), nameof(PurchasePrice), nameof(SalePrice), nameof(TaxRate), nameof(StockQty), nameof(Unit) })
         {
              ErrorsChanged?.Invoke(this, new DataErrorsChangedEventArgs(propertyName));
         }
 
         if (HasErrors)
         {
-            GeneralErrorMessage = "Please correct the errors before saving.";
+            var allErrors = _errors.Values.SelectMany(e => e).Distinct().ToList();
+            GeneralErrorMessage = string.Join(", ", allErrors);
             return;
         }
 
@@ -318,7 +341,7 @@ public partial class ProductFormViewModel : ViewModelBase, INotifyDataErrorInfo
             SalePrice = SalePrice,
             StockQty = StockQty,
             TaxRate = TaxRate,
-            UOM = Uom
+            Unit = Unit
         };
 
         RequestClose?.Invoke(product);

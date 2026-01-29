@@ -29,6 +29,12 @@ public class SafeDisplayConverter : IValueConverter
                 return customer.CustomerName ?? "(No Name)";
             }
 
+            // Handle Vendor entity directly
+            if (value is Vendor vendor)
+            {
+                return vendor.VendorName ?? "(No Name)";
+            }
+
             // Handle string formatting if parameter is provided
             if (parameter is string format && !string.IsNullOrEmpty(format))
             {

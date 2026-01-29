@@ -24,8 +24,9 @@ public class Product
     [MaxLength(20)]
     public string? HSNCode { get; set; }
 
+    [Required]
     [MaxLength(10)]
-    public string? UOM { get; set; } = "PCS";
+    public string? Unit { get; set; } = "PCS";
 
     [MaxLength(50)]
     public string? Category { get; set; }

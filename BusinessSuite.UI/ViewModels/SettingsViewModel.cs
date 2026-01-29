@@ -23,6 +23,8 @@ public partial class SettingsViewModel : ViewModelBase
     };
 
     [ObservableProperty] private string _businessName = string.Empty;
+    [ObservableProperty] private string _email = string.Empty;
+    [ObservableProperty] private string _contactNo = string.Empty;
     [ObservableProperty] private string _address = string.Empty;
     [ObservableProperty] private string _state = string.Empty;
     
@@ -36,8 +38,8 @@ public partial class SettingsViewModel : ViewModelBase
     
     [ObservableProperty] private string _statusMessage = string.Empty;
     [ObservableProperty] private bool _isSuccess;
-    [ObservableProperty] private System.Collections.ObjectModel.ObservableCollection<UnitOfMeasure> _uoms = new();
-    [ObservableProperty] private string _newUomName = string.Empty;
+    [ObservableProperty] private System.Collections.ObjectModel.ObservableCollection<UnitOfMeasure> _units = new();
+    [ObservableProperty] private string _newUnitName = string.Empty;
 
     public System.Collections.Generic.IEnumerable<string> States => BLL.StaticData.LocationData.IndianStates;
     public string[] GstTypesList => new[] { "Regular", "Composition" };
@@ -55,6 +57,8 @@ public partial class SettingsViewModel : ViewModelBase
         if (business != null)
         {
             BusinessName = business.BusinessName;
+            Email = business.Email ?? "";
+            ContactNo = business.ContactNo ?? "";
             Address = business.Address ?? "";
             State = business.State ?? "";
             IsGstRegistered = business.IsGSTRegistered;
@@ -65,8 +69,8 @@ public partial class SettingsViewModel : ViewModelBase
             Ifsc = business.IFSC ?? "";
         }
 
-        var uomList = db.UnitsOfMeasure.Where(u => u.BusinessId == 0 || u.BusinessId == _businessId).ToList();
-        foreach (var u in uomList) Uoms.Add(u);
+        var unitList = db.UnitsOfMeasure.Where(u => u.BusinessId == 0 || u.BusinessId == _businessId).ToList();
+        foreach (var u in unitList) Units.Add(u);
     }
 
     [RelayCommand]
@@ -79,6 +83,8 @@ public partial class SettingsViewModel : ViewModelBase
             if (business != null)
             {
                 business.BusinessName = BusinessName;
+                business.Email = Email;
+                business.ContactNo = ContactNo;
                 business.Address = Address;
                 business.State = State;
                 business.IsGSTRegistered = IsGstRegistered;
@@ -105,28 +111,28 @@ public partial class SettingsViewModel : ViewModelBase
     }
 
     [RelayCommand]
-    private async Task AddUomAsync()
+    private async Task AddUnitAsync()
     {
-        if (string.IsNullOrWhiteSpace(NewUomName)) return;
+        if (string.IsNullOrWhiteSpace(NewUnitName)) return;
 
         using var db = new AppDbContext();
-        var uom = new UnitOfMeasure { BusinessId = _businessId, Name = NewUomName.ToUpper() };
-        db.UnitsOfMeasure.Add(uom);
+        var unit = new UnitOfMeasure { BusinessId = _businessId, Name = NewUnitName.ToUpper() };
+        db.UnitsOfMeasure.Add(unit);
         await db.SaveChangesAsync();
 
-        Uoms.Add(uom);
-        NewUomName = "";
+        Units.Add(unit);
+        NewUnitName = "";
     }
 
     [RelayCommand]
-    private async Task RemoveUomAsync(UnitOfMeasure uom)
+    private async Task RemoveUnitAsync(UnitOfMeasure unit)
     {
-        if (uom == null || uom.BusinessId == 0) return; // Don't delete system UOMs
+        if (unit == null || unit.BusinessId == 0) return; // Don't delete system units
 
         using var db = new AppDbContext();
-        db.UnitsOfMeasure.Remove(uom);
+        db.UnitsOfMeasure.Remove(unit);
         await db.SaveChangesAsync();
 
-        Uoms.Remove(uom);
+        Units.Remove(unit);
     }
 }

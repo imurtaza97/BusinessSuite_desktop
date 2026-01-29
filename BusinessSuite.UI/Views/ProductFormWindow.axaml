@@ -52,8 +52,10 @@
                         <TextBox Text="{Binding ProductHsnCode}" Watermark="HSN code"/>
                     </StackPanel>
                     <StackPanel Grid.Column="2" Margin="5,0,0,0">
-                        <TextBlock Text="UOM" Margin="0,0,0,5" FontWeight="Medium" Foreground="#374151"/>
-                        <TextBox Text="{Binding Uom}" Watermark="e.g. PCS, BOX"/>
+                        <TextBlock Text="Unit" Margin="0,0,0,5" FontWeight="Medium" Foreground="#374151"/>
+                        <ComboBox ItemsSource="{Binding UnitNames}" 
+                                  SelectedItem="{Binding Unit}"
+                                  HorizontalAlignment="Stretch"/>
                     </StackPanel>
                 </Grid>
 

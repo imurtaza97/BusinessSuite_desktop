@@ -90,7 +90,7 @@ public partial class VendorsViewModel : ViewModelBase
 
     private async Task AddVendorAsync()
     {
-        var vm = new VendorFormViewModel();
+        var vm = new VendorFormViewModel(_businessId);
         var dialog = new Views.VendorFormWindow { DataContext = vm };
         
         if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
@@ -121,7 +121,7 @@ public partial class VendorsViewModel : ViewModelBase
     {
         if (SelectedVendor == null) return;
         
-        var vm = new VendorFormViewModel(SelectedVendor);
+        var vm = new VendorFormViewModel(_businessId, SelectedVendor);
         var dialog = new Views.VendorFormWindow { DataContext = vm };
         
         if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)

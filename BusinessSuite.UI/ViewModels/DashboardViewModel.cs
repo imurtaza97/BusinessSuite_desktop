@@ -7,6 +7,7 @@ using BusinessSuite.UI.Views;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using BusinessSuite.BLL.StaticData;
+using Avalonia.Controls.ApplicationLifetimes;
 
 namespace BusinessSuite.UI.ViewModels;
 
@@ -104,7 +105,7 @@ public partial class DashboardViewModel : ViewModelBase
         switch (target)
         {
             case "Dashboard":
-                CurrentView = new HomeViewModel();
+                CurrentView = new HomeViewModel(_businessId);
                 break;
             case "Products":
                 var productsVm = new ProductsViewModel(_businessId);
@@ -132,9 +133,41 @@ public partial class DashboardViewModel : ViewModelBase
                 invoiceFormVm.RequestClose += (result) => NavigateInternal("Sales");
                 CurrentView = invoiceFormVm;
                 break;
+            case "Purchases":
+                var posVm = new PurchaseOrdersViewModel(_businessId);
+                posVm.RequestPOForm += (po) => NavigateInternal("PurchaseOrderForm", po);
+                CurrentView = posVm;
+                _ = posVm.LoadPOsCommand.ExecuteAsync(null);
+                break;
+            case "PurchaseOrderForm":
+                var poFormVm = new PurchaseOrderFormViewModel(_businessId, parameter as PurchaseOrder);
+                poFormVm.RequestClose += (result) => NavigateInternal("Purchases");
+                CurrentView = poFormVm;
+                break;
+            case "Reports":
+                CurrentView = new ReportsViewModel(_businessId);
+                break;
             case "Settings":
                 CurrentView = new SettingsViewModel(_businessId);
                 break;
+        }
+    }
+
+    [RelayCommand]
+    private void Logout()
+    {
+        if (Avalonia.Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+        {
+            var db = new AppDbContext();
+            var loginForm = new LoginForm
+            {
+                DataContext = new LoginFormViewModel(db)
+            };
+            
+            var oldWindow = desktop.MainWindow;
+            desktop.MainWindow = loginForm;
+            loginForm.Show();
+            oldWindow?.Close();
         }
     }
 }

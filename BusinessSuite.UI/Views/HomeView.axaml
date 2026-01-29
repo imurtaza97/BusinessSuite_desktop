@@ -2,8 +2,11 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:BusinessSuite.UI.ViewModels"
+             xmlns:services="using:BusinessSuite.BLL.Services"
              mc:Ignorable="d" d:DesignWidth="1000" d:DesignHeight="800"
-             x:Class="BusinessSuite.UI.Views.HomeView">
+             x:Class="BusinessSuite.UI.Views.HomeView"
+             x:DataType="vm:HomeViewModel">
 
     <ScrollViewer Background="#F8F9FA">
         <StackPanel Margin="30" Spacing="30">
@@ -11,30 +14,30 @@
             <UniformGrid Columns="4" Rows="1">
                 <Border Classes="StatCard">
                     <StackPanel>
-                        <TextBlock Text="Total Sales" Classes="StatLabel"/>
-                        <TextBlock Text="₹ 1,24,500" Classes="StatValue"/>
-                        <TextBlock Text="+12% from last month" Classes="StatTrend Positive"/>
+                        <TextBlock Text="Total Sales (Monthly)" Classes="StatLabel"/>
+                        <TextBlock Text="{Binding TotalSales, StringFormat=₹ \{0:N2\}}" Classes="StatValue"/>
+                        <TextBlock Text="Included GST" Classes="StatTrend Positive"/>
                     </StackPanel>
                 </Border>
                 <Border Classes="StatCard">
                     <StackPanel>
-                        <TextBlock Text="Total GST" Classes="StatLabel"/>
-                        <TextBlock Text="₹ 22,410" Classes="StatValue"/>
-                        <TextBlock Text="+5.2% from last month" Classes="StatTrend Positive"/>
+                        <TextBlock Text="Total Purchases" Classes="StatLabel"/>
+                        <TextBlock Text="{Binding TotalPurchase, StringFormat=₹ \{0:N2\}}" Classes="StatValue"/>
+                        <TextBlock Text="Raw materials/Stock" Classes="StatTrend Negative"/>
                     </StackPanel>
                 </Border>
                 <Border Classes="StatCard">
                     <StackPanel>
-                        <TextBlock Text="New Orders" Classes="StatLabel"/>
-                        <TextBlock Text="48" Classes="StatValue"/>
-                        <TextBlock Text="-2% from yesterday" Classes="StatTrend Negative"/>
+                        <TextBlock Text="New Orders (MTD)" Classes="StatLabel"/>
+                        <TextBlock Text="{Binding NewOrdersCount}" Classes="StatValue"/>
+                        <TextBlock Text="Month to date" Classes="StatTrend Positive"/>
                     </StackPanel>
                 </Border>
                 <Border Classes="StatCard">
                     <StackPanel>
-                        <TextBlock Text="Customer Growth" Classes="StatLabel"/>
-                        <TextBlock Text="128" Classes="StatValue"/>
-                        <TextBlock Text="+18% from last month" Classes="StatTrend Positive"/>
+                        <TextBlock Text="Total Customers" Classes="StatLabel"/>
+                        <TextBlock Text="{Binding CustomerCount}" Classes="StatValue"/>
+                        <TextBlock Text="Active base" Classes="StatTrend Positive"/>
                     </StackPanel>
                 </Border>
             </UniformGrid>
@@ -42,34 +45,37 @@
             <!-- Recent Activity Section -->
             <Border Background="White" CornerRadius="12" BoxShadow="0 4 15 0 #0A000000" Padding="25">
                 <StackPanel Spacing="20">
-                    <TextBlock Text="Recent Transactions" FontSize="18" FontWeight="SemiBold" Foreground="#333333"/>
+                    <TextBlock Text="Recent Transactions (Sales &amp; Purchases)" FontSize="18" FontWeight="SemiBold" Foreground="#333333"/>
                     <Separator Background="#EEEEEE" Height="1"/>
-                    <Grid ColumnDefinitions="*, *, *, *, *">
-                        <TextBlock Grid.Column="0" Text="Invoice #" FontWeight="Medium" Foreground="#666666"/>
-                        <TextBlock Grid.Column="1" Text="Customer" FontWeight="Medium" Foreground="#666666"/>
-                        <TextBlock Grid.Column="2" Text="Date" FontWeight="Medium" Foreground="#666666"/>
-                        <TextBlock Grid.Column="3" Text="Amount" FontWeight="Medium" Foreground="#666666"/>
-                        <TextBlock Grid.Column="4" Text="Status" FontWeight="Medium" Foreground="#666666"/>
+                    
+                    <Grid ColumnDefinitions="*, *, *, *, *, *" Margin="0,0,0,10">
+                        <TextBlock Grid.Column="0" Text="Date" FontWeight="Bold" Foreground="#666666"/>
+                        <TextBlock Grid.Column="1" Text="Type" FontWeight="Bold" Foreground="#666666"/>
+                        <TextBlock Grid.Column="2" Text="Number" FontWeight="Bold" Foreground="#666666"/>
+                        <TextBlock Grid.Column="3" Text="Entity" FontWeight="Bold" Foreground="#666666"/>
+                        <TextBlock Grid.Column="4" Text="Amount" FontWeight="Bold" Foreground="#666666" HorizontalAlignment="Right"/>
+                        <TextBlock Grid.Column="5" Text="Status" FontWeight="Bold" Foreground="#666666" HorizontalAlignment="Center"/>
                     </Grid>
-                    <!-- Mock Data Rows -->
-                    <Grid ColumnDefinitions="*, *, *, *, *" Margin="0,5">
-                        <TextBlock Grid.Column="0" Text="INV-2024-001" Foreground="#333333"/>
-                        <TextBlock Grid.Column="1" Text="Anil Sharma" Foreground="#333333"/>
-                        <TextBlock Grid.Column="2" Text="Jan 05, 2024" Foreground="#333333"/>
-                        <TextBlock Grid.Column="3" Text="₹ 12,500" Foreground="#333333" FontWeight="Bold"/>
-                        <Border Grid.Column="4" Background="#E1F5FE" CornerRadius="10" HorizontalAlignment="Left" Padding="10,2">
-                            <TextBlock Text="Paid" FontSize="12" Foreground="#0288D1"/>
-                        </Border>
-                    </Grid>
-                    <Grid ColumnDefinitions="*, *, *, *, *" Margin="0,5">
-                        <TextBlock Grid.Column="0" Text="INV-2024-002" Foreground="#333333"/>
-                        <TextBlock Grid.Column="1" Text="Suresh Kumar" Foreground="#333333"/>
-                        <TextBlock Grid.Column="2" Text="Jan 05, 2024" Foreground="#333333"/>
-                        <TextBlock Grid.Column="3" Text="₹ 8,240" Foreground="#333333" FontWeight="Bold"/>
-                        <Border Grid.Column="4" Background="#FFF9C4" CornerRadius="10" HorizontalAlignment="Left" Padding="10,2">
-                            <TextBlock Text="Pending" FontSize="12" Foreground="#FBC02D"/>
-                        </Border>
-                    </Grid>
+
+                    <ItemsControl ItemsSource="{Binding RecentTransactions}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Grid ColumnDefinitions="*, *, *, *, *, *" Margin="0,8">
+                                    <TextBlock Grid.Column="0" Text="{Binding Date, StringFormat=\{0:dd MMM yyyy\}}" VerticalAlignment="Center" Foreground="#333333"/>
+                                    <Border Grid.Column="1" Background="{Binding Type, Converter={StaticResource TransactionTypeBgConverter}}" CornerRadius="4" HorizontalAlignment="Left" Padding="6,2" VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding Type}" FontSize="11" FontWeight="SemiBold" Foreground="White"/>
+                                    </Border>
+                                    <TextBlock Grid.Column="2" Text="{Binding Number}" VerticalAlignment="Center" Foreground="#2563EB" FontWeight="Medium"/>
+                                    <TextBlock Grid.Column="3" Text="{Binding EntityName}" VerticalAlignment="Center" Foreground="#333333" MaxWidth="150" TextTrimming="CharacterEllipsis"/>
+                                    <TextBlock Grid.Column="4" Text="{Binding Amount, StringFormat=₹ \{0:N2\}}" VerticalAlignment="Center" Foreground="#333333" FontWeight="Bold" HorizontalAlignment="Right"/>
+                                    <Border Grid.Column="5" CornerRadius="10" HorizontalAlignment="Center" Padding="10,2" VerticalAlignment="Center"
+                                            Background="{Binding Status, Converter={StaticResource StatusBgConverter}}">
+                                        <TextBlock Text="{Binding Status}" FontSize="11" Foreground="{Binding Status, Converter={StaticResource StatusFgConverter}}"/>
+                                    </Border>
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
                 </StackPanel>
             </Border>
         </StackPanel>

@@ -53,11 +53,20 @@ public partial class VendorFormViewModel : ViewModelBase, INotifyDataErrorInfo
         else if (VendorName.Length > 100)
             AddError(nameof(VendorName), "Vendor Name cannot exceed 100 characters");
 
-        if (GSTIN?.Length > 15)
-            AddError(nameof(GSTIN), "GSTIN cannot exceed 15 characters");
-
         if (!string.IsNullOrWhiteSpace(GSTIN) && GSTIN.Length != 15)
             AddError(nameof(GSTIN), "GSTIN must be 15 characters long");
+
+        if (IsGstRegistered)
+        {
+            if (string.IsNullOrWhiteSpace(GSTIN))
+                AddError(nameof(GSTIN), "GSTIN is required for registered vendors");
+        }
+
+        if (string.IsNullOrWhiteSpace(GstTreatment))
+            AddError(nameof(GstTreatment), "GST Treatment is required");
+
+        if (string.IsNullOrWhiteSpace(State))
+            AddError(nameof(State), "State is required");
 
         if (ContactNo?.Length > 15)
             AddError(nameof(ContactNo), "Contact No cannot exceed 15 characters");
@@ -181,13 +190,20 @@ public partial class VendorFormViewModel : ViewModelBase, INotifyDataErrorInfo
     public bool IsGstRegistered => GstTreatment == "Regular" || GstTreatment == "Composition";
     public bool IsNotGstRegistered => !IsGstRegistered;
 
-    public VendorFormViewModel()
+    [ObservableProperty] private string? _bankName;
+    [ObservableProperty] private string? _accountNumber;
+    [ObservableProperty] private string? _ifsc;
+
+    private readonly int _businessId;
+
+    public VendorFormViewModel(int businessId)
     {
+        _businessId = businessId;
         SaveCommand = new RelayCommand(Save);
         CancelCommand = new RelayCommand(Cancel);
     }
 
-    public VendorFormViewModel(Vendor vendor) : this()
+    public VendorFormViewModel(int businessId, Vendor vendor) : this(businessId)
     {
         Title = "Edit Vendor";
         VendorId = vendor.VendorID;
@@ -198,6 +214,9 @@ public partial class VendorFormViewModel : ViewModelBase, INotifyDataErrorInfo
         Address = vendor.Address;
         State = vendor.State;
         GstTreatment = vendor.GstTreatment ?? "Unregistered";
+        BankName = vendor.BankName;
+        AccountNumber = vendor.AccountNumber;
+        Ifsc = vendor.IFSC;
     }
 
     public IRelayCommand SaveCommand { get; }
@@ -230,7 +249,11 @@ public partial class VendorFormViewModel : ViewModelBase, INotifyDataErrorInfo
             Email = Email,
             Address = Address,
             State = State,
-            GstTreatment = GstTreatment
+            GstTreatment = GstTreatment,
+            BankName = BankName,
+            AccountNumber = AccountNumber,
+            IFSC = Ifsc,
+            BusinessId = _businessId
         };
 
         RequestClose?.Invoke(vendor);

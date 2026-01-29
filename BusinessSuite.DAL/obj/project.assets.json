@@ -2585,11 +2585,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "/Users/murtaza/Desktop/BusinessSuite/BusinessSuite.DAL/BusinessSuite.DAL.csproj",
+      "projectUniqueName": "/Users/murtaza/Desktop/BusinessSuite_desktop/BusinessSuite.DAL/BusinessSuite.DAL.csproj",
       "projectName": "BusinessSuite.DAL",
-      "projectPath": "/Users/murtaza/Desktop/BusinessSuite/BusinessSuite.DAL/BusinessSuite.DAL.csproj",
+      "projectPath": "/Users/murtaza/Desktop/BusinessSuite_desktop/BusinessSuite.DAL/BusinessSuite.DAL.csproj",
       "packagesPath": "/Users/murtaza/.nuget/packages/",
-      "outputPath": "/Users/murtaza/Desktop/BusinessSuite/BusinessSuite.DAL/obj/",
+      "outputPath": "/Users/murtaza/Desktop/BusinessSuite_desktop/BusinessSuite.DAL/obj/",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "/Users/murtaza/.nuget/NuGet/NuGet.Config"

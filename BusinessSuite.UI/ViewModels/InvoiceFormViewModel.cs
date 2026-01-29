@@ -28,6 +28,7 @@ public partial class InvoiceFormViewModel : ViewModelBase, INotifyDataErrorInfo
     private readonly int _businessId;
 
     private readonly Dictionary<string, List<string>> _errors = new();
+    private bool _ignoreSearchUpdate;
 
     public bool HasErrors => _errors.Any();
     public event EventHandler<DataErrorsChangedEventArgs>? ErrorsChanged;
@@ -60,11 +61,28 @@ public partial class InvoiceFormViewModel : ViewModelBase, INotifyDataErrorInfo
     {
         ClearAllErrors();
         if (SelectedCustomer == null) AddError(nameof(SelectedCustomer), "Customer is required");
-        if (!Items.Any()) AddError(nameof(Items), "At least one item is required");
-        
-        foreach (var item in Items)
+        if (!Items.Any()) 
+            AddError(nameof(Items), "At least one item is required");
+        else
         {
-            if (item.Quantity <= 0) AddError(nameof(Items), "Quantity must be greater than zero");
+            var validItems = Items.Where(i => i.SelectedProduct != null).ToList();
+            if (!validItems.Any())
+                AddError(nameof(Items), "At least one product must be selected");
+
+            foreach (var item in Items)
+            {
+                if (item.SelectedProduct != null)
+                {
+                    if (item.Quantity <= 0) 
+                        AddError(nameof(Items), $"Quantity for '{item.SelectedProduct.ProductName}' must be greater than zero");
+                }
+                else if (Items.Count > 1)
+                {
+                    // If multiple rows and one is empty, maybe allow it but warn? 
+                    // No, usually best to require it if added.
+                    AddError(nameof(Items), "Product is missing in one of the rows");
+                }
+            }
         }
 
         OnPropertyChanged(nameof(HasErrors));
@@ -95,9 +113,9 @@ public partial class InvoiceFormViewModel : ViewModelBase, INotifyDataErrorInfo
     [ObservableProperty] private Customer? _selectedCustomer;
 
     [ObservableProperty] private ObservableCollection<Product> _products = new();
-    [ObservableProperty] private ObservableCollection<UnitOfMeasure> _uoms = new();
-    [ObservableProperty] private ObservableCollection<string> _uomNames = new();
-    
+    [ObservableProperty] private ObservableCollection<UnitOfMeasure> _units = new();
+    [ObservableProperty] private ObservableCollection<string> _unitNames = new();
+
     [ObservableProperty] private ObservableCollection<InvoiceItemViewModel> _items = new();
 
     [ObservableProperty] private decimal _totalAmount;
@@ -112,6 +130,9 @@ public partial class InvoiceFormViewModel : ViewModelBase, INotifyDataErrorInfo
     [ObservableProperty] private bool _isItemLevelDiscount;
 
     public bool IsGstRegistered => _business?.IsGSTRegistered ?? false;
+    public bool IsComposition => _business?.GstType == BusinessGstType.Composition;
+    public bool IsRegularScheme => IsGstRegistered && !IsComposition;
+    public string TotalInWords => BLL.Services.NumberToWordsConverter.ConvertToWords(GrandTotal).ToUpper();
 
     public InvoiceFormViewModel(int businessId, Invoice? existingInvoice = null)
     {
@@ -172,15 +193,19 @@ public partial class InvoiceFormViewModel : ViewModelBase, INotifyDataErrorInfo
     {
         var vm = new CustomerFormViewModel(_businessId);
         var win = new CustomerFormWindow { DataContext = vm };
-        
+
         if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
             var result = await win.ShowDialog<Customer?>(desktop.MainWindow!);
             if (result != null)
             {
-                Customers.Add(result);
-                FilteredCustomers.Add(result);
-                SelectedCustomer = result;
+                var success = await _customerRepository.AddAsync(result);
+                if (success)
+                {
+                    Customers.Add(result);
+                    FilteredCustomers.Add(result);
+                    SelectedCustomer = result;
+                }
             }
         }
     }
@@ -188,17 +213,19 @@ public partial class InvoiceFormViewModel : ViewModelBase, INotifyDataErrorInfo
     private async Task AddProductAsync()
     {
         var vm = new ProductFormViewModel(_businessId);
-        
+
         var win = new ProductFormWindow { DataContext = vm };
-        
+
         if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
             var result = await win.ShowDialog<Product?>(desktop.MainWindow!);
             if (result != null)
             {
-                Products.Add(result);
-                // Can't easily select it here as we don't know which row clicked, 
-                // but it's now in the list.
+                var success = await _productRepository.AddAsync(result);
+                if (success)
+                {
+                    Products.Add(result);
+                }
             }
         }
     }
@@ -207,22 +234,25 @@ public partial class InvoiceFormViewModel : ViewModelBase, INotifyDataErrorInfo
     {
         var nextNumber = "";
         if (existing == null)
-            nextNumber = await _invoiceRepository.GetNextInvoiceNumberAsync(_businessId);
+        {
+            string prefix = IsComposition ? "BOS-" : "INV-";
+            nextNumber = await _invoiceRepository.GetNextInvoiceNumberAsync(_businessId, prefix);
+        }
 
         var customersList = await _customerRepository.GetAllAsync(_businessId);
         var productsList = await _productRepository.GetAllAsync(_businessId);
-        
-        using var db = new AppDbContext();
-        var uomList = await db.UnitsOfMeasure.Where(u => u.BusinessId == 0 || u.BusinessId == _businessId).ToListAsync();
 
-        await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() => 
+        using var db = new AppDbContext();
+        var unitList = await db.UnitsOfMeasure.Where(u => u.BusinessId == 0 || u.BusinessId == _businessId).ToListAsync();
+
+        await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
         {
             if (existing == null)
                 InvoiceNumber = nextNumber;
 
             Customers.Clear();
             FilteredCustomers.Clear();
-            foreach (var c in customersList) 
+            foreach (var c in customersList)
             {
                 Customers.Add(c);
                 FilteredCustomers.Add(c);
@@ -234,12 +264,12 @@ public partial class InvoiceFormViewModel : ViewModelBase, INotifyDataErrorInfo
             Products.Clear();
             foreach (var p in productsList) Products.Add(p);
 
-            Uoms.Clear();
-            UomNames.Clear();
-            foreach (var u in uomList) 
+            Units.Clear();
+            UnitNames.Clear();
+            foreach (var u in unitList)
             {
-                Uoms.Add(u);
-                UomNames.Add(u.Name);
+                Units.Add(u);
+                UnitNames.Add(u.Name);
             }
 
             if (existing != null)
@@ -248,13 +278,15 @@ public partial class InvoiceFormViewModel : ViewModelBase, INotifyDataErrorInfo
                 Items.Clear();
                 foreach (var item in existing.Items)
                 {
-                    var itemVm = new InvoiceItemViewModel(Products.ToList(), Uoms.ToList(), TaxRatesList);
+                    var itemVm = new InvoiceItemViewModel(Products, Units.ToList(), TaxRatesList);
                     itemVm.PropertyChanged += Item_PropertyChanged;
                     itemVm.SelectedProduct = Products.FirstOrDefault(p => p.ProductID == item.ProductID);
                     itemVm.Quantity = item.Quantity;
                     itemVm.UnitPrice = item.UnitPrice;
                     itemVm.TaxRate = item.TaxRate;
                     itemVm.Discount = item.Discount;
+                    itemVm.Unit = item.Unit;
+                    itemVm.HsnCode = item.HSNCode;
                     Items.Add(itemVm);
                 }
                 CalculateTotals();
@@ -270,8 +302,11 @@ public partial class InvoiceFormViewModel : ViewModelBase, INotifyDataErrorInfo
 
     private void AddItem()
     {
-        var item = new InvoiceItemViewModel(Products.ToList(), Uoms.ToList(), TaxRatesList);
+        var item = new InvoiceItemViewModel(Products, Units.ToList(), TaxRatesList);
         item.PropertyChanged += Item_PropertyChanged;
+        // Ensure no invalid selection
+        if (item.FilteredProducts.Count > 0)
+            item.SelectedProduct = null;
         Items.Add(item);
     }
 
@@ -280,6 +315,8 @@ public partial class InvoiceFormViewModel : ViewModelBase, INotifyDataErrorInfo
         if (item != null)
         {
             item.PropertyChanged -= Item_PropertyChanged;
+            // Clear selection to avoid invalid index
+            item.SelectedProduct = null;
             Items.Remove(item);
             CalculateTotals();
         }
@@ -287,7 +324,7 @@ public partial class InvoiceFormViewModel : ViewModelBase, INotifyDataErrorInfo
 
     private void Item_PropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
-        if (e.PropertyName == nameof(InvoiceItemViewModel.TotalAmount) || 
+        if (e.PropertyName == nameof(InvoiceItemViewModel.TotalAmount) ||
             e.PropertyName == nameof(InvoiceItemViewModel.TaxAmount) ||
             e.PropertyName == nameof(InvoiceItemViewModel.SelectedProduct) ||
             e.PropertyName == nameof(InvoiceItemViewModel.Quantity) ||
@@ -301,40 +338,52 @@ public partial class InvoiceFormViewModel : ViewModelBase, INotifyDataErrorInfo
 
     partial void OnCustomerSearchQueryChanged(string value)
     {
-        // Avoid re-filtering if the search query was set by selecting an item
-        if (SelectedCustomer != null && value == SelectedCustomer.CustomerName)
-            return;
+        if (_ignoreSearchUpdate) return;
+        if (SelectedCustomer != null && string.Equals(value, SelectedCustomer.CustomerName, StringComparison.OrdinalIgnoreCase)) return;
 
-        var query = value?.ToLower() ?? "";
-        var filteredList = string.IsNullOrWhiteSpace(query)
-            ? Customers.ToList()
-            : Customers.Where(c => 
-                c.CustomerName.ToLower().Contains(query) || 
-                (c.ContactNo?.Contains(query) ?? false)).ToList();
-
-        // Ensure SelectedCustomer is kept in the list
-        if (SelectedCustomer != null && !filteredList.Contains(SelectedCustomer))
+        Avalonia.Threading.Dispatcher.UIThread.Post(() =>
         {
-            filteredList.Insert(0, SelectedCustomer);
-        }
+            if (_ignoreSearchUpdate) return;
+            if (SelectedCustomer != null && string.Equals(value, SelectedCustomer.CustomerName, StringComparison.OrdinalIgnoreCase)) return;
 
-        if (!filteredList.SequenceEqual(FilteredCustomers))
-        {
-            FilteredCustomers.Clear();
-            foreach (var c in filteredList) FilteredCustomers.Add(c);
-        }
+            var query = value?.ToLower() ?? "";
+            var filteredList = string.IsNullOrWhiteSpace(query)
+                ? Customers.ToList()
+                : Customers.Where(c =>
+                    c.CustomerName.ToLower().Contains(query) ||
+                    (c.ContactNo?.Contains(query) ?? false)).ToList();
 
-        if (!string.IsNullOrWhiteSpace(query) && query != SelectedCustomer?.CustomerName?.ToLower())
-            IsCustomerDropDownOpen = true;
+            if (SelectedCustomer != null && !filteredList.Contains(SelectedCustomer))
+            {
+                filteredList.Insert(0, SelectedCustomer);
+            }
+
+            if (!filteredList.SequenceEqual(FilteredCustomers))
+            {
+                FilteredCustomers.Clear();
+                foreach (var c in filteredList) FilteredCustomers.Add(c);
+            }
+
+            if (!string.IsNullOrWhiteSpace(query) && SelectedCustomer == null)
+                IsCustomerDropDownOpen = true;
+        });
     }
 
     partial void OnSelectedCustomerChanged(Customer? value)
     {
         if (value != null)
         {
-            if (CustomerSearchQuery != value.CustomerName)
+            _ignoreSearchUpdate = true;
+            try
             {
-                CustomerSearchQuery = value.CustomerName;
+                if (CustomerSearchQuery != value.CustomerName)
+                {
+                    CustomerSearchQuery = value.CustomerName;
+                }
+            }
+            finally
+            {
+                _ignoreSearchUpdate = false;
             }
             IsCustomerDropDownOpen = false;
         }
@@ -387,17 +436,27 @@ public partial class InvoiceFormViewModel : ViewModelBase, INotifyDataErrorInfo
             {
                 decimal itemBaseAmount = item.Quantity * item.UnitPrice;
                 decimal discountedAmount = IsItemLevelDiscount ? (itemBaseAmount - item.Discount) : itemBaseAmount;
-                
+
                 var tax = _taxCalculator.CalculateTax(
                     discountedAmount,
                     item.TaxRate,
                     _business.State,
                     PlaceOfSupply ?? SelectedCustomer?.State);
 
-                item.TaxAmount = tax.TotalTaxAmount;
-                item.CgstAmount = tax.CGST;
-                item.SgstAmount = tax.SGST;
-                item.IgstAmount = tax.IGST;
+                if (IsComposition)
+                {
+                    item.TaxAmount = 0;
+                    item.CgstAmount = 0;
+                    item.SgstAmount = 0;
+                    item.IgstAmount = 0;
+                }
+                else
+                {
+                    item.TaxAmount = tax.TotalTaxAmount;
+                    item.CgstAmount = tax.CGST;
+                    item.SgstAmount = tax.SGST;
+                    item.IgstAmount = tax.IGST;
+                }
                 item.TotalAmount = discountedAmount + item.TaxAmount;
 
                 subTotal += itemBaseAmount;
@@ -414,7 +473,7 @@ public partial class InvoiceFormViewModel : ViewModelBase, INotifyDataErrorInfo
         TotalCGST = cgstTotal;
         TotalSGST = sgstTotal;
         TotalIGST = igstTotal;
-        
+
         decimal tempGrandTotal;
         if (IsItemLevelDiscount)
         {
@@ -429,13 +488,16 @@ public partial class InvoiceFormViewModel : ViewModelBase, INotifyDataErrorInfo
         if (IsAutoRoundOff)
         {
             decimal totalBeforeRound = tempGrandTotal;
-            GrandTotal = Math.Round(tempGrandTotal, 0);
+            // Round DOWN to the nearest rupee (minimum side) with 00 paise
+            GrandTotal = Math.Floor(tempGrandTotal);
             RoundOff = GrandTotal - totalBeforeRound;
         }
         else
         {
-            GrandTotal = tempGrandTotal + RoundOff;
+            GrandTotal = tempGrandTotal;
+            RoundOff = 0;
         }
+        OnPropertyChanged(nameof(TotalInWords));
     }
 
     public IAsyncRelayCommand SaveCommand { get; }
@@ -447,12 +509,17 @@ public partial class InvoiceFormViewModel : ViewModelBase, INotifyDataErrorInfo
 
     private async Task SaveAsync()
     {
+        // Filter out empty rows before validation if possible, or just validate them
+        var emptyItems = Items.Where(i => i.SelectedProduct == null).ToList();
+        foreach (var empty in emptyItems) Items.Remove(empty);
+
         ValidationVisible = true;
         ValidateAll();
 
         if (HasErrors)
         {
-            GeneralErrorMessage = "Please correct the errors before saving.";
+            var allErrors = _errors.Values.SelectMany(e => e).Distinct().ToList();
+            GeneralErrorMessage = string.Join(", ", allErrors);
             return;
         }
 
@@ -495,7 +562,7 @@ public partial class InvoiceFormViewModel : ViewModelBase, INotifyDataErrorInfo
                 IGST_Rate = i.TaxRate,
                 IGST_Amount = i.IgstAmount,
                 HSNCode = i.HsnCode,
-                UOM = i.Uom,
+                Unit = i.Unit,
                 Discount = i.Discount,
                 TotalAmount = i.TotalAmount
             }).ToList()
@@ -525,11 +592,12 @@ public partial class InvoiceFormViewModel : ViewModelBase, INotifyDataErrorInfo
 
 public partial class InvoiceItemViewModel : ObservableObject
 {
-    private readonly List<Product> _allProducts;
+    private readonly ObservableCollection<Product> _allProducts;
     [ObservableProperty] private ObservableCollection<Product> _filteredProducts;
     [ObservableProperty] private string _searchQuery = string.Empty;
     [ObservableProperty] private bool _isDropDownOpen;
- 
+    private bool _ignoreSearchUpdate;
+
     [ObservableProperty] private Product? _selectedProduct;
     [ObservableProperty] private int _quantity = 1;
     [ObservableProperty] private decimal _unitPrice;
@@ -541,52 +609,97 @@ public partial class InvoiceItemViewModel : ObservableObject
     [ObservableProperty] private decimal _igstAmount;
     [ObservableProperty] private decimal _totalAmount;
     [ObservableProperty] private string? _hsnCode;
-    [ObservableProperty] private string? _uom;
+    private string? _unit;
+    public string? Unit
+    {
+        get => _unit;
+        set 
+        {
+            var sanitized = value;
+            if (sanitized != null && sanitized.Contains("BusinessSuite.DAL.Entities")) sanitized = "PCS";
+            SetProperty(ref _unit, sanitized);
+        }
+    }
 
-    public InvoiceItemViewModel(List<Product> products, List<UnitOfMeasure> uoms, List<decimal> taxRates)
+    public InvoiceItemViewModel(ObservableCollection<Product> products, List<UnitOfMeasure> units, List<decimal> taxRates)
     {
         _allProducts = products;
         _filteredProducts = new ObservableCollection<Product>(products);
-        Uoms = new ObservableCollection<UnitOfMeasure>(uoms);
+        Units = new ObservableCollection<UnitOfMeasure>(units);
         TaxRates = new ObservableCollection<decimal>(taxRates);
+
+        // Update filtered list when main products collection changes
+        _allProducts.CollectionChanged += (s, e) => Avalonia.Threading.Dispatcher.UIThread.Post(() => UpdateFilteredProducts(SearchQuery));
     }
 
-    [ObservableProperty] private ObservableCollection<UnitOfMeasure> _uoms;
-    [ObservableProperty] private ObservableCollection<decimal> _taxRates;
-
-    partial void OnSearchQueryChanged(string value)
+    private void UpdateFilteredProducts(string? value)
     {
-        // Avoid re-filtering if the search query was set by selecting an item
-        // or if it matches the current selection (prevents feedback loops)
-        if (SelectedProduct != null && value == SelectedProduct.ProductName)
-            return;
-
         var query = value?.ToLower() ?? "";
-        var filteredList = string.IsNullOrWhiteSpace(query) 
-            ? _allProducts.ToList() 
-            : _allProducts.Where(p => 
-                p.ProductName.ToLower().Contains(query) || 
+        var filteredList = string.IsNullOrWhiteSpace(query)
+            ? _allProducts.ToList()
+            : _allProducts.Where(p =>
+                p.ProductName.ToLower().Contains(query) ||
                 (p.SKU?.ToLower().Contains(query) ?? false)).ToList();
 
-        // If we have a selection and it's not in the filtered list, add it back
-        // to prevent Avalonia from resetting SelectedProduct to null
+        // CRITICAL: Always keep SelectedProduct in the list to prevent de-selection
         if (SelectedProduct != null && !filteredList.Contains(SelectedProduct))
         {
             filteredList.Insert(0, SelectedProduct);
         }
 
-        // Only update collection if it actually changed to reduce UI flickering
-        if (!filteredList.SequenceEqual(FilteredProducts))
-        {
-            FilteredProducts.Clear();
-            foreach (var p in filteredList)
-            {
-                FilteredProducts.Add(p);
-            }
-        }
+        if (filteredList.SequenceEqual(FilteredProducts)) return;
 
-        if (!string.IsNullOrWhiteSpace(query) && query != SelectedProduct?.ProductName?.ToLower())
-            IsDropDownOpen = true;
+        Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+        {
+            if (filteredList.SequenceEqual(FilteredProducts)) return;
+            FilteredProducts.Clear();
+            foreach (var p in filteredList) FilteredProducts.Add(p);
+        });
+    }
+
+    [ObservableProperty] private ObservableCollection<UnitOfMeasure> _units;
+    [ObservableProperty] private ObservableCollection<decimal> _taxRates;
+
+    private void EnsureSelectedProductInFiltered()
+    {
+        // Only null out if we are NOT in the middle of a search/text update
+        if (SelectedProduct != null && !FilteredProducts.Contains(SelectedProduct))
+        {
+            // Instead of nulling, consider adding it back to the list 
+            // to prevent the DataGrid from losing the binding context.
+            FilteredProducts.Insert(0, SelectedProduct);
+        }
+    }
+
+    partial void OnSearchQueryChanged(string value)
+    {
+        if (_ignoreSearchUpdate) return;
+        if (SelectedProduct != null && string.Equals(value, SelectedProduct.ProductName, StringComparison.OrdinalIgnoreCase)) return;
+
+        Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+        {
+            if (_ignoreSearchUpdate) return;
+            if (SelectedProduct != null && string.Equals(value, SelectedProduct.ProductName, StringComparison.OrdinalIgnoreCase)) return;
+
+            var query = value?.ToLower() ?? "";
+            var filteredList = string.IsNullOrWhiteSpace(query)
+                ? _allProducts.ToList()
+                : _allProducts.Where(p =>
+                    p.ProductName.ToLower().Contains(query) ||
+                    (p.SKU?.ToLower().Contains(query) ?? false)).ToList();
+
+            if (SelectedProduct != null && !filteredList.Contains(SelectedProduct))
+                filteredList.Insert(0, SelectedProduct);
+
+            if (!filteredList.SequenceEqual(FilteredProducts))
+            {
+                FilteredProducts.Clear();
+                foreach (var p in filteredList) FilteredProducts.Add(p);
+            }
+
+            if (!string.IsNullOrWhiteSpace(value) && SelectedProduct == null)
+                IsDropDownOpen = true;
+        });
     }
 
     partial void OnSelectedProductChanged(Product? value)
@@ -597,16 +710,20 @@ public partial class InvoiceItemViewModel : ObservableObject
             UnitPrice = value.SalePrice;
             TaxRate = value.TaxRate;
             HsnCode = value.HSNCode;
-            Uom = value.UOM;
+            Unit = value.Unit;
             Discount = 0; // Reset discount when product changes
-            
-            // Sync search query with selection name without triggering re-filter
-            if (SearchQuery != value.ProductName)
+
+            _ignoreSearchUpdate = true;
+            try
             {
-                SearchQuery = value.ProductName;
+                if (SearchQuery != value.ProductName) SearchQuery = value.ProductName;
             }
-            
-            // Close dropdown on selection
+            finally
+            {
+                _ignoreSearchUpdate = false;
+            }
+
+            EnsureSelectedProductInFiltered();
             IsDropDownOpen = false;
         }
     }
