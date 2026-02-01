@@ -2,10 +2,21 @@
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net8.0</TargetFramework>
+    <ApplicationIcon>Assets/icon.ico</ApplicationIcon>
+    <AssemblyName>BusinessSuite</AssemblyName>
     <Nullable>enable</Nullable>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+
+    <CFBundleDisplayName>BusinessSuite</CFBundleDisplayName>
+    <CFBundleIdentifier>com.alanwar.businesssuite</CFBundleIdentifier>
+    <CFBundlePackageType>APPL</CFBundlePackageType>
+    <CFBundleShortVersionString>1.0.0</CFBundleShortVersionString>
   </PropertyGroup>
+
+  <ItemGroup>
+    <AvaloniaResource Include="Assets\**" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Avalonia" Version="11.3.10" />
@@ -21,6 +32,7 @@
     </PackageReference>
     <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
+    <PackageReference Include="LiveChartsCore.SkiaSharpView.Avalonia" Version="2.0.0-rc6.1" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.7">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
@@ -33,4 +45,8 @@
     <ProjectReference Include="..\BusinessSuite.DAL\BusinessSuite.DAL.csproj" />
     <ProjectReference Include="..\BusinessSuite.BLL\BusinessSuite.BLL.csproj" />
   </ItemGroup>
+
+  <PropertyGroup>
+  <AvaloniaXamlDiagnostics>true</AvaloniaXamlDiagnostics>
+</PropertyGroup>
 </Project>

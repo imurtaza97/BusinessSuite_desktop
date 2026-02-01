@@ -38,7 +38,6 @@
                 <Button DockPanel.Dock="Bottom" 
                         Classes="MenuButtonLogout" 
                         Content="Logout" 
-                        Command="{Binding LogoutCommand}"
                         VerticalAlignment="Bottom" 
                         Margin="0,0,0,20"/>
             </DockPanel>
@@ -100,11 +99,11 @@
                     <DataTemplate DataType="vm:PurchaseOrderFormViewModel">
                         <Views:PurchaseOrderFormView/>
                     </DataTemplate>
-                    <DataTemplate DataType="vm:SettingsViewModel">
-                        <Views:SettingsView/>
-                    </DataTemplate>
                     <DataTemplate DataType="vm:ReportsViewModel">
                         <Views:ReportsView/>
+                    </DataTemplate>
+                    <DataTemplate DataType="vm:SettingsViewModel">
+                        <Views:SettingsView/>
                     </DataTemplate>
                 </ContentControl.DataTemplates>
             </ContentControl>

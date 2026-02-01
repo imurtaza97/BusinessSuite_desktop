@@ -7,7 +7,6 @@ using BusinessSuite.UI.Views;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using BusinessSuite.BLL.StaticData;
-using Avalonia.Controls.ApplicationLifetimes;
 
 namespace BusinessSuite.UI.ViewModels;
 
@@ -105,7 +104,9 @@ public partial class DashboardViewModel : ViewModelBase
         switch (target)
         {
             case "Dashboard":
-                CurrentView = new HomeViewModel(_businessId);
+                var homeVm = new HomeViewModel(_businessId);
+                CurrentView = homeVm;
+                _ = homeVm.LoadDashboardDataCommand.ExecuteAsync(null);
                 break;
             case "Products":
                 var productsVm = new ProductsViewModel(_businessId);
@@ -144,11 +145,13 @@ public partial class DashboardViewModel : ViewModelBase
                 poFormVm.RequestClose += (result) => NavigateInternal("Purchases");
                 CurrentView = poFormVm;
                 break;
-            case "Reports":
-                CurrentView = new ReportsViewModel(_businessId);
-                break;
             case "Settings":
                 CurrentView = new SettingsViewModel(_businessId);
+                break;
+            case "Reports":
+                var reportsVm = new ReportsViewModel(_businessId);
+                CurrentView = reportsVm;
+                _ = reportsVm.LoadReportsCommand.ExecuteAsync(null);
                 break;
         }
     }
@@ -156,18 +159,8 @@ public partial class DashboardViewModel : ViewModelBase
     [RelayCommand]
     private void Logout()
     {
-        if (Avalonia.Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
-        {
-            var db = new AppDbContext();
-            var loginForm = new LoginForm
-            {
-                DataContext = new LoginFormViewModel(db)
-            };
-            
-            var oldWindow = desktop.MainWindow;
-            desktop.MainWindow = loginForm;
-            loginForm.Show();
-            oldWindow?.Close();
-        }
+        RequestLogout?.Invoke();
     }
+
+    public event Action? RequestLogout;
 }

@@ -1,18 +1,8 @@
 <Application xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:conv="clr-namespace:BusinessSuite.UI.Converters"
              x:Class="BusinessSuite.UI.App"
              RequestedThemeVariant="Default">
-             
-    <Application.Resources>
-        <ResourceDictionary>
-            <conv:StatusBgConverter x:Key="StatusBgConverter"/>
-            <conv:StatusFgConverter x:Key="StatusFgConverter"/>
-            <conv:TransactionTypeBgConverter x:Key="TransactionTypeBgConverter"/>
-            <conv:DecimalToBoolConverter x:Key="DecimalToBoolConverter"/>
-            <conv:NullToZeroConverter x:Key="NullToZeroConverter"/>
-        </ResourceDictionary>
-    </Application.Resources>
+             <!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
 
     <Application.Styles>
         <FluentTheme />

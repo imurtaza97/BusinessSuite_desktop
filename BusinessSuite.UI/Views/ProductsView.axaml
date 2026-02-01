@@ -42,10 +42,10 @@
                     <DataGridTextColumn Header="Category" Binding="{Binding Category}" Width="150"/>
                     <DataGridTextColumn Header="SKU" Binding="{Binding SKU}" Width="100"/>
                     <DataGridTextColumn Header="HSN Code" Binding="{Binding HSNCode}" Width="100"/>
-                    <DataGridTextColumn Header="Purchase Price" Binding="{Binding PurchasePrice, StringFormat=\{0:C\}}" Width="120"/>
-                    <DataGridTextColumn Header="Sale Price" Binding="{Binding SalePrice, StringFormat=\{0:C\}}" Width="120"/>
+                    <DataGridTextColumn Header="Purchase Price" Binding="{Binding PurchasePrice, StringFormat='{}₹{0:N2}'}" Width="120"/>
+                    <DataGridTextColumn Header="Sale Price" Binding="{Binding SalePrice, StringFormat='{}₹{0:N2}'}" Width="120"/>
                     <DataGridTextColumn Header="Stock" Binding="{Binding StockQty}" Width="80"/>
-                    <DataGridTextColumn Header="Tax Rate (GST %)" Binding="{Binding TaxRate, StringFormat=\{0\}%}" Width="110"/>
+                    <DataGridTextColumn Header="Tax Rate (GST %)" Binding="{Binding TaxRate, StringFormat='\{0\}%'}" Width="110"/>
                 </DataGrid.Columns>
             </DataGrid>
             

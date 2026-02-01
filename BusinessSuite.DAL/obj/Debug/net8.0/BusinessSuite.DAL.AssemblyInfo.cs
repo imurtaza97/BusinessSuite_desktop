@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("BusinessSuite.DAL")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+75553d23eebc4a4adb8fd9dffdcbab0205c9e8c0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+1b9180bddde72c20adbb8523880e77038fb0619c")]
 [assembly: System.Reflection.AssemblyProductAttribute("BusinessSuite.DAL")]
 [assembly: System.Reflection.AssemblyTitleAttribute("BusinessSuite.DAL")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

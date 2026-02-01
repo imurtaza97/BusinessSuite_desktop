@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "y6k6ROQ7odA=",
+  "dgSpecHash": "1RT+0lpkPFs=",
   "success": true,
   "projectFilePath": "/Users/murtaza/Desktop/BusinessSuite_desktop/BusinessSuite.UI/BusinessSuite.UI.csproj",
   "expectedPackageFiles": [
@@ -30,6 +30,9 @@
     "/Users/murtaza/.nuget/packages/harfbuzzsharp.nativeassets.webassembly/8.3.1.1/harfbuzzsharp.nativeassets.webassembly.8.3.1.1.nupkg.sha512",
     "/Users/murtaza/.nuget/packages/harfbuzzsharp.nativeassets.win32/8.3.1.1/harfbuzzsharp.nativeassets.win32.8.3.1.1.nupkg.sha512",
     "/Users/murtaza/.nuget/packages/humanizer.core/2.14.1/humanizer.core.2.14.1.nupkg.sha512",
+    "/Users/murtaza/.nuget/packages/livechartscore/2.0.0-rc6.1/livechartscore.2.0.0-rc6.1.nupkg.sha512",
+    "/Users/murtaza/.nuget/packages/livechartscore.skiasharpview/2.0.0-rc6.1/livechartscore.skiasharpview.2.0.0-rc6.1.nupkg.sha512",
+    "/Users/murtaza/.nuget/packages/livechartscore.skiasharpview.avalonia/2.0.0-rc6.1/livechartscore.skiasharpview.avalonia.2.0.0-rc6.1.nupkg.sha512",
     "/Users/murtaza/.nuget/packages/microcom.runtime/0.11.0/microcom.runtime.0.11.0.nupkg.sha512",
     "/Users/murtaza/.nuget/packages/microsoft.bcl.asyncinterfaces/6.0.0/microsoft.bcl.asyncinterfaces.6.0.0.nupkg.sha512",
     "/Users/murtaza/.nuget/packages/microsoft.codeanalysis.analyzers/3.3.3/microsoft.codeanalysis.analyzers.3.3.3.nupkg.sha512",
@@ -59,6 +62,7 @@
     "/Users/murtaza/.nuget/packages/questpdf/2025.12.3/questpdf.2025.12.3.nupkg.sha512",
     "/Users/murtaza/.nuget/packages/reactiveui/22.3.1/reactiveui.22.3.1.nupkg.sha512",
     "/Users/murtaza/.nuget/packages/skiasharp/2.88.9/skiasharp.2.88.9.nupkg.sha512",
+    "/Users/murtaza/.nuget/packages/skiasharp.harfbuzz/2.88.9/skiasharp.harfbuzz.2.88.9.nupkg.sha512",
     "/Users/murtaza/.nuget/packages/skiasharp.nativeassets.linux/2.88.9/skiasharp.nativeassets.linux.2.88.9.nupkg.sha512",
     "/Users/murtaza/.nuget/packages/skiasharp.nativeassets.macos/2.88.9/skiasharp.nativeassets.macos.2.88.9.nupkg.sha512",
     "/Users/murtaza/.nuget/packages/skiasharp.nativeassets.webassembly/2.88.9/skiasharp.nativeassets.webassembly.2.88.9.nupkg.sha512",

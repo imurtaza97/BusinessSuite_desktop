@@ -154,7 +154,7 @@
       "version": "1.0.0",
       "restore": {
         "projectUniqueName": "/Users/murtaza/Desktop/BusinessSuite_desktop/BusinessSuite.UI/BusinessSuite.UI.csproj",
-        "projectName": "BusinessSuite.UI",
+        "projectName": "BusinessSuite",
         "projectPath": "/Users/murtaza/Desktop/BusinessSuite_desktop/BusinessSuite.UI/BusinessSuite.UI.csproj",
         "packagesPath": "/Users/murtaza/.nuget/packages/",
         "outputPath": "/Users/murtaza/Desktop/BusinessSuite_desktop/BusinessSuite.UI/obj/",
@@ -231,6 +231,10 @@
             "CommunityToolkit.Mvvm": {
               "target": "Package",
               "version": "[8.4.0, )"
+            },
+            "LiveChartsCore.SkiaSharpView.Avalonia": {
+              "target": "Package",
+              "version": "[2.0.0-rc6.1, )"
             },
             "Microsoft.EntityFrameworkCore.Design": {
               "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",

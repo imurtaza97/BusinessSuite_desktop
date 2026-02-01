@@ -30,6 +30,9 @@
 /Users/murtaza/.nuget/packages/communitytoolkit.mvvm/8.4.0/lib/net8.0/CommunityToolkit.Mvvm.dll
 /Users/murtaza/.nuget/packages/dynamicdata/9.4.1/lib/net8.0/DynamicData.dll
 /Users/murtaza/.nuget/packages/harfbuzzsharp/8.3.1.1/lib/net8.0/HarfBuzzSharp.dll
+/Users/murtaza/.nuget/packages/livechartscore/2.0.0-rc6.1/lib/net8.0/LiveChartsCore.dll
+/Users/murtaza/.nuget/packages/livechartscore.skiasharpview.avalonia/2.0.0-rc6.1/lib/net8.0/LiveChartsCore.SkiaSharpView.Avalonia.dll
+/Users/murtaza/.nuget/packages/livechartscore.skiasharpview/2.0.0-rc6.1/lib/net8.0/LiveChartsCore.SkiaSharpView.dll
 /Users/murtaza/.nuget/packages/microcom.runtime/0.11.0/lib/net5.0/MicroCom.Runtime.dll
 /usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/8.0.11/ref/net8.0/Microsoft.CSharp.dll
 /Users/murtaza/.nuget/packages/microsoft.data.sqlite.core/8.0.4/lib/net8.0/Microsoft.Data.Sqlite.dll
@@ -56,6 +59,7 @@
 /Users/murtaza/.nuget/packages/questpdf/2025.12.3/lib/net8.0/QuestPDF.dll
 /Users/murtaza/.nuget/packages/reactiveui/22.3.1/lib/net8.0/ReactiveUI.dll
 /Users/murtaza/.nuget/packages/skiasharp/2.88.9/lib/net6.0/SkiaSharp.dll
+/Users/murtaza/.nuget/packages/skiasharp.harfbuzz/2.88.9/lib/net6.0/SkiaSharp.HarfBuzz.dll
 /Users/murtaza/.nuget/packages/splat.builder/17.1.1/lib/net8.0/Splat.Builder.dll
 /Users/murtaza/.nuget/packages/splat.core/17.1.1/lib/net8.0/Splat.Core.dll
 /Users/murtaza/.nuget/packages/splat/17.1.1/lib/net8.0/Splat.dll

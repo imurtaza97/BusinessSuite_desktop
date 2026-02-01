@@ -1,8 +1,9 @@
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
+using BusinessSuite.BLL.DTOs;
 using BusinessSuite.BLL.Services;
+using BusinessSuite.DAL.Data;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
@@ -10,53 +11,58 @@ namespace BusinessSuite.UI.ViewModels;
 
 public partial class ReportsViewModel : ViewModelBase
 {
-    private readonly AnalyticsService _analyticsService;
     private readonly int _businessId;
+    private readonly ReportingService _reportingService;
 
-    [ObservableProperty] private DateTimeOffset _startDate = DateTimeOffset.Now.AddMonths(-6);
-    [ObservableProperty] private DateTimeOffset _endDate = DateTimeOffset.Now;
-    
-    [ObservableProperty] private decimal _totalSales;
-    [ObservableProperty] private decimal _totalPurchases;
-    [ObservableProperty] private decimal _totalGstCollected;
-    [ObservableProperty] private decimal _totalGstPaid;
-    [ObservableProperty] private decimal _netProfit;
+    public ObservableCollection<VendorPerformanceStats> TopVendors { get; } = new();
+    public ObservableCollection<CustomerInsightStats> TopCustomers { get; } = new();
 
-    public ObservableCollection<FinancialReportRow> ReportRows { get; } = new();
-
-    public IAsyncRelayCommand LoadReportCommand { get; }
+    [ObservableProperty] private GstReportItem _gstReport = new();
+    [ObservableProperty] private DateTimeOffset? _startDate = DateTimeOffset.Now.AddMonths(-1);
+    [ObservableProperty] private DateTimeOffset? _endDate = DateTimeOffset.Now;
+    [ObservableProperty] private bool _isLoading;
 
     public ReportsViewModel(int businessId)
     {
         _businessId = businessId;
-        _analyticsService = new AnalyticsService(new SimpleDbContextFactory());
-        LoadReportCommand = new AsyncRelayCommand(LoadReportAsync);
-        _ = LoadReportAsync();
+        _reportingService = new ReportingService(new AppDbContext());
+        LoadReportsCommand = new AsyncRelayCommand(LoadDataAsync);
     }
 
-    private async Task LoadReportAsync()
+    public IAsyncRelayCommand LoadReportsCommand { get; }
+
+    private async Task LoadDataAsync()
     {
-        var rows = await _analyticsService.GetFinancialBreakdownAsync(_businessId, StartDate.DateTime, EndDate.DateTime);
-        
-        ReportRows.Clear();
-        decimal sales = 0, purchases = 0, gstColl = 0, gstPaid = 0;
-
-        foreach (var row in rows)
+        IsLoading = true;
+        try 
         {
-            ReportRows.Add(row);
-            sales += row.SalesAmount;
-            purchases += row.PurchaseAmount;
-            gstColl += row.GstCollected;
-            gstPaid += row.GstPaid;
+            var start = StartDate?.DateTime ?? DateTime.Today.AddMonths(-1);
+            var end = EndDate?.DateTime ?? DateTime.Today;
+
+            // Fetch Data
+            var vendors = await _reportingService.GetVendorPerformanceAsync(_businessId);
+            var customers = await _reportingService.GetCustomerInsightsAsync(_businessId);
+            var report = await _reportingService.GetGstReportAsync(_businessId, start, end);
+
+            // Update UI
+            TopVendors.Clear();
+            foreach (var v in vendors) TopVendors.Add(v);
+
+            TopCustomers.Clear();
+            foreach (var c in customers) TopCustomers.Add(c);
+
+            GstReport = report;
         }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error: {ex.Message}");
 
-        TotalSales = sales;
-        TotalPurchases = purchases;
-        TotalGstCollected = gstColl;
-        TotalGstPaid = gstPaid;
-        NetProfit = sales - purchases;
+            Console.WriteLine($"FATAL ERROR: {ex.Message}");
+    Console.WriteLine($"STACK TRACE: {ex.StackTrace}");
+        }
+        finally
+        {
+            IsLoading = false;
+        }
     }
-
-    partial void OnStartDateChanged(DateTimeOffset value) => _ = LoadReportAsync();
-    partial void OnEndDateChanged(DateTimeOffset value) => _ = LoadReportAsync();
 }
