@@ -28,8 +28,15 @@ public class Product
     [MaxLength(10)]
     public string? Unit { get; set; } = "PCS";
 
-    [MaxLength(50)]
-    public string? Category { get; set; }
+    public int? CategoryID { get; set; }
+
+    [ForeignKey("CategoryID")]
+    public Category? Category { get; set; }
+
+    public int? PreferredVendorID { get; set; }
+
+    [ForeignKey("PreferredVendorID")]
+    public Vendor? PreferredVendor { get; set; }
 
     [Required]
     public decimal PurchasePrice { get; set; }

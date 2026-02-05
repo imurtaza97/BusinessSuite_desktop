@@ -12,9 +12,19 @@
         <Border Grid.Row="0" Background="White" BorderBrush="#E5E7EB" BorderThickness="0,0,0,1" Padding="20,15">
             <Grid ColumnDefinitions="*, Auto">
                 <StackPanel Orientation="Horizontal" Spacing="15">
-                    <TextBox Width="300" 
-                             Watermark="Search products by name or SKU..." 
+                    <TextBox Width="250" 
+                             Watermark="Search products..." 
                              Text="{Binding SearchQuery}"/>
+                    <ComboBox Width="150"
+                              ItemsSource="{Binding Categories}"
+                              SelectedItem="{Binding SelectedCategory}"
+                              PlaceholderText="All Categories"/>
+                    <Button Content="x" 
+                            Command="{Binding ClearCategoryFilterCommand}" 
+                            IsVisible="{Binding SelectedCategory, Converter={x:Static ObjectConverters.IsNotNull}}"
+                            ToolTip.Tip="Clear Category Filter"
+                            Padding="8,4"
+                            VerticalAlignment="Center"/>
                     <Button Classes="Primary" Content="Add New Product" Command="{Binding AddProductCommand}"/>
                 </StackPanel>
                 
@@ -39,7 +49,7 @@
                       DoubleTapped="DataGrid_DoubleTapped">
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="Product Name" Binding="{Binding ProductName}" Width="*"/>
-                    <DataGridTextColumn Header="Category" Binding="{Binding Category}" Width="150"/>
+                    <DataGridTextColumn Header="Category" Binding="{Binding Category.Name}" Width="150"/>
                     <DataGridTextColumn Header="SKU" Binding="{Binding SKU}" Width="100"/>
                     <DataGridTextColumn Header="HSN Code" Binding="{Binding HSNCode}" Width="100"/>
                     <DataGridTextColumn Header="Purchase Price" Binding="{Binding PurchasePrice, StringFormat='{}₹{0:N2}'}" Width="120"/>

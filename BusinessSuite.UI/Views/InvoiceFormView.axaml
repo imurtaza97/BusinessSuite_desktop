@@ -142,7 +142,7 @@
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
 
-                            <DataGridTextColumn Header="HSN" Binding="{Binding HsnCode}" Width="80"/>
+                            <DataGridTextColumn Header="HSN" Binding="{Binding HsnCode}" Width="80" IsVisible="{Binding ((vm:InvoiceFormViewModel)DataContext).IsGstRegistered, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
                             <DataGridTemplateColumn Header="UOM" Width="80">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>

@@ -47,7 +47,8 @@
                         Background="#2563EB"
                         Foreground="White"
                         Padding="10"
-                        Height="40"/>
+                        Height="40"
+                        CornerRadius="3"/>
                 
                 <TextBlock Text="{Binding StatusMessage}" 
                            Foreground="#DC2626" 

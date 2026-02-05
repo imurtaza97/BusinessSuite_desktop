@@ -20,6 +20,8 @@ public class ProductRepository
     public async Task<List<Product>> GetAllAsync(int businessId)
     {
         return await _context.Products
+            .Include(p => p.Category)
+            .Include(p => p.PreferredVendor)
             .Where(p => p.BusinessID == businessId)
             .OrderByDescending(p => p.CreatedAt)
             .ToListAsync();

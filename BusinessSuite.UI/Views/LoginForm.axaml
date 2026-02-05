@@ -48,7 +48,8 @@
                     Foreground="White"
                     Padding="10"
                     Height="40"
-                    Margin="0,10,0,0"/>
+                    Margin="0,10,0,0"
+                    CornerRadius="3"/>
 
             <TextBlock Text="{Binding ErrorMessage}"
                        Foreground="#DC2626"

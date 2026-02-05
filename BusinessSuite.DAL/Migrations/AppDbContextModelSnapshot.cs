@@ -83,6 +83,34 @@ namespace BusinessSuite.DAL.Migrations
                     b.ToTable("Businesses");
                 });
 
+            modelBuilder.Entity("BusinessSuite.DAL.Entities.Category", b =>
+                {
+                    b.Property<int>("CategoryID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("BusinessID")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(200)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("CategoryID");
+
+                    b.HasIndex("BusinessID");
+
+                    b.ToTable("Categories");
+                });
+
             modelBuilder.Entity("BusinessSuite.DAL.Entities.Customer", b =>
                 {
                     b.Property<int>("CustomerID")
@@ -402,9 +430,8 @@ namespace BusinessSuite.DAL.Migrations
                     b.Property<int>("BusinessID")
                         .HasColumnType("INTEGER");
 
-                    b.Property<string>("Category")
-                        .HasMaxLength(50)
-                        .HasColumnType("TEXT");
+                    b.Property<int?>("CategoryID")
+                        .HasColumnType("INTEGER");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("TEXT");
@@ -412,6 +439,9 @@ namespace BusinessSuite.DAL.Migrations
                     b.Property<string>("HSNCode")
                         .HasMaxLength(20)
                         .HasColumnType("TEXT");
+
+                    b.Property<int?>("PreferredVendorID")
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("ProductName")
                         .IsRequired()
@@ -442,6 +472,10 @@ namespace BusinessSuite.DAL.Migrations
                     b.HasKey("ProductID");
 
                     b.HasIndex("BusinessID");
+
+                    b.HasIndex("CategoryID");
+
+                    b.HasIndex("PreferredVendorID");
 
                     b.ToTable("Products");
                 });
@@ -528,6 +562,10 @@ namespace BusinessSuite.DAL.Migrations
 
                     b.Property<decimal>("TotalTax")
                         .HasColumnType("decimal(18, 2)");
+
+                    b.Property<string>("VendorBillPath")
+                        .HasMaxLength(500)
+                        .HasColumnType("TEXT");
 
                     b.Property<int>("VendorId")
                         .HasColumnType("INTEGER");
@@ -647,6 +685,44 @@ namespace BusinessSuite.DAL.Migrations
                     b.HasKey("SettingsID");
 
                     b.ToTable("Settings");
+                });
+
+            modelBuilder.Entity("BusinessSuite.DAL.Entities.StockTransaction", b =>
+                {
+                    b.Property<int>("TransactionID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("BusinessId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(200)
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("ProductID")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int?>("ReferenceID")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("TransactionDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("TransactionType")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("TransactionID");
+
+                    b.HasIndex("BusinessId");
+
+                    b.HasIndex("ProductID");
+
+                    b.ToTable("StockTransactions");
                 });
 
             modelBuilder.Entity("BusinessSuite.DAL.Entities.UnitOfMeasure", b =>
@@ -946,6 +1022,17 @@ namespace BusinessSuite.DAL.Migrations
                     b.ToTable("Vendors");
                 });
 
+            modelBuilder.Entity("BusinessSuite.DAL.Entities.Category", b =>
+                {
+                    b.HasOne("BusinessSuite.DAL.Entities.Business", "Business")
+                        .WithMany()
+                        .HasForeignKey("BusinessID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Business");
+                });
+
             modelBuilder.Entity("BusinessSuite.DAL.Entities.Customer", b =>
                 {
                     b.HasOne("BusinessSuite.DAL.Entities.Business", "Business")
@@ -1003,7 +1090,19 @@ namespace BusinessSuite.DAL.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("BusinessSuite.DAL.Entities.Category", "Category")
+                        .WithMany()
+                        .HasForeignKey("CategoryID");
+
+                    b.HasOne("BusinessSuite.DAL.Entities.Vendor", "PreferredVendor")
+                        .WithMany()
+                        .HasForeignKey("PreferredVendorID");
+
                     b.Navigation("Business");
+
+                    b.Navigation("Category");
+
+                    b.Navigation("PreferredVendor");
                 });
 
             modelBuilder.Entity("BusinessSuite.DAL.Entities.PurchaseOrder", b =>
@@ -1042,6 +1141,25 @@ namespace BusinessSuite.DAL.Migrations
                     b.Navigation("Product");
 
                     b.Navigation("PurchaseOrder");
+                });
+
+            modelBuilder.Entity("BusinessSuite.DAL.Entities.StockTransaction", b =>
+                {
+                    b.HasOne("BusinessSuite.DAL.Entities.Business", "Business")
+                        .WithMany()
+                        .HasForeignKey("BusinessId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("BusinessSuite.DAL.Entities.Product", "Product")
+                        .WithMany()
+                        .HasForeignKey("ProductID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Business");
+
+                    b.Navigation("Product");
                 });
 
             modelBuilder.Entity("BusinessSuite.DAL.Entities.Vendor", b =>

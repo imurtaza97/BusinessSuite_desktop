@@ -443,7 +443,8 @@ public partial class InvoiceFormViewModel : ViewModelBase, INotifyDataErrorInfo
                     _business.State,
                     PlaceOfSupply ?? SelectedCustomer?.State);
 
-                if (IsComposition)
+                // Non-GST or Composition: No tax
+                if (!IsGstRegistered || IsComposition)
                 {
                     item.TaxAmount = 0;
                     item.CgstAmount = 0;

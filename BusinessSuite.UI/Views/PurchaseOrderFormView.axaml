@@ -142,7 +142,7 @@
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
 
-                            <DataGridTextColumn Header="HSN" Binding="{Binding HsnCode}" Width="80"/>
+                            <DataGridTextColumn Header="HSN" Binding="{Binding HsnCode}" Width="80" IsVisible="{Binding ((vm:PurchaseOrderFormViewModel)DataContext).ShowGstFields, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
                             <DataGridTemplateColumn Header="UOM" Width="80">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
@@ -178,18 +178,19 @@
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
 
-                            <DataGridTemplateColumn Header="Tax %" Width="100">
+                            <DataGridTemplateColumn Header="Tax %" Width="100" IsVisible="{Binding ((vm:PurchaseOrderFormViewModel)DataContext).ShowGstFields, RelativeSource={RelativeSource AncestorType=UserControl}}">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
                                         <ComboBox ItemsSource="{Binding TaxRates}" 
                                                   SelectedItem="{Binding TaxRate}" 
+                                                  IsEnabled="{Binding IsTaxEditable}"
                                                   HorizontalAlignment="Stretch"
                                                   BorderThickness="0"/>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
 
-                            <DataGridTextColumn Header="Tax Amt" Binding="{Binding TaxAmount, StringFormat=₹ \{0:N2\}}" IsReadOnly="True" Width="100"/>
+                            <DataGridTextColumn Header="Tax Amt" Binding="{Binding TaxAmount, StringFormat=₹ \{0:N2\}}" IsReadOnly="True" Width="100" IsVisible="{Binding ((vm:PurchaseOrderFormViewModel)DataContext).ShowGstFields, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
                             <DataGridTextColumn Header="Total" Binding="{Binding TotalAmount, StringFormat=₹ \{0:N2\}}" IsReadOnly="True" Width="120"/>
 
                             <DataGridTemplateColumn Width="50">
@@ -226,6 +227,17 @@
                         </StackPanel>
                     </Grid>
                     
+                    <StackPanel Spacing="10" Margin="0,0,0,10">
+                        <TextBlock Text="Vendor Bill Attachment (Optional)" FontWeight="Medium"/>
+                        <StackPanel Orientation="Horizontal" Spacing="10">
+                            <Button Content="Attach Bill (PDF/Image)" Click="OnAttachBillClicked" Background="#F3F4F6"/>
+                            <TextBlock Text="{Binding VendorBillFileName}" VerticalAlignment="Center" Foreground="#2563EB" 
+                                       IsVisible="{Binding VendorBillFileName, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+                            <Button Content="✕" Click="OnClearBillClicked" Foreground="#EF4444" Background="Transparent" 
+                                       IsVisible="{Binding VendorBillFileName, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+                        </StackPanel>
+                    </StackPanel>
+
                     <StackPanel Spacing="5">
                         <TextBlock Text="Notes" FontWeight="Medium"/>
                         <TextBox Text="{Binding Notes, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" Height="60" Watermark="Add internal notes..."/>
@@ -241,12 +253,12 @@
  
                 <!-- Right: Totals -->
                 <StackPanel Grid.Column="1" Spacing="10" Width="300">
-                    <Grid ColumnDefinitions="*, Auto" Margin="0,5">
+                    <Grid ColumnDefinitions="*, Auto" Margin="0,5" IsVisible="{Binding ShowGstFields}">
                         <TextBlock Text="Taxable Amount:"/>
                         <TextBlock Grid.Column="1" Text="{Binding TotalAmount, StringFormat=₹ \{0:N2\}}" FontWeight="SemiBold"/>
                     </Grid>
 
-                    <Separator Margin="0,5"/>
+                    <Separator Margin="0,5" IsVisible="{Binding ShowGstFields}"/>
                     
                     <StackPanel IsVisible="{Binding TotalCGST, Converter={StaticResource DecimalToBoolConverter}}">
                         <TextBlock Text="Tax Type: CGST + SGST" FontSize="11" Foreground="#3B82F6" Margin="0,2"/>
@@ -268,11 +280,11 @@
                         </Grid>
                     </StackPanel>
 
-                    <Grid ColumnDefinitions="*, Auto" Margin="0,5" IsVisible="{Binding IsGstRegistered}">
+                    <Grid ColumnDefinitions="*, Auto" Margin="0,5" IsVisible="{Binding ShowGstFields}">
                         <TextBlock Text="Total Tax:" FontWeight="Medium"/>
                         <TextBlock Grid.Column="1" Text="{Binding TotalTax, StringFormat=₹ \{0:N2\}}" FontWeight="SemiBold"/>
                     </Grid>
-                    <Separator Margin="0,5" IsVisible="{Binding IsGstRegistered}"/>
+                    <Separator Margin="0,5" IsVisible="{Binding ShowGstFields}"/>
 
                     <Grid ColumnDefinitions="*, Auto" Margin="0,5">
                         <TextBlock Text="Discount:"/>

@@ -1,4 +1,6 @@
 using System;
+using Avalonia;
+using Avalonia.Threading;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -19,13 +21,15 @@ public partial class HomeViewModel : ViewModelBase
 {
     private readonly int _businessId;
     private readonly ReportingService _reportingService;
-    private readonly ObservableCollection<double> _chartValues = new() { 0, 0, 0, 0, 0, 0 };
+    private readonly ObservableCollection<double> _chartValues = new() {0,0,0,0,0,0,0,0,0,0,0,0};
+    private readonly ObservableCollection<string> _chartLabels = new();
 
     [ObservableProperty] private decimal _totalSales;
     [ObservableProperty] private decimal _totalPurchases;
     [ObservableProperty] private decimal _netProfit;
     [ObservableProperty] private int _activeOrders;
     [ObservableProperty] private decimal _totalReceivable;
+    [ObservableProperty] private bool _isGstRegistered;
     [ObservableProperty] private ObservableCollection<BusinessSuite.DAL.Entities.Invoice> _recentActivity = new();
 
     // The Command definition that was missing
@@ -39,7 +43,7 @@ public partial class HomeViewModel : ViewModelBase
     {
         new Axis
         {
-            Labels = new string[] { "Jan", "Feb", "Mar", "Apr", "May", "Jun" },
+            Labels = Array.Empty<string>(), // Will be bound or updated
             MinStep = 1, // Add this to prevent 0.1, 0.2...
             ForceStepToMin = true, // Force it to stay on whole numbers
             LabelsRotation = 0,
@@ -50,7 +54,12 @@ public partial class HomeViewModel : ViewModelBase
     public HomeViewModel(int businessId)
     {
         _businessId = businessId;
-        _reportingService = new ReportingService(new AppDbContext());
+        var db = new AppDbContext();
+        _reportingService = new ReportingService(db);
+        
+        // Load business GST status
+        var business = db.Businesses.Find(businessId);
+        IsGstRegistered = business?.IsGSTRegistered ?? false;
         
         // Initialize Command
         LoadDashboardDataCommand = new AsyncRelayCommand(LoadDataAsync);
@@ -95,20 +104,20 @@ public partial class HomeViewModel : ViewModelBase
             }
 
             // Load trend data
-            var trend = await _reportingService.GetSalesAnalyticsAsync(_businessId, 6);
+            var trend = await _reportingService.GetSalesAnalyticsAsync(_businessId, DateTime.Now.Year);
             
             _chartValues.Clear();
-            if (trend == null || !trend.Any())
+            var labels = new List<string>();
+            
+            foreach (var point in trend)
             {
-                for (int i = 0; i < 6; i++) _chartValues.Add(0);
+                _chartValues.Add(point.Value);
+                labels.Add(point.Label);
             }
-            else
-            {
-                foreach (var point in trend)
-                {
-                    _chartValues.Add(point.Value);
-                }
-            }
+
+            await Dispatcher.UIThread.InvokeAsync(() => {
+                XAxes[0].Labels = labels.ToArray();
+            });
         }
         catch (Exception ex)
         {

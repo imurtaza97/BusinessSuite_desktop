@@ -39,27 +39,39 @@ public class ReportingService
     }
 
     // Inside ReportingService.cs
-    public async Task<List<ChartDataPoint>> GetSalesAnalyticsAsync(int businessId, int months = 6)
+    public async Task<List<ChartDataPoint>> GetSalesAnalyticsAsync(int businessId, int year = 0)
     {
-        var startDate = DateTime.Now.AddMonths(-months);
+        if (year == 0) year = DateTime.Now.Year;
+        
+        var startDate = new DateTime(year, 1, 1);
+        var endDate = new DateTime(year, 12, 31, 23, 59, 59);
         
         var salesData = await _context.Invoices
-            .Where(i => i.BusinessID == businessId && i.Status != "Cancelled" && i.InvoiceDate >= startDate)
+            .Where(i => i.BusinessID == businessId && i.Status != "Cancelled" && 
+                        i.InvoiceDate >= startDate && i.InvoiceDate <= endDate)
             .GroupBy(i => new { i.InvoiceDate.Year, i.InvoiceDate.Month })
             .Select(g => new 
             {
-                Date = new DateTime(g.Key.Year, g.Key.Month, 1),
-                // MUST CAST TO DOUBLE FOR SQLITE
+                Year = g.Key.Year,
+                Month = g.Key.Month,
                 Total = g.Sum(i => (double)i.GrandTotal) 
             })
             .ToListAsync();
+
+        var result = new List<ChartDataPoint>();
+        for (int m = 1; m <= 12; m++)
+        {
+            var monthData = salesData.FirstOrDefault(d => d.Month == m);
+            var date = new DateTime(year, m, 1);
+            result.Add(new ChartDataPoint
+            {
+                Date = date,
+                Label = date.ToString("MMM"),
+                Value = monthData?.Total ?? 0
+            });
+        }
                 
-        return salesData.Select(x => new ChartDataPoint 
-        { 
-            Date = x.Date,
-            Label = x.Date.ToString("MMM"),
-            Value = x.Total // Already double
-        }).OrderBy(x => x.Date).ToList();
+        return result.OrderBy(x => x.Date).ToList();
     }
 
     public async Task<List<VendorPerformanceStats>> GetVendorPerformanceAsync(int businessId)

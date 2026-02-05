@@ -29,6 +29,7 @@ public partial class PurchaseOrdersViewModel : ViewModelBase
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(PrintPOCommand))]
+    [NotifyCanExecuteChangedFor(nameof(ViewBillCommand))]
     private PurchaseOrder? _selectedPO;
 
     [ObservableProperty]
@@ -70,6 +71,7 @@ public partial class PurchaseOrdersViewModel : ViewModelBase
         EditPOCommand = new AsyncRelayCommand(EditPOAsync);
         DeletePOCommand = new AsyncRelayCommand(DeletePOAsync);
         PrintPOCommand = new AsyncRelayCommand(PrintPOAsync);
+        ViewBillCommand = new RelayCommand(ViewBill, CanViewBill);
         RefreshCommand = new AsyncRelayCommand(LoadPOsAsync);
     }
 
@@ -78,6 +80,7 @@ public partial class PurchaseOrdersViewModel : ViewModelBase
     public IAsyncRelayCommand EditPOCommand { get; }
     public IAsyncRelayCommand DeletePOCommand { get; }
     public IAsyncRelayCommand PrintPOCommand { get; }
+    public IRelayCommand ViewBillCommand { get; }
     public IAsyncRelayCommand RefreshCommand { get; }
 
     public event Action<PurchaseOrder?>? RequestPOForm;
@@ -189,4 +192,15 @@ public partial class PurchaseOrdersViewModel : ViewModelBase
             IsBusy = false;
         }
     }
+
+    private void ViewBill()
+    {
+        if (SelectedPO?.VendorBillPath != null)
+        {
+            var storage = new FileStorageService();
+            storage.OpenFile(SelectedPO.VendorBillPath);
+        }
+    }
+
+    private bool CanViewBill() => SelectedPO != null && !string.IsNullOrEmpty(SelectedPO.VendorBillPath);
 }

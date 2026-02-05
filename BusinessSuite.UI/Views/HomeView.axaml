@@ -51,7 +51,7 @@
             <!-- Sales Trend Chart -->
             <Border Background="White" CornerRadius="12" BoxShadow="0 4 15 0 #0A000000" Padding="20">
                 <StackPanel>
-                    <TextBlock Text="Sales Trend (Last 6 Months)" FontSize="16" FontWeight="SemiBold" Foreground="#333333" Margin="0,0,0,15"/>
+                    <TextBlock Text="Sales Trend (Current Year)" FontSize="16" FontWeight="SemiBold" Foreground="#333333" Margin="0,0,0,15"/>
                     <lvc:CartesianChart Series="{Binding SalesTrendSeries}" XAxes="{Binding XAxes}" Height="250"/>
                 </StackPanel>
             </Border>

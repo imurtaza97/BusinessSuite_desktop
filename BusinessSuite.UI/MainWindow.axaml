@@ -5,7 +5,48 @@
         xmlns:views="clr-namespace:BusinessSuite.UI.Views"
         mc:Ignorable="d" d:DesignWidth="1200" d:DesignHeight="800"
         x:Class="BusinessSuite.UI.MainWindow"
+        xmlns:vm="clr-namespace:BusinessSuite.UI.ViewModels"
+        x:DataType="vm:DashboardViewModel"
         Title="BusinessSuite - Smart GST Billing"
         WindowStartupLocation="CenterScreen">
-    <views:DashboardView />
+    <NativeMenu.Menu>
+        <NativeMenu>
+            <NativeMenuItem Header="File">
+                <NativeMenu>
+                    <NativeMenuItem Header="New Invoice" Command="{Binding NavigateCommand}" CommandParameter="InvoiceForm" />
+                    <NativeMenuItem Header="New Purchase Order" Command="{Binding NavigateCommand}" CommandParameter="PurchaseOrderForm" />
+                    <NativeMenuItem Header="New Product" Command="{Binding NavigateCommand}" CommandParameter="ProductForm" />
+                    <NativeMenuItemSeparator />
+                    <NativeMenuItem Header="Preferences..." Command="{Binding NavigateCommand}" CommandParameter="Settings" />
+                    <NativeMenuItemSeparator />
+                    <NativeMenuItem Header="Quit BusinessSuite" Command="{Binding ExitCommand}" />
+                </NativeMenu>
+            </NativeMenuItem>
+            <NativeMenuItem Header="Help">
+                <NativeMenu>
+                    <NativeMenuItem Header="About BusinessSuite" Command="{Binding AboutCommand}" />
+                </NativeMenu>
+            </NativeMenuItem>
+        </NativeMenu>
+    </NativeMenu.Menu>
+
+    <DockPanel>
+        <!-- Standard Menu for Windows/Linux -->
+        <Menu DockPanel.Dock="Top" IsVisible="{OnPlatform Default=True, macOS=False}">
+            <MenuItem Header="_File">
+                <MenuItem Header="_New Invoice" Command="{Binding NavigateCommand}" CommandParameter="InvoiceForm" HotKey="Ctrl+N" />
+                <MenuItem Header="_New Purchase Order" Command="{Binding NavigateCommand}" CommandParameter="PurchaseOrderForm" />
+                <MenuItem Header="_New Product" Command="{Binding NavigateCommand}" CommandParameter="ProductForm" />
+                <Separator />
+                <MenuItem Header="_Settings" Command="{Binding NavigateCommand}" CommandParameter="Settings" />
+                <Separator />
+                <MenuItem Header="E_xit" Command="{Binding ExitCommand}" />
+            </MenuItem>
+            <MenuItem Header="_Help">
+                <MenuItem Header="_About BusinessSuite" Command="{Binding AboutCommand}" />
+            </MenuItem>
+        </Menu>
+
+        <views:DashboardView />
+    </DockPanel>
 </Window>

@@ -21,12 +21,18 @@ public partial class ReportsViewModel : ViewModelBase
     [ObservableProperty] private DateTimeOffset? _startDate = DateTimeOffset.Now.AddMonths(-1);
     [ObservableProperty] private DateTimeOffset? _endDate = DateTimeOffset.Now;
     [ObservableProperty] private bool _isLoading;
+    [ObservableProperty] private bool _isGstRegistered;
 
     public ReportsViewModel(int businessId)
     {
         _businessId = businessId;
-        _reportingService = new ReportingService(new AppDbContext());
+        var db = new AppDbContext();
+        _reportingService = new ReportingService(db);
         LoadReportsCommand = new AsyncRelayCommand(LoadDataAsync);
+
+        // Load business GST status
+        var business = db.Businesses.Find(businessId);
+        IsGstRegistered = business?.IsGSTRegistered ?? false;
     }
 
     public IAsyncRelayCommand LoadReportsCommand { get; }

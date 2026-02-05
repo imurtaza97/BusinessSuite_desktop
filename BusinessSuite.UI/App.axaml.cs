@@ -41,11 +41,19 @@ public partial class App : Application
 
                 if (!licenseExists)
                 {
-                    var dbFactory = new SimpleDbContextFactory();
-                    desktop.MainWindow = new ActivationForm 
-                    { 
-                        DataContext = new ActivationFormViewModel(dbFactory, new ActivationService(dbFactory)) 
+                    var agreementVm = new LegalAgreementViewModel();
+                    var agreementWin = new LegalAgreementView { DataContext = agreementVm };
+                    agreementVm.OnAccepted += () => 
+                    {
+                        var dbFactory = new SimpleDbContextFactory();
+                        desktop.MainWindow = new ActivationForm 
+                        { 
+                            DataContext = new ActivationFormViewModel(dbFactory, new ActivationService(dbFactory)) 
+                        };
+                        desktop.MainWindow.Show();
+                        agreementWin.Close();
                     };
+                    desktop.MainWindow = agreementWin;
                 }
                 else if (!businessExists)
                 {

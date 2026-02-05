@@ -1,4 +1,8 @@
 using System;
+using System.Threading.Tasks;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
 using System.Linq;
 using System.Collections.ObjectModel;
 using BusinessSuite.DAL.Data;
@@ -44,6 +48,9 @@ public partial class DashboardViewModel : ViewModelBase
     private string _currentUserType = "User";
 
     [ObservableProperty]
+    private bool _isGstRegistered;
+
+    [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsDashboardActive))]
     [NotifyPropertyChangedFor(nameof(IsProductsActive))]
     [NotifyPropertyChangedFor(nameof(IsCustomersActive))]
@@ -74,6 +81,7 @@ public partial class DashboardViewModel : ViewModelBase
         {
             BusinessName = business.BusinessName;
             _businessId = business.BusinessID;
+            IsGstRegistered = business.IsGSTRegistered;
         }
 
         Navigate("Dashboard");
@@ -85,6 +93,7 @@ public partial class DashboardViewModel : ViewModelBase
         CurrentUserName = "Admin";
         BusinessName = "My Tech Store";
         CurrentUserType = "Admin";
+        IsGstRegistered = true;
         NavigateInternal("Dashboard");
     }
 
@@ -153,6 +162,24 @@ public partial class DashboardViewModel : ViewModelBase
                 CurrentView = reportsVm;
                 _ = reportsVm.LoadReportsCommand.ExecuteAsync(null);
                 break;
+            case "ProductForm":
+                OpenProductForm();
+                break;
+        }
+    }
+
+    private async void OpenProductForm()
+    {
+        var vm = new ProductFormViewModel(_businessId);
+        var win = new ProductFormWindow { DataContext = vm };
+        if (Avalonia.Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+        {
+            await win.ShowDialog<Product?>(desktop.MainWindow!);
+            // We don't necessarily need to navigate away, just refresh if we are on Products view
+            if (CurrentView is ProductsViewModel pvm)
+            {
+                _ = pvm.LoadProductsCommand.ExecuteAsync(null);
+            }
         }
     }
 
@@ -160,6 +187,25 @@ public partial class DashboardViewModel : ViewModelBase
     private void Logout()
     {
         RequestLogout?.Invoke();
+    }
+
+    [RelayCommand]
+    private void Exit()
+    {
+        if (Avalonia.Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+        {
+            desktop.Shutdown();
+        }
+    }
+
+    [RelayCommand]
+    private async Task About()
+    {
+        var win = new AboutView();
+        if (Avalonia.Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+        {
+            await win.ShowDialog(desktop.MainWindow!);
+        }
     }
 
     public event Action? RequestLogout;

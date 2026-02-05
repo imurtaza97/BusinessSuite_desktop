@@ -21,7 +21,13 @@
                     <TextBlock Text="Smart GST Billing" 
                                FontSize="12" 
                                Foreground="#6B7280" 
-                               HorizontalAlignment="Center"/>
+                               HorizontalAlignment="Center"
+                               IsVisible="{Binding IsGstRegistered}"/>
+                    <TextBlock Text="Smart Billing" 
+                               FontSize="12" 
+                               Foreground="#6B7280" 
+                               HorizontalAlignment="Center"
+                               IsVisible="{Binding !IsGstRegistered}"/>
                 </StackPanel>
 
                 <StackPanel Spacing="5" Margin="0,0,0,0">
@@ -38,6 +44,7 @@
                 <Button DockPanel.Dock="Bottom" 
                         Classes="MenuButtonLogout" 
                         Content="Logout" 
+                        Command="{Binding LogoutCommand}"
                         VerticalAlignment="Bottom" 
                         Margin="0,0,0,20"/>
             </DockPanel>

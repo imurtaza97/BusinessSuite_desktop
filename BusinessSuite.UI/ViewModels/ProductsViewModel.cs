@@ -22,6 +22,12 @@ public partial class ProductsViewModel : ViewModelBase
     private ObservableCollection<Product> _products = new();
 
     [ObservableProperty]
+    private ObservableCollection<Category> _categories = new();
+
+    [ObservableProperty]
+    private Category? _selectedCategory;
+
+    [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(EditProductCommand))]
     [NotifyCanExecuteChangedFor(nameof(DeleteProductCommand))]
     private Product? _selectedProduct;
@@ -31,26 +37,27 @@ public partial class ProductsViewModel : ViewModelBase
 
     private List<Product> _allProducts = new();
 
-    partial void OnSearchQueryChanged(string value)
-    {
-        ApplyFilter();
-    }
+    partial void OnSearchQueryChanged(string value) => ApplyFilter();
+    partial void OnSelectedCategoryChanged(Category? value) => ApplyFilter();
 
     private void ApplyFilter()
     {
-        if (string.IsNullOrWhiteSpace(SearchQuery))
-        {
-            Products = new ObservableCollection<Product>(_allProducts);
-        }
-        else
+        var filtered = _allProducts.AsEnumerable();
+
+        if (!string.IsNullOrWhiteSpace(SearchQuery))
         {
             var query = SearchQuery.ToLower();
-            var filtered = _allProducts.Where(p => 
+            filtered = filtered.Where(p => 
                 (p.ProductName?.ToLower().Contains(query) ?? false) || 
-                (p.SKU?.ToLower().Contains(query) ?? false))
-                .ToList();
-            Products = new ObservableCollection<Product>(filtered);
+                (p.SKU?.ToLower().Contains(query) ?? false));
         }
+
+        if (SelectedCategory != null)
+        {
+            filtered = filtered.Where(p => p.CategoryID == SelectedCategory.CategoryID);
+        }
+
+        Products = new ObservableCollection<Product>(filtered);
     }
 
     [ObservableProperty]
@@ -66,6 +73,22 @@ public partial class ProductsViewModel : ViewModelBase
         AddProductCommand = new AsyncRelayCommand(AddProductAsync);
         EditProductCommand = new AsyncRelayCommand(EditProductAsync, () => SelectedProduct != null);
         DeleteProductCommand = new AsyncRelayCommand(DeleteProductAsync, () => SelectedProduct != null);
+        ClearCategoryFilterCommand = new RelayCommand(() => SelectedCategory = null);
+
+        _ = LoadCategoriesAsync(db);
+    }
+
+    public IRelayCommand ClearCategoryFilterCommand { get; }
+
+    private async Task LoadCategoriesAsync(AppDbContext db)
+    {
+        var repo = new CategoryRepository(db);
+        var categories = await repo.GetAllAsync(_businessId);
+        await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
+        {
+            Categories.Clear();
+            foreach (var c in categories) Categories.Add(c);
+        });
     }
 
     public IAsyncRelayCommand LoadProductsCommand { get; }

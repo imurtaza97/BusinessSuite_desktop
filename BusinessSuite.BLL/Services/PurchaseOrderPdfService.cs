@@ -15,6 +15,7 @@ public class PurchaseOrderPdfService
         QuestPDF.Settings.License = LicenseType.Community;
 
         bool isInterState = po.TotalIGST > 0;
+        bool hasTax = po.TotalTax > 0;
 
         Document.Create(container =>
         {
@@ -116,15 +117,18 @@ public class PurchaseOrderPdfService
                         {
                             columns.ConstantColumn(25);
                             columns.RelativeColumn(3);
-                            columns.ConstantColumn(40);
+                            if (hasTax) columns.ConstantColumn(40); // HSN
                             columns.ConstantColumn(30);
                             columns.ConstantColumn(30);
                             columns.ConstantColumn(55);
                             columns.ConstantColumn(35);
                             columns.ConstantColumn(60);
 
-                            if (isInterState) columns.ConstantColumn(65);
-                            else { columns.ConstantColumn(55); columns.ConstantColumn(55); }
+                            if (hasTax)
+                            {
+                                if (isInterState) columns.ConstantColumn(65);
+                                else { columns.ConstantColumn(55); columns.ConstantColumn(55); }
+                            }
 
                             columns.ConstantColumn(70);
                         });
@@ -133,18 +137,21 @@ public class PurchaseOrderPdfService
                         {
                             header.Cell().Element(HeaderStyle).Text("Sr.");
                             header.Cell().Element(HeaderStyle).Text("Description of Goods");
-                            header.Cell().Element(HeaderStyle).AlignCenter().Text("HSN");
+                            if (hasTax) header.Cell().Element(HeaderStyle).AlignCenter().Text("HSN");
                             header.Cell().Element(HeaderStyle).AlignCenter().Text("Qty");
                             header.Cell().Element(HeaderStyle).AlignCenter().Text("Unit");
                             header.Cell().Element(HeaderStyle).AlignRight().Text("Rate");
                             header.Cell().Element(HeaderStyle).AlignCenter().Text("Disc%");
                             header.Cell().Element(HeaderStyle).AlignRight().Text("Taxable");
 
-                            if (isInterState) header.Cell().Element(HeaderStyle).AlignCenter().Text("IGST");
-                            else
+                            if (hasTax)
                             {
-                                header.Cell().Element(HeaderStyle).AlignCenter().Text("CGST");
-                                header.Cell().Element(HeaderStyle).AlignCenter().Text("SGST");
+                                if (isInterState) header.Cell().Element(HeaderStyle).AlignCenter().Text("IGST");
+                                else
+                                {
+                                    header.Cell().Element(HeaderStyle).AlignCenter().Text("CGST");
+                                    header.Cell().Element(HeaderStyle).AlignCenter().Text("SGST");
+                                }
                             }
                             header.Cell().Element(HeaderStyle).AlignRight().Text("Amount");
 
@@ -160,18 +167,21 @@ public class PurchaseOrderPdfService
 
                             table.Cell().Element(CellStyle).AlignCenter().Text((index + 1).ToString());
                             table.Cell().Element(CellStyle).Text(item.Product?.ProductName ?? "");
-                            table.Cell().Element(CellStyle).AlignCenter().Text(item.HSNCode ?? "");
+                            if (hasTax) table.Cell().Element(CellStyle).AlignCenter().Text(item.HSNCode ?? "");
                             table.Cell().Element(CellStyle).AlignCenter().Text(item.Quantity.ToString("N0"));
                             table.Cell().Element(CellStyle).AlignCenter().Text(item.Unit ?? "");
                             table.Cell().Element(CellStyle).AlignRight().Text(item.UnitPrice.ToString("N2"));
                             table.Cell().Element(CellStyle).AlignCenter().Text(dPerc > 0 ? $"{dPerc:N1}%" : "-");
                             table.Cell().Element(CellStyle).AlignRight().Text(taxableValue.ToString("N2"));
 
-                            if (isInterState) table.Cell().Element(CellStyle).AlignCenter().Text($"{item.TaxRate}%\n{item.IGST_Amount:N2}");
-                            else
+                            if (hasTax)
                             {
-                                table.Cell().Element(CellStyle).AlignCenter().Text($"{item.TaxRate / 2}%\n{item.CGST_Amount:N2}");
-                                table.Cell().Element(CellStyle).AlignCenter().Text($"{item.TaxRate / 2}%\n{item.SGST_Amount:N2}");
+                                if (isInterState) table.Cell().Element(CellStyle).AlignCenter().Text($"{item.TaxRate}%\n{item.IGST_Amount:N2}");
+                                else
+                                {
+                                    table.Cell().Element(CellStyle).AlignCenter().Text($"{item.TaxRate / 2}%\n{item.CGST_Amount:N2}");
+                                    table.Cell().Element(CellStyle).AlignCenter().Text($"{item.TaxRate / 2}%\n{item.SGST_Amount:N2}");
+                                }
                             }
 
                             table.Cell().Element(CellStyle).AlignRight().Text(rowTotal.ToString("N2"));
@@ -205,12 +215,15 @@ public class PurchaseOrderPdfService
 
                             AddSummaryRow("Sub Total", po.TotalAmount.ToString("N2"));
 
-                            if (isInterState)
-                                AddSummaryRow("Total IGST", po.TotalIGST.ToString("N2"));
-                            else
+                            if (hasTax)
                             {
-                                AddSummaryRow("Total CGST", po.TotalCGST.ToString("N2"));
-                                AddSummaryRow("Total SGST", po.TotalSGST.ToString("N2"));
+                                if (isInterState)
+                                    AddSummaryRow("Total IGST", po.TotalIGST.ToString("N2"));
+                                else
+                                {
+                                    AddSummaryRow("Total CGST", po.TotalCGST.ToString("N2"));
+                                    AddSummaryRow("Total SGST", po.TotalSGST.ToString("N2"));
+                                }
                             }
 
                             if (po.Discount > 0)

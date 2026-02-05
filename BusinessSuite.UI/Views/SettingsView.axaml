@@ -165,6 +165,43 @@
                             </StackPanel>
                         </Border>
                     </StackPanel>
+
+                    <!-- Data Management Section -->
+                    <StackPanel Spacing="20" IsVisible="{Binding SelectedSection, Converter={x:Static conv:StringEqualityConverter.Instance}, ConverterParameter='Data Management'}">
+                        <TextBlock Text="Data Management" FontSize="22" FontWeight="Bold"/>
+                        <TextBlock Text="Backup your data to a secure location or restore from a previous backup." Foreground="#6B7280"/>
+                        
+                        <Border Background="White" BorderBrush="#E5E7EB" BorderThickness="1" CornerRadius="8" Padding="25">
+                            <StackPanel Spacing="20">
+                                <StackPanel Spacing="10">
+                                    <TextBlock Text="Backup Database" FontSize="16" FontWeight="SemiBold"/>
+                                    <TextBlock Text="Export your entire database (including products, invoices, and settings) to a file." 
+                                               Foreground="#6B7280" FontSize="13" TextWrapping="Wrap"/>
+                                    <Button Content="Create Backup Now" Click="OnBackupClicked" 
+                                            Classes="Primary" HorizontalAlignment="Left" Margin="0,10,0,0"/>
+                                </StackPanel>
+
+                                <Separator Background="#E5E7EB"/>
+
+                                <StackPanel Spacing="10">
+                                    <TextBlock Text="Restore Database" FontSize="16" FontWeight="SemiBold"/>
+                                    <TextBlock Text="Warning: Restoring will overwrite all current data. This action cannot be undone." 
+                                               Foreground="#EF4444" FontSize="13" FontWeight="Medium" TextWrapping="Wrap"/>
+                                    <Button Content="Select Backup to Restore" Click="OnRestoreClicked"
+                                            BorderBrush="#EF4444" Foreground="#EF4444" BorderThickness="1"
+                                            Background="Transparent" HorizontalAlignment="Left" Margin="0,10,0,0"/>
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Background="#FEF3C7" BorderBrush="#F59E0B" BorderThickness="1" CornerRadius="8" Padding="15">
+                            <StackPanel Orientation="Horizontal" Spacing="10">
+                                <PathIcon Data="{StaticResource WarningIcon}" Foreground="#D97706" Width="20"/>
+                                <TextBlock Text="Tip: We recommend taking weekly backups and storing them on a separate drive or cloud storage." 
+                                           Foreground="#92400E" FontSize="13" VerticalAlignment="Center" TextWrapping="Wrap"/>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
                 </StackPanel>
             </ScrollViewer>
 

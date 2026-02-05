@@ -52,16 +52,39 @@
                         <TextBox Text="{Binding ProductHsnCode}" Watermark="HSN code"/>
                     </StackPanel>
                     <StackPanel Grid.Column="2" Margin="5,0,0,0">
-                        <TextBlock Text="Unit" Margin="0,0,0,5" FontWeight="Medium" Foreground="#374151"/>
+                        <TextBlock Text="Unit *" Margin="0,0,0,5" FontWeight="Medium" Foreground="#374151"/>
                         <ComboBox ItemsSource="{Binding UnitNames}" 
                                   SelectedItem="{Binding Unit}"
                                   HorizontalAlignment="Stretch"/>
                     </StackPanel>
                 </Grid>
 
+                <StackPanel Spacing="5">
+                    <TextBlock Text="Category *" FontWeight="Medium" Foreground="#374151"/>
+                    <Grid ColumnDefinitions="*, Auto">
+                        <ComboBox ItemsSource="{Binding Categories}" 
+                                  SelectedItem="{Binding SelectedCategory}"
+                                  PlaceholderText="Select category"
+                                  HorizontalAlignment="Stretch"/>
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="5" Margin="5,0,0,0">
+                            <TextBox Width="120" Text="{Binding NewCategoryName}" Watermark="New category..."/>
+                            <Button Content="+" Command="{Binding AddCategoryCommand}" VerticalAlignment="Stretch"/>
+                        </StackPanel>
+                    </Grid>
+                </StackPanel>
+
                 <StackPanel>
-                    <TextBlock Text="Category" Margin="0,0,0,5" FontWeight="Medium" Foreground="#374151"/>
-                    <TextBox Text="{Binding Category}" Watermark="e.g. Electronics, Grocery"/>
+                    <TextBlock Text="Preferred Vendor" Margin="0,0,0,5" FontWeight="Medium" Foreground="#374151"/>
+                    <ComboBox ItemsSource="{Binding Vendors}" 
+                              SelectedItem="{Binding SelectedPreferredVendor}"
+                              PlaceholderText="Select vendor (optional)"
+                              HorizontalAlignment="Stretch">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding VendorName}"/>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
                 </StackPanel>
 
                 <Grid ColumnDefinitions="*, *">

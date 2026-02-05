@@ -19,6 +19,7 @@
                     <Button Classes="Primary" Content="Create New PO" Command="{Binding AddPOCommand}"/>
                     <Button Content="Edit" Command="{Binding EditPOCommand}" IsEnabled="{Binding !!SelectedPO}"/>
                     <Button Content="Delete" Command="{Binding DeletePOCommand}" IsEnabled="{Binding !!SelectedPO}" Background="#EF4444" Foreground="White"/>
+                    <Button Content="View Bill" Command="{Binding ViewBillCommand}" IsEnabled="{Binding !!SelectedPO}" Background="#6366F1" Foreground="White" />
                     <Button Content="Download/Print" Command="{Binding PrintPOCommand}" IsEnabled="{Binding !!SelectedPO}" Background="#10B981" Foreground="White"/>
                 </StackPanel>
                 

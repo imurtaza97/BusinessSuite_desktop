@@ -101,6 +101,8 @@ public partial class PurchaseOrderFormViewModel : ViewModelBase, INotifyDataErro
     [ObservableProperty] private decimal _shippingCharges;
     [ObservableProperty] private bool _reverseCharge;
     [ObservableProperty] private string _status = "Issued";
+    [ObservableProperty] private string? _vendorBillPath;
+    [ObservableProperty] private string? _vendorBillFileName;
 
     private readonly int? _existingPOId;
 
@@ -108,7 +110,9 @@ public partial class PurchaseOrderFormViewModel : ViewModelBase, INotifyDataErro
     [ObservableProperty] private ObservableCollection<Vendor> _filteredVendors = new();
     [ObservableProperty] private string _vendorSearchQuery = string.Empty;
     [ObservableProperty] private bool _isVendorDropDownOpen;
-    [ObservableProperty] private Vendor? _selectedVendor;
+    [ObservableProperty] 
+    [NotifyPropertyChangedFor(nameof(ShowGstFields))]
+    private Vendor? _selectedVendor;
 
     [ObservableProperty] private ObservableCollection<Product> _products = new();
     [ObservableProperty] private ObservableCollection<UnitOfMeasure> _units = new();
@@ -128,6 +132,8 @@ public partial class PurchaseOrderFormViewModel : ViewModelBase, INotifyDataErro
     [ObservableProperty] private bool _isItemLevelDiscount;
 
     public bool IsGstRegistered => _business?.IsGSTRegistered ?? false;
+
+    public bool ShowGstFields => IsGstRegistered || (SelectedVendor != null && !string.Equals(SelectedVendor.GSTIN, "Unregistered", StringComparison.OrdinalIgnoreCase));
 
     public PurchaseOrderFormViewModel(int businessId, PurchaseOrder? existingPO = null)
     {
@@ -165,6 +171,9 @@ public partial class PurchaseOrderFormViewModel : ViewModelBase, INotifyDataErro
             ExpectedDeliveryDate = existingPO.ExpectedDeliveryDate;
             IsAutoRoundOff = existingPO.IsAutoRoundOff;
             IsItemLevelDiscount = existingPO.IsItemLevelDiscount;
+            VendorBillPath = existingPO.VendorBillPath;
+            if (!string.IsNullOrEmpty(VendorBillPath))
+                VendorBillFileName = System.IO.Path.GetFileName(VendorBillPath);
         }
         else
         {
@@ -290,6 +299,13 @@ public partial class PurchaseOrderFormViewModel : ViewModelBase, INotifyDataErro
     private void AddItem()
     {
         var item = new PurchaseOrderItemViewModel(Products, Units.ToList(), TaxRatesList);
+        
+        item.IsTaxEditable = ShowGstFields;
+        if (!ShowGstFields)
+        {
+            item.TaxRate = 0;
+        }
+
         item.PropertyChanged += Item_PropertyChanged;
         if (item.FilteredProducts.Count > 0)
             item.SelectedProduct = null;
@@ -370,6 +386,16 @@ public partial class PurchaseOrderFormViewModel : ViewModelBase, INotifyDataErro
                 _ignoreSearchUpdate = false;
             }
             IsVendorDropDownOpen = false;
+
+            // Lock tax to 0 if vendor is unregistered
+            foreach (var item in Items)
+            {
+                item.IsTaxEditable = ShowGstFields;
+                if (!ShowGstFields)
+                {
+                    item.TaxRate = 0;
+                }
+            }
         }
         CalculateTotals();
     }
@@ -403,10 +429,21 @@ public partial class PurchaseOrderFormViewModel : ViewModelBase, INotifyDataErro
                     _business.State,
                     PlaceOfSupply ?? SelectedVendor?.State);
 
-                item.TaxAmount = tax.TotalTaxAmount;
-                item.CgstAmount = tax.CGST;
-                item.SgstAmount = tax.SGST;
-                item.IgstAmount = tax.IGST;
+                // Non-GST Business & Non-GST Vendor: No tax
+                if (!ShowGstFields)
+                {
+                    item.TaxAmount = 0;
+                    item.CgstAmount = 0;
+                    item.SgstAmount = 0;
+                    item.IgstAmount = 0;
+                }
+                else
+                {
+                    item.TaxAmount = tax.TotalTaxAmount;
+                    item.CgstAmount = tax.CGST;
+                    item.SgstAmount = tax.SGST;
+                    item.IgstAmount = tax.IGST;
+                }
                 item.TotalAmount = discountedAmount + item.TaxAmount;
 
                 subTotal += itemBaseAmount;
@@ -495,6 +532,7 @@ public partial class PurchaseOrderFormViewModel : ViewModelBase, INotifyDataErro
             IsItemLevelDiscount = IsItemLevelDiscount,
             ExpectedDeliveryDate = ExpectedDeliveryDate,
             IsAutoRoundOff = IsAutoRoundOff,
+            VendorBillPath = VendorBillPath,
             Items = Items.Select(i => new PurchaseOrderItem
             {
                 ProductID = i.SelectedProduct!.ProductID,
@@ -532,6 +570,21 @@ public partial class PurchaseOrderFormViewModel : ViewModelBase, INotifyDataErro
     }
 
     private void Cancel() => RequestClose?.Invoke(null);
+
+    public async Task AttachBillAsync(string sourcePath)
+    {
+        try
+        {
+            var storage = new FileStorageService();
+            var savedPath = await storage.StoreBillAsync(sourcePath);
+            VendorBillPath = savedPath;
+            VendorBillFileName = System.IO.Path.GetFileName(sourcePath);
+        }
+        catch (Exception ex)
+        {
+            GeneralErrorMessage = "Failed to attach bill: " + ex.Message;
+        }
+    }
 }
 
 public partial class PurchaseOrderItemViewModel : ObservableObject
@@ -553,6 +606,7 @@ public partial class PurchaseOrderItemViewModel : ObservableObject
     [ObservableProperty] private decimal _igstAmount;
     [ObservableProperty] private decimal _totalAmount;
     [ObservableProperty] private string? _hsnCode;
+    [ObservableProperty] private bool _isTaxEditable = true;
     private string? _unit;
     public string? Unit
     {
@@ -664,6 +718,10 @@ public partial class PurchaseOrderItemViewModel : ObservableObject
 
             EnsureSelectedProductInFiltered();
             IsDropDownOpen = false;
+
+            // Check parent VM's selected vendor status
+            // Note: This requires accessing the parent VM or a flag. 
+            // For now, we'll rely on the parent VM setting it when adding items or changing vendors.
         }
     }
 }

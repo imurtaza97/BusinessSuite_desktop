@@ -131,7 +131,7 @@ public class InvoicePdfService
                             columns.ConstantColumn(30);
                             columns.ConstantColumn(55);
                             columns.ConstantColumn(35);
-                            if (!isComposition)
+                            if (isGstRegistered && !isComposition)
                             {
                                 columns.ConstantColumn(60); // Taxable Value
                                 if (isInterState) columns.ConstantColumn(65);
@@ -150,7 +150,7 @@ public class InvoicePdfService
                             header.Cell().Element(HeaderStyle).AlignCenter().Text("Unit");
                             header.Cell().Element(HeaderStyle).AlignRight().Text("Rate");
                             header.Cell().Element(HeaderStyle).AlignCenter().Text("Disc%");
-                            if (!isComposition)
+                            if (isGstRegistered && !isComposition)
                             {
                                 header.Cell().Element(HeaderStyle).AlignRight().Text("Taxable");
                                 if (isInterState) header.Cell().Element(HeaderStyle).AlignCenter().Text("IGST");
@@ -179,7 +179,7 @@ public class InvoicePdfService
                             table.Cell().Element(CellStyle).AlignCenter().Text(item.Unit ?? "");
                             table.Cell().Element(CellStyle).AlignRight().Text(item.UnitPrice.ToString("N2"));
                             table.Cell().Element(CellStyle).AlignCenter().Text(dPerc > 0 ? $"{dPerc:N1}%" : "-");
-                            if (!isComposition)
+                            if (isGstRegistered && !isComposition)
                             {
                                 table.Cell().Element(CellStyle).AlignRight().Text(taxableValue.ToString("N2"));
                                 if (isInterState) table.Cell().Element(CellStyle).AlignCenter().Text($"{item.TaxRate}%\n{item.IGST_Amount:N2}");
@@ -225,10 +225,10 @@ public class InvoicePdfService
                                 });
                             }
 
-                            if (!isComposition)
+                            if (isGstRegistered && !isComposition)
                                 AddSummaryRow("Sub Total", invoice.TotalAmount.ToString("N2"));
 
-                            if (!isComposition)
+                            if (isGstRegistered && !isComposition)
                             {
                                 if (isInterState)
                                     AddSummaryRow("Total IGST", invoice.TotalIGST.ToString("N2"));

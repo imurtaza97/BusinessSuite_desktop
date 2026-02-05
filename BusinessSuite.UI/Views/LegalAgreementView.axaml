@@ -1,0 +1,35 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:BusinessSuite.UI.ViewModels"
+        x:Class="BusinessSuite.UI.Views.LegalAgreementView"
+        x:DataType="vm:LegalAgreementViewModel"
+        Title="Software License Agreement"
+        Width="600" Height="700"
+        WindowStartupLocation="CenterScreen"
+        CanResize="False"
+        Background="#F4F7FC">
+
+    <DockPanel Margin="30">
+        <StackPanel DockPanel.Dock="Top" Spacing="10" Margin="0,0,0,20">
+            <TextBlock Text="BusinessSuite Installation" FontSize="24" FontWeight="Bold" Foreground="#1E293B"/>
+            <TextBlock Text="Please review the license agreement before continuing." FontSize="14" Foreground="#64748B"/>
+        </StackPanel>
+
+        <StackPanel DockPanel.Dock="Bottom" Spacing="20" Margin="0,20,0,0">
+            <CheckBox IsChecked="{Binding IsAccepted}" Content="I accept the terms and conditions of this agreement." />
+            
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="15">
+                <Button Content="Decline" Command="{Binding DeclineCommand}" Width="100" 
+                        Background="#E2E8F0" Foreground="#475569" HorizontalContentAlignment="Center"/>
+                <Button Content="Accept" Command="{Binding AcceptCommand}" IsEnabled="{Binding IsAccepted}" Width="100" 
+                        Background="#2563EB" Foreground="White" HorizontalContentAlignment="Center"/>
+            </StackPanel>
+        </StackPanel>
+
+        <Border Background="White" CornerRadius="8" BorderBrush="#E2E8F0" BorderThickness="1">
+            <ScrollViewer Padding="20">
+                <TextBlock Text="{Binding TermsContent}" TextWrapping="Wrap" FontSize="13" Foreground="#334155" LineHeight="20"/>
+            </ScrollViewer>
+        </Border>
+    </DockPanel>
+</Window>

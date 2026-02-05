@@ -18,6 +18,8 @@ public class AppDbContext : DbContext
     public DbSet<LicenseActivation> LicenseActivations => Set<LicenseActivation>();
     public DbSet<Settings> Settings => Set<Settings>();
     public DbSet<UnitOfMeasure> UnitsOfMeasure => Set<UnitOfMeasure>();
+    public DbSet<Category> Categories => Set<Category>();
+    public DbSet<StockTransaction> StockTransactions => Set<StockTransaction>();
 
     protected override void OnConfiguring(DbContextOptionsBuilder options)
     {

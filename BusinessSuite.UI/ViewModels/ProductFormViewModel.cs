@@ -18,6 +18,8 @@ namespace BusinessSuite.UI.ViewModels;
 public partial class ProductFormViewModel : ViewModelBase, INotifyDataErrorInfo
 {
     private readonly GstRateRepository _gstRateRepository;
+    private readonly CategoryRepository _categoryRepository;
+    private readonly VendorRepository _vendorRepository;
     private readonly Dictionary<string, List<string>> _errors = new();
     private readonly int _businessId;
     
@@ -63,8 +65,8 @@ public partial class ProductFormViewModel : ViewModelBase, INotifyDataErrorInfo
         if (ProductHsnCode?.Length > 20)
             AddError(nameof(ProductHsnCode), "HSN Code cannot exceed 20 characters");
 
-        if (Category?.Length > 50)
-            AddError(nameof(Category), "Category cannot exceed 50 characters");
+        if (SelectedCategory == null)
+            AddError(nameof(SelectedCategory), "Category is required");
 
         if (PurchasePrice <= 0)
             AddError(nameof(PurchasePrice), "Purchase Price must be greater than zero");
@@ -95,6 +97,9 @@ public partial class ProductFormViewModel : ViewModelBase, INotifyDataErrorInfo
     [ObservableProperty]
     private string _title = "Add Product";
 
+    [ObservableProperty]
+    private bool _isGstRegistered;
+
     private string _productName = string.Empty;
     public string ProductName
     {
@@ -121,31 +126,17 @@ public partial class ProductFormViewModel : ViewModelBase, INotifyDataErrorInfo
         }
     }
 
-    private string? _productHsnCode;
-    public string? ProductHsnCode
+    [ObservableProperty] private ObservableCollection<Category> _categories = new();
+    [ObservableProperty] private Category? _selectedCategory;
+    [ObservableProperty] private ObservableCollection<Vendor> _vendors = new();
+    [ObservableProperty] private Vendor? _selectedPreferredVendor;
+
+    partial void OnSelectedCategoryChanged(Category? value)
     {
-        get => _productHsnCode;
-        set 
-        {
-            if (SetProperty(ref _productHsnCode, value))
-            {
-                if (ValidationVisible) ValidateAll();
-            }
-        }
+        if (ValidationVisible) ValidateAll();
     }
 
-    private string? _category;
-    public string? Category
-    {
-        get => _category;
-        set 
-        {
-            if (SetProperty(ref _category, value))
-            {
-                if (ValidationVisible) ValidateAll();
-            }
-        }
-    }
+    [ObservableProperty] private string? _productHsnCode;
 
     private decimal _purchasePrice;
     public decimal PurchasePrice
@@ -227,11 +218,66 @@ public partial class ProductFormViewModel : ViewModelBase, INotifyDataErrorInfo
         _businessId = businessId;
         var db = new AppDbContext();
         _gstRateRepository = new GstRateRepository(db);
+        _categoryRepository = new CategoryRepository(db);
+        _vendorRepository = new VendorRepository(db);
+
         SaveCommand = new RelayCommand(Save);
         CancelCommand = new RelayCommand(Cancel);
+        AddCategoryCommand = new RelayCommand(AddCategory);
         LoadUnits(db);
+        
+        // Load business GST status
+        var business = db.Businesses.Find(businessId);
+        IsGstRegistered = business?.IsGSTRegistered ?? false;
+
         _ = LoadRatesAsync();
+        _ = LoadCategoriesAndVendorsAsync();
     }
+
+    public IRelayCommand AddCategoryCommand { get; }
+    [ObservableProperty] private string _newCategoryName = string.Empty;
+
+    private async void AddCategory()
+    {
+        if (string.IsNullOrWhiteSpace(NewCategoryName)) return;
+        
+        var category = new Category 
+        { 
+            BusinessID = _businessId, 
+            Name = NewCategoryName 
+        };
+        
+        if (await _categoryRepository.AddAsync(category))
+        {
+            Categories.Add(category);
+            SelectedCategory = category;
+            NewCategoryName = string.Empty;
+        }
+    }
+
+    private async Task LoadCategoriesAndVendorsAsync()
+    {
+        var categories = await _categoryRepository.GetAllAsync(_businessId);
+        var vendors = await _vendorRepository.GetAllAsync(_businessId);
+
+        await Dispatcher.UIThread.InvokeAsync(() =>
+        {
+            Categories.Clear();
+            foreach (var c in categories) Categories.Add(c);
+            
+            Vendors.Clear();
+            foreach (var v in vendors) Vendors.Add(v);
+
+            // Re-select if editing
+            if (_pendingCategoryId.HasValue)
+                SelectedCategory = Categories.FirstOrDefault(c => c.CategoryID == _pendingCategoryId);
+            if (_pendingVendorId.HasValue)
+                SelectedPreferredVendor = Vendors.FirstOrDefault(v => v.VendorID == _pendingVendorId);
+        });
+    }
+
+    private int? _pendingCategoryId;
+    private int? _pendingVendorId;
 
     private void LoadUnits(AppDbContext db)
     {
@@ -252,7 +298,8 @@ public partial class ProductFormViewModel : ViewModelBase, INotifyDataErrorInfo
         ProductName = product.ProductName;
         ProductSku = product.SKU;
         ProductHsnCode = product.HSNCode;
-        Category = product.Category;
+        _pendingCategoryId = product.CategoryID;
+        _pendingVendorId = product.PreferredVendorID;
         PurchasePrice = product.PurchasePrice;
         SalePrice = product.SalePrice;
         StockQty = product.StockQty;
@@ -336,7 +383,8 @@ public partial class ProductFormViewModel : ViewModelBase, INotifyDataErrorInfo
             ProductName = ProductName,
             SKU = ProductSku,
             HSNCode = ProductHsnCode,
-            Category = Category,
+            CategoryID = SelectedCategory?.CategoryID,
+            PreferredVendorID = SelectedPreferredVendor?.VendorID,
             PurchasePrice = PurchasePrice,
             SalePrice = SalePrice,
             StockQty = StockQty,

@@ -1,0 +1,11 @@
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+  BusinessSuite.DAL -> /Users/murtaza/Desktop/BusinessSuite_desktop/BusinessSuite.DAL/bin/Debug/net8.0/BusinessSuite.DAL.dll
+  BusinessSuite.BLL -> /Users/murtaza/Desktop/BusinessSuite_desktop/BusinessSuite.BLL/bin/Debug/net8.0/BusinessSuite.BLL.dll
+  BusinessSuite.UI -> /Users/murtaza/Desktop/BusinessSuite_desktop/BusinessSuite.UI/bin/Debug/net8.0/BusinessSuite.dll
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:01.24

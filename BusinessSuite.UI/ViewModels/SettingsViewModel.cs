@@ -19,7 +19,8 @@ public partial class SettingsViewModel : ViewModelBase
         "Profile", 
         "Tax & GST", 
         "Bank Details", 
-        "Units of Measure" 
+        "Units of Measure",
+        "Data Management"
     };
 
     [ObservableProperty] private string _businessName = string.Empty;
@@ -134,5 +135,37 @@ public partial class SettingsViewModel : ViewModelBase
         await db.SaveChangesAsync();
 
         Units.Remove(unit);
+    }
+
+    public async Task BackupDataAsync(string path)
+    {
+        try
+        {
+            var service = new BLL.Services.BackupService();
+            await service.BackupDatabaseAsync(path);
+            IsSuccess = true;
+            StatusMessage = "Backup created successfully!";
+        }
+        catch (Exception ex)
+        {
+            IsSuccess = false;
+            StatusMessage = "Backup failed: " + ex.Message;
+        }
+    }
+
+    public async Task RestoreDataAsync(string path)
+    {
+        try
+        {
+            var service = new BLL.Services.BackupService();
+            await service.RestoreDatabaseAsync(path);
+            IsSuccess = true;
+            StatusMessage = "Database restored successfully! Please restart the application.";
+        }
+        catch (Exception ex)
+        {
+            IsSuccess = false;
+            StatusMessage = "Restore failed: " + ex.Message;
+        }
     }
 }

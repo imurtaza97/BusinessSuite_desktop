@@ -75,6 +75,9 @@ public class PurchaseOrder
     [Column(TypeName = "decimal(18, 2)")]
     public decimal ShippingCharges { get; set; }
 
+    [MaxLength(500)]
+    public string? VendorBillPath { get; set; }
+
     public DateTime CreatedAt { get; set; } = DateTime.Now;
 
     [ForeignKey("BusinessId")]
