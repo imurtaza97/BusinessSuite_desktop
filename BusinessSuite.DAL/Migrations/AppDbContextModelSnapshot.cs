@@ -687,6 +687,31 @@ namespace BusinessSuite.DAL.Migrations
                     b.ToTable("Settings");
                 });
 
+            modelBuilder.Entity("BusinessSuite.DAL.Entities.Stock", b =>
+                {
+                    b.Property<int>("StockID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("ProductID")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("WarehouseID")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("StockID");
+
+                    b.HasIndex("WarehouseID");
+
+                    b.HasIndex("ProductID", "WarehouseID")
+                        .IsUnique();
+
+                    b.ToTable("Stocks");
+                });
+
             modelBuilder.Entity("BusinessSuite.DAL.Entities.StockTransaction", b =>
                 {
                     b.Property<int>("TransactionID")
@@ -709,6 +734,9 @@ namespace BusinessSuite.DAL.Migrations
                     b.Property<int?>("ReferenceID")
                         .HasColumnType("INTEGER");
 
+                    b.Property<int?>("ToWarehouseID")
+                        .HasColumnType("INTEGER");
+
                     b.Property<DateTime>("TransactionDate")
                         .HasColumnType("TEXT");
 
@@ -716,11 +744,18 @@ namespace BusinessSuite.DAL.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
+                    b.Property<int?>("WarehouseID")
+                        .HasColumnType("INTEGER");
+
                     b.HasKey("TransactionID");
 
                     b.HasIndex("BusinessId");
 
                     b.HasIndex("ProductID");
+
+                    b.HasIndex("ToWarehouseID");
+
+                    b.HasIndex("WarehouseID");
 
                     b.ToTable("StockTransactions");
                 });
@@ -1022,6 +1057,46 @@ namespace BusinessSuite.DAL.Migrations
                     b.ToTable("Vendors");
                 });
 
+            modelBuilder.Entity("BusinessSuite.DAL.Entities.Warehouse", b =>
+                {
+                    b.Property<int>("WarehouseID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Address")
+                        .HasMaxLength(255)
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("BusinessId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("City")
+                        .HasMaxLength(50)
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsMainWarehouse")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("State")
+                        .HasMaxLength(50)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("WarehouseName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ZipCode")
+                        .HasMaxLength(10)
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("WarehouseID");
+
+                    b.HasIndex("BusinessId");
+
+                    b.ToTable("Warehouses");
+                });
+
             modelBuilder.Entity("BusinessSuite.DAL.Entities.Category", b =>
                 {
                     b.HasOne("BusinessSuite.DAL.Entities.Business", "Business")
@@ -1143,6 +1218,25 @@ namespace BusinessSuite.DAL.Migrations
                     b.Navigation("PurchaseOrder");
                 });
 
+            modelBuilder.Entity("BusinessSuite.DAL.Entities.Stock", b =>
+                {
+                    b.HasOne("BusinessSuite.DAL.Entities.Product", "Product")
+                        .WithMany()
+                        .HasForeignKey("ProductID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("BusinessSuite.DAL.Entities.Warehouse", "Warehouse")
+                        .WithMany()
+                        .HasForeignKey("WarehouseID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Product");
+
+                    b.Navigation("Warehouse");
+                });
+
             modelBuilder.Entity("BusinessSuite.DAL.Entities.StockTransaction", b =>
                 {
                     b.HasOne("BusinessSuite.DAL.Entities.Business", "Business")
@@ -1157,12 +1251,35 @@ namespace BusinessSuite.DAL.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("BusinessSuite.DAL.Entities.Warehouse", "ToWarehouse")
+                        .WithMany()
+                        .HasForeignKey("ToWarehouseID");
+
+                    b.HasOne("BusinessSuite.DAL.Entities.Warehouse", "Warehouse")
+                        .WithMany()
+                        .HasForeignKey("WarehouseID");
+
                     b.Navigation("Business");
 
                     b.Navigation("Product");
+
+                    b.Navigation("ToWarehouse");
+
+                    b.Navigation("Warehouse");
                 });
 
             modelBuilder.Entity("BusinessSuite.DAL.Entities.Vendor", b =>
+                {
+                    b.HasOne("BusinessSuite.DAL.Entities.Business", "Business")
+                        .WithMany()
+                        .HasForeignKey("BusinessId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Business");
+                });
+
+            modelBuilder.Entity("BusinessSuite.DAL.Entities.Warehouse", b =>
                 {
                     b.HasOne("BusinessSuite.DAL.Entities.Business", "Business")
                         .WithMany()

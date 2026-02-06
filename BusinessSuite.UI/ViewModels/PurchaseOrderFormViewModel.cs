@@ -133,7 +133,7 @@ public partial class PurchaseOrderFormViewModel : ViewModelBase, INotifyDataErro
 
     public bool IsGstRegistered => _business?.IsGSTRegistered ?? false;
 
-    public bool ShowGstFields => IsGstRegistered || (SelectedVendor != null && !string.Equals(SelectedVendor.GSTIN, "Unregistered", StringComparison.OrdinalIgnoreCase));
+    public bool ShowGstFields => SelectedVendor?.GstTreatment?.Equals("Regular", StringComparison.OrdinalIgnoreCase) ?? false;
 
     public PurchaseOrderFormViewModel(int businessId, PurchaseOrder? existingPO = null)
     {
@@ -187,6 +187,7 @@ public partial class PurchaseOrderFormViewModel : ViewModelBase, INotifyDataErro
     public IAsyncRelayCommand AddProductCommand { get; }
 
     public List<string> PaymentMethodsList { get; } = new() { "Cash", "Bank Transfer", "UPI/QR", "Card", "Cheque" };
+    public List<string> StatusOptions { get; } = new() { "Issued", "Received", "Paid", "Cancelled" };
     public List<decimal> TaxRatesList { get; } = new() { 0, 5, 12, 18, 28 };
 
     public IAsyncRelayCommand AddVendorCommand { get; }

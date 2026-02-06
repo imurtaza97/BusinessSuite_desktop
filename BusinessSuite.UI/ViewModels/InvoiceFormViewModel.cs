@@ -185,6 +185,7 @@ public partial class InvoiceFormViewModel : ViewModelBase, INotifyDataErrorInfo
     public IAsyncRelayCommand AddProductCommand { get; }
 
     public List<string> PaymentMethodsList { get; } = new() { "Cash", "Bank Transfer", "UPI/QR", "Card", "Cheque" };
+    public List<string> StatusOptions { get; } = new() { "Unpaid", "Paid", "Partial", "Cancelled" };
     public List<decimal> TaxRatesList { get; } = new() { 0, 5, 12, 18, 28 };
 
     public IAsyncRelayCommand AddCustomerCommand { get; }

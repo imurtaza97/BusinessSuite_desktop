@@ -68,7 +68,7 @@
                 </Border>
                 
                 <Border Background="White" BorderBrush="#E5E7EB" BorderThickness="1" CornerRadius="8" Padding="20" Margin="0,10,0,0">
-                    <Grid ColumnDefinitions="*, *, *">
+                    <Grid ColumnDefinitions="*, *, *, *">
                         <StackPanel Grid.Column="0" Spacing="5" Margin="0,0,10,0">
                             <TextBlock Text="Date" FontWeight="Medium" Foreground="#374151"/>
                             <CalendarDatePicker SelectedDate="{Binding PoDate}" HorizontalAlignment="Stretch" SelectedDateFormat="Short"/>
@@ -79,7 +79,12 @@
                             <CalendarDatePicker SelectedDate="{Binding ExpectedDeliveryDate}" HorizontalAlignment="Stretch" SelectedDateFormat="Short"/>
                         </StackPanel>
 
-                        <StackPanel Grid.Column="2" Spacing="5" Margin="10,0,0,0">
+                        <StackPanel Grid.Column="2" Spacing="5" Margin="10,0,10,0">
+                            <TextBlock Text="Status" FontWeight="Medium" Foreground="#374151"/>
+                            <ComboBox ItemsSource="{Binding StatusOptions}" SelectedItem="{Binding Status}" HorizontalAlignment="Stretch"/>
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="3" Spacing="5" Margin="10,0,0,0">
                             <TextBlock Text="Reverse Charge" FontWeight="Medium" Foreground="#374151"/>
                             <ToggleSwitch OnContent="Yes" OffContent="No" IsChecked="{Binding ReverseCharge}"/>
                         </StackPanel>
@@ -260,24 +265,26 @@
 
                     <Separator Margin="0,5" IsVisible="{Binding ShowGstFields}"/>
                     
-                    <StackPanel IsVisible="{Binding TotalCGST, Converter={StaticResource DecimalToBoolConverter}}">
-                        <TextBlock Text="Tax Type: CGST + SGST" FontSize="11" Foreground="#3B82F6" Margin="0,2"/>
-                        <Grid ColumnDefinitions="*, Auto">
-                            <TextBlock Text="CGST:" FontWeight="Medium"/>
-                            <TextBlock Grid.Column="1" Text="{Binding TotalCGST, StringFormat=₹ \{0:N2\}}" FontWeight="SemiBold"/>
-                        </Grid>
-                        <Grid ColumnDefinitions="*, Auto" Margin="0,2,0,5">
-                            <TextBlock Text="SGST:" FontWeight="Medium"/>
-                            <TextBlock Grid.Column="1" Text="{Binding TotalSGST, StringFormat=₹ \{0:N2\}}" FontWeight="SemiBold"/>
-                        </Grid>
-                    </StackPanel>
-                    
-                    <StackPanel IsVisible="{Binding TotalIGST, Converter={StaticResource DecimalToBoolConverter}}">
-                        <TextBlock Text="Tax Type: IGST" FontSize="11" Foreground="#3B82F6" Margin="0,2"/>
-                        <Grid ColumnDefinitions="*, Auto" Margin="0,0,0,5">
-                            <TextBlock Text="IGST:" FontWeight="Medium"/>
-                            <TextBlock Grid.Column="1" Text="{Binding TotalIGST, StringFormat=₹ \{0:N2\}}" FontWeight="SemiBold"/>
-                        </Grid>
+                    <StackPanel IsVisible="{Binding ShowGstFields}">
+                        <StackPanel IsVisible="{Binding TotalCGST, Converter={StaticResource DecimalToBoolConverter}}">
+                            <TextBlock Text="Tax Type: CGST + SGST" FontSize="11" Foreground="#3B82F6" Margin="0,2"/>
+                            <Grid ColumnDefinitions="*, Auto">
+                                <TextBlock Text="CGST:" FontWeight="Medium"/>
+                                <TextBlock Grid.Column="1" Text="{Binding TotalCGST, StringFormat=₹ \{0:N2\}}" FontWeight="SemiBold"/>
+                            </Grid>
+                            <Grid ColumnDefinitions="*, Auto" Margin="0,2,0,5">
+                                <TextBlock Text="SGST:" FontWeight="Medium"/>
+                                <TextBlock Grid.Column="1" Text="{Binding TotalSGST, StringFormat=₹ \{0:N2\}}" FontWeight="SemiBold"/>
+                            </Grid>
+                        </StackPanel>
+                        
+                        <StackPanel IsVisible="{Binding TotalIGST, Converter={StaticResource DecimalToBoolConverter}}">
+                            <TextBlock Text="Tax Type: IGST" FontSize="11" Foreground="#3B82F6" Margin="0,2"/>
+                            <Grid ColumnDefinitions="*, Auto" Margin="0,0,0,5">
+                                <TextBlock Text="IGST:" FontWeight="Medium"/>
+                                <TextBlock Grid.Column="1" Text="{Binding TotalIGST, StringFormat=₹ \{0:N2\}}" FontWeight="SemiBold"/>
+                            </Grid>
+                        </StackPanel>
                     </StackPanel>
 
                     <Grid ColumnDefinitions="*, Auto" Margin="0,5" IsVisible="{Binding ShowGstFields}">

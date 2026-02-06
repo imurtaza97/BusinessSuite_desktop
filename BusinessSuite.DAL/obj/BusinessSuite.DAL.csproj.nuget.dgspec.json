@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "/Users/murtaza/Desktop/BusinessSuite_desktop/BusinessSuite.DAL/BusinessSuite.DAL.csproj": {}
+    "/Users/murtaza/Desktop/BusinessSuite/BusinessSuite_desktop/BusinessSuite.DAL/BusinessSuite.DAL.csproj": {}
   },
   "projects": {
-    "/Users/murtaza/Desktop/BusinessSuite_desktop/BusinessSuite.DAL/BusinessSuite.DAL.csproj": {
+    "/Users/murtaza/Desktop/BusinessSuite/BusinessSuite_desktop/BusinessSuite.DAL/BusinessSuite.DAL.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/Users/murtaza/Desktop/BusinessSuite_desktop/BusinessSuite.DAL/BusinessSuite.DAL.csproj",
+        "projectUniqueName": "/Users/murtaza/Desktop/BusinessSuite/BusinessSuite_desktop/BusinessSuite.DAL/BusinessSuite.DAL.csproj",
         "projectName": "BusinessSuite.DAL",
-        "projectPath": "/Users/murtaza/Desktop/BusinessSuite_desktop/BusinessSuite.DAL/BusinessSuite.DAL.csproj",
+        "projectPath": "/Users/murtaza/Desktop/BusinessSuite/BusinessSuite_desktop/BusinessSuite.DAL/BusinessSuite.DAL.csproj",
         "packagesPath": "/Users/murtaza/.nuget/packages/",
-        "outputPath": "/Users/murtaza/Desktop/BusinessSuite_desktop/BusinessSuite.DAL/obj/",
+        "outputPath": "/Users/murtaza/Desktop/BusinessSuite/BusinessSuite_desktop/BusinessSuite.DAL/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "/Users/murtaza/.nuget/NuGet/NuGet.Config"
@@ -60,6 +60,12 @@
             "Microsoft.EntityFrameworkCore.Sqlite": {
               "target": "Package",
               "version": "[8.0.4, )"
+            },
+            "Microsoft.NET.ILLink.Tasks": {
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[8.0.11, )",
+              "autoReferenced": true
             }
           },
           "imports": [
@@ -73,12 +79,27 @@
           ],
           "assetTargetFallback": true,
           "warn": true,
+          "downloadDependencies": [
+            {
+              "name": "Microsoft.AspNetCore.App.Runtime.osx-arm64",
+              "version": "[8.0.11, 8.0.11]"
+            },
+            {
+              "name": "Microsoft.NETCore.App.Runtime.osx-arm64",
+              "version": "[8.0.11, 8.0.11]"
+            }
+          ],
           "frameworkReferences": {
             "Microsoft.NETCore.App": {
               "privateAssets": "all"
             }
           },
           "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/8.0.404/PortableRuntimeIdentifierGraph.json"
+        }
+      },
+      "runtimes": {
+        "osx-arm64": {
+          "#import": []
         }
       }
     }

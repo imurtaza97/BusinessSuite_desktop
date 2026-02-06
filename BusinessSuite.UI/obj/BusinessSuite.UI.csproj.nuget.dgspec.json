@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "/Users/murtaza/Desktop/BusinessSuite_desktop/BusinessSuite.UI/BusinessSuite.UI.csproj": {}
+    "/Users/murtaza/Desktop/BusinessSuite/BusinessSuite_desktop/BusinessSuite.UI/BusinessSuite.UI.csproj": {}
   },
   "projects": {
-    "/Users/murtaza/Desktop/BusinessSuite_desktop/BusinessSuite.BLL/BusinessSuite.BLL.csproj": {
+    "/Users/murtaza/Desktop/BusinessSuite/BusinessSuite_desktop/BusinessSuite.BLL/BusinessSuite.BLL.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/Users/murtaza/Desktop/BusinessSuite_desktop/BusinessSuite.BLL/BusinessSuite.BLL.csproj",
+        "projectUniqueName": "/Users/murtaza/Desktop/BusinessSuite/BusinessSuite_desktop/BusinessSuite.BLL/BusinessSuite.BLL.csproj",
         "projectName": "BusinessSuite.BLL",
-        "projectPath": "/Users/murtaza/Desktop/BusinessSuite_desktop/BusinessSuite.BLL/BusinessSuite.BLL.csproj",
+        "projectPath": "/Users/murtaza/Desktop/BusinessSuite/BusinessSuite_desktop/BusinessSuite.BLL/BusinessSuite.BLL.csproj",
         "packagesPath": "/Users/murtaza/.nuget/packages/",
-        "outputPath": "/Users/murtaza/Desktop/BusinessSuite_desktop/BusinessSuite.BLL/obj/",
+        "outputPath": "/Users/murtaza/Desktop/BusinessSuite/BusinessSuite_desktop/BusinessSuite.BLL/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "/Users/murtaza/.nuget/NuGet/NuGet.Config"
@@ -26,8 +26,8 @@
           "net8.0": {
             "targetAlias": "net8.0",
             "projectReferences": {
-              "/Users/murtaza/Desktop/BusinessSuite_desktop/BusinessSuite.DAL/BusinessSuite.DAL.csproj": {
-                "projectPath": "/Users/murtaza/Desktop/BusinessSuite_desktop/BusinessSuite.DAL/BusinessSuite.DAL.csproj"
+              "/Users/murtaza/Desktop/BusinessSuite/BusinessSuite_desktop/BusinessSuite.DAL/BusinessSuite.DAL.csproj": {
+                "projectPath": "/Users/murtaza/Desktop/BusinessSuite/BusinessSuite_desktop/BusinessSuite.DAL/BusinessSuite.DAL.csproj"
               }
             }
           }
@@ -47,6 +47,12 @@
         "net8.0": {
           "targetAlias": "net8.0",
           "dependencies": {
+            "Microsoft.NET.ILLink.Tasks": {
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[8.0.11, )",
+              "autoReferenced": true
+            },
             "QuestPDF": {
               "target": "Package",
               "version": "[2025.12.3, )"
@@ -63,6 +69,16 @@
           ],
           "assetTargetFallback": true,
           "warn": true,
+          "downloadDependencies": [
+            {
+              "name": "Microsoft.AspNetCore.App.Runtime.osx-arm64",
+              "version": "[8.0.11, 8.0.11]"
+            },
+            {
+              "name": "Microsoft.NETCore.App.Runtime.osx-arm64",
+              "version": "[8.0.11, 8.0.11]"
+            }
+          ],
           "frameworkReferences": {
             "Microsoft.NETCore.App": {
               "privateAssets": "all"
@@ -70,16 +86,21 @@
           },
           "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/8.0.404/PortableRuntimeIdentifierGraph.json"
         }
+      },
+      "runtimes": {
+        "osx-arm64": {
+          "#import": []
+        }
       }
     },
-    "/Users/murtaza/Desktop/BusinessSuite_desktop/BusinessSuite.DAL/BusinessSuite.DAL.csproj": {
+    "/Users/murtaza/Desktop/BusinessSuite/BusinessSuite_desktop/BusinessSuite.DAL/BusinessSuite.DAL.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/Users/murtaza/Desktop/BusinessSuite_desktop/BusinessSuite.DAL/BusinessSuite.DAL.csproj",
+        "projectUniqueName": "/Users/murtaza/Desktop/BusinessSuite/BusinessSuite_desktop/BusinessSuite.DAL/BusinessSuite.DAL.csproj",
         "projectName": "BusinessSuite.DAL",
-        "projectPath": "/Users/murtaza/Desktop/BusinessSuite_desktop/BusinessSuite.DAL/BusinessSuite.DAL.csproj",
+        "projectPath": "/Users/murtaza/Desktop/BusinessSuite/BusinessSuite_desktop/BusinessSuite.DAL/BusinessSuite.DAL.csproj",
         "packagesPath": "/Users/murtaza/.nuget/packages/",
-        "outputPath": "/Users/murtaza/Desktop/BusinessSuite_desktop/BusinessSuite.DAL/obj/",
+        "outputPath": "/Users/murtaza/Desktop/BusinessSuite/BusinessSuite_desktop/BusinessSuite.DAL/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "/Users/murtaza/.nuget/NuGet/NuGet.Config"
@@ -128,6 +149,12 @@
             "Microsoft.EntityFrameworkCore.Sqlite": {
               "target": "Package",
               "version": "[8.0.4, )"
+            },
+            "Microsoft.NET.ILLink.Tasks": {
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[8.0.11, )",
+              "autoReferenced": true
             }
           },
           "imports": [
@@ -141,6 +168,16 @@
           ],
           "assetTargetFallback": true,
           "warn": true,
+          "downloadDependencies": [
+            {
+              "name": "Microsoft.AspNetCore.App.Runtime.osx-arm64",
+              "version": "[8.0.11, 8.0.11]"
+            },
+            {
+              "name": "Microsoft.NETCore.App.Runtime.osx-arm64",
+              "version": "[8.0.11, 8.0.11]"
+            }
+          ],
           "frameworkReferences": {
             "Microsoft.NETCore.App": {
               "privateAssets": "all"
@@ -148,16 +185,21 @@
           },
           "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/8.0.404/PortableRuntimeIdentifierGraph.json"
         }
+      },
+      "runtimes": {
+        "osx-arm64": {
+          "#import": []
+        }
       }
     },
-    "/Users/murtaza/Desktop/BusinessSuite_desktop/BusinessSuite.UI/BusinessSuite.UI.csproj": {
+    "/Users/murtaza/Desktop/BusinessSuite/BusinessSuite_desktop/BusinessSuite.UI/BusinessSuite.UI.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/Users/murtaza/Desktop/BusinessSuite_desktop/BusinessSuite.UI/BusinessSuite.UI.csproj",
+        "projectUniqueName": "/Users/murtaza/Desktop/BusinessSuite/BusinessSuite_desktop/BusinessSuite.UI/BusinessSuite.UI.csproj",
         "projectName": "BusinessSuite",
-        "projectPath": "/Users/murtaza/Desktop/BusinessSuite_desktop/BusinessSuite.UI/BusinessSuite.UI.csproj",
+        "projectPath": "/Users/murtaza/Desktop/BusinessSuite/BusinessSuite_desktop/BusinessSuite.UI/BusinessSuite.UI.csproj",
         "packagesPath": "/Users/murtaza/.nuget/packages/",
-        "outputPath": "/Users/murtaza/Desktop/BusinessSuite_desktop/BusinessSuite.UI/obj/",
+        "outputPath": "/Users/murtaza/Desktop/BusinessSuite/BusinessSuite_desktop/BusinessSuite.UI/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "/Users/murtaza/.nuget/NuGet/NuGet.Config"
@@ -172,11 +214,11 @@
           "net8.0": {
             "targetAlias": "net8.0",
             "projectReferences": {
-              "/Users/murtaza/Desktop/BusinessSuite_desktop/BusinessSuite.BLL/BusinessSuite.BLL.csproj": {
-                "projectPath": "/Users/murtaza/Desktop/BusinessSuite_desktop/BusinessSuite.BLL/BusinessSuite.BLL.csproj"
+              "/Users/murtaza/Desktop/BusinessSuite/BusinessSuite_desktop/BusinessSuite.BLL/BusinessSuite.BLL.csproj": {
+                "projectPath": "/Users/murtaza/Desktop/BusinessSuite/BusinessSuite_desktop/BusinessSuite.BLL/BusinessSuite.BLL.csproj"
               },
-              "/Users/murtaza/Desktop/BusinessSuite_desktop/BusinessSuite.DAL/BusinessSuite.DAL.csproj": {
-                "projectPath": "/Users/murtaza/Desktop/BusinessSuite_desktop/BusinessSuite.DAL/BusinessSuite.DAL.csproj"
+              "/Users/murtaza/Desktop/BusinessSuite/BusinessSuite_desktop/BusinessSuite.DAL/BusinessSuite.DAL.csproj": {
+                "projectPath": "/Users/murtaza/Desktop/BusinessSuite/BusinessSuite_desktop/BusinessSuite.DAL/BusinessSuite.DAL.csproj"
               }
             }
           }
@@ -209,6 +251,8 @@
               "version": "[11.3.10, )"
             },
             "Avalonia.Diagnostics": {
+              "include": "None",
+              "suppressParent": "All",
               "target": "Package",
               "version": "[11.3.10, )"
             },
@@ -246,6 +290,12 @@
               "target": "Package",
               "version": "[10.0.1, )"
             },
+            "Microsoft.NET.ILLink.Tasks": {
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[8.0.11, )",
+              "autoReferenced": true
+            },
             "ReactiveUI": {
               "target": "Package",
               "version": "[22.3.1, )"
@@ -262,12 +312,27 @@
           ],
           "assetTargetFallback": true,
           "warn": true,
+          "downloadDependencies": [
+            {
+              "name": "Microsoft.AspNetCore.App.Runtime.osx-arm64",
+              "version": "[8.0.11, 8.0.11]"
+            },
+            {
+              "name": "Microsoft.NETCore.App.Runtime.osx-arm64",
+              "version": "[8.0.11, 8.0.11]"
+            }
+          ],
           "frameworkReferences": {
             "Microsoft.NETCore.App": {
               "privateAssets": "all"
             }
           },
           "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/8.0.404/PortableRuntimeIdentifierGraph.json"
+        }
+      },
+      "runtimes": {
+        "osx-arm64": {
+          "#import": []
         }
       }
     }

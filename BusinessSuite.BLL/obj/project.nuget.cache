@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "kB1i3Zp3Vmo=",
+  "dgSpecHash": "3F00Cy3XBg4=",
   "success": true,
-  "projectFilePath": "/Users/murtaza/Desktop/BusinessSuite_desktop/BusinessSuite.BLL/BusinessSuite.BLL.csproj",
+  "projectFilePath": "/Users/murtaza/Desktop/BusinessSuite/BusinessSuite_desktop/BusinessSuite.BLL/BusinessSuite.BLL.csproj",
   "expectedPackageFiles": [
     "/Users/murtaza/.nuget/packages/bcrypt.net-next/4.0.3/bcrypt.net-next.4.0.3.nupkg.sha512",
     "/Users/murtaza/.nuget/packages/microsoft.data.sqlite.core/8.0.4/microsoft.data.sqlite.core.8.0.4.nupkg.sha512",
@@ -22,6 +22,7 @@
     "/Users/murtaza/.nuget/packages/microsoft.extensions.logging.abstractions/8.0.0/microsoft.extensions.logging.abstractions.8.0.0.nupkg.sha512",
     "/Users/murtaza/.nuget/packages/microsoft.extensions.options/8.0.0/microsoft.extensions.options.8.0.0.nupkg.sha512",
     "/Users/murtaza/.nuget/packages/microsoft.extensions.primitives/8.0.0/microsoft.extensions.primitives.8.0.0.nupkg.sha512",
+    "/Users/murtaza/.nuget/packages/microsoft.net.illink.tasks/8.0.11/microsoft.net.illink.tasks.8.0.11.nupkg.sha512",
     "/Users/murtaza/.nuget/packages/questpdf/2025.12.3/questpdf.2025.12.3.nupkg.sha512",
     "/Users/murtaza/.nuget/packages/sqlitepclraw.bundle_e_sqlite3/2.1.6/sqlitepclraw.bundle_e_sqlite3.2.1.6.nupkg.sha512",
     "/Users/murtaza/.nuget/packages/sqlitepclraw.core/2.1.6/sqlitepclraw.core.2.1.6.nupkg.sha512",
@@ -29,7 +30,9 @@
     "/Users/murtaza/.nuget/packages/sqlitepclraw.provider.e_sqlite3/2.1.6/sqlitepclraw.provider.e_sqlite3.2.1.6.nupkg.sha512",
     "/Users/murtaza/.nuget/packages/system.memory/4.5.3/system.memory.4.5.3.nupkg.sha512",
     "/Users/murtaza/.nuget/packages/system.text.encodings.web/8.0.0/system.text.encodings.web.8.0.0.nupkg.sha512",
-    "/Users/murtaza/.nuget/packages/system.text.json/8.0.0/system.text.json.8.0.0.nupkg.sha512"
+    "/Users/murtaza/.nuget/packages/system.text.json/8.0.0/system.text.json.8.0.0.nupkg.sha512",
+    "/Users/murtaza/.nuget/packages/microsoft.netcore.app.runtime.osx-arm64/8.0.11/microsoft.netcore.app.runtime.osx-arm64.8.0.11.nupkg.sha512",
+    "/Users/murtaza/.nuget/packages/microsoft.aspnetcore.app.runtime.osx-arm64/8.0.11/microsoft.aspnetcore.app.runtime.osx-arm64.8.0.11.nupkg.sha512"
   ],
   "logs": []
 }
