@@ -236,8 +236,10 @@ public partial class PurchaseOrderFormViewModel : ViewModelBase, INotifyDataErro
     {
         var nextNumber = "";
         if (existing == null)
-            nextNumber = await _poRepository.GetNextPONumberAsync(_businessId);
-
+        {
+            var date = PoDate ?? DateTime.Now;
+            nextNumber = await _poRepository.GetNextPONumberAsync(_businessId, date);
+        }
         var vendorsList = await _vendorRepository.GetAllAsync(_businessId);
         var productsList = await _productRepository.GetAllAsync(_businessId);
 

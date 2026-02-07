@@ -134,6 +134,15 @@ public partial class InvoiceFormViewModel : ViewModelBase, INotifyDataErrorInfo
     public bool IsRegularScheme => IsGstRegistered && !IsComposition;
     public string TotalInWords => BLL.Services.NumberToWordsConverter.ConvertToWords(GrandTotal).ToUpper();
 
+    private static string GetFinancialYear(DateTime date)
+    {
+        if (date.Month >= 4)
+            return $"{date.Year % 100}-{(date.Year + 1) % 100}";
+        else
+            return $"{(date.Year - 1) % 100}-{date.Year % 100}";
+    }
+
+
     public InvoiceFormViewModel(int businessId, Invoice? existingInvoice = null)
     {
         _businessId = businessId;
@@ -236,7 +245,12 @@ public partial class InvoiceFormViewModel : ViewModelBase, INotifyDataErrorInfo
         var nextNumber = "";
         if (existing == null)
         {
-            string prefix = IsComposition ? "BOS-" : "INV-";
+            var fy = GetFinancialYear(InvoiceDate ?? DateTime.Now);
+
+            string prefix = IsComposition
+                ? $"BOS/{fy}/"
+                : $"INV/{fy}/";
+
             nextNumber = await _invoiceRepository.GetNextInvoiceNumberAsync(_businessId, prefix);
         }
 

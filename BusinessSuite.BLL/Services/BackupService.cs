@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.IO.Compression;
 using System.Threading.Tasks;
 using BusinessSuite.DAL.Data;
 
@@ -7,29 +8,57 @@ namespace BusinessSuite.BLL.Services;
 
 public class BackupService
 {
-    public Task BackupDatabaseAsync(string destinationPath)
+    public Task BackupDatabaseAsync(string zipPath)
     {
         return Task.Run(() =>
         {
-            var sourcePath = DatabasePathProvider.GetDatabasePath();
-            if (!File.Exists(sourcePath))
-                throw new FileNotFoundException("Source database file not found.");
+            var dbPath = DatabasePathProvider.GetDatabasePath();
 
-            File.Copy(sourcePath, destinationPath, true);
+            using var zip = ZipFile.Open(zipPath, ZipArchiveMode.Create);
+
+            AddIfExists(zip, dbPath);
+            AddIfExists(zip, dbPath + "-wal");
+            AddIfExists(zip, dbPath + "-shm");
         });
     }
 
-    public Task RestoreDatabaseAsync(string sourcePath)
+    private void AddIfExists(ZipArchive zip, string path)
+    {
+        if (File.Exists(path))
+            zip.CreateEntryFromFile(path, Path.GetFileName(path));
+    }
+
+    public Task RestoreDatabaseAsync(string zipPath)
     {
         return Task.Run(() =>
         {
-            var destinationPath = DatabasePathProvider.GetDatabasePath();
-            
-            // It's safer to delete the current one before copying if needed, 
-            // but File.Copy with overwrite true should work.
-            // Note: Restoring while the app is running might be tricky if the DB is locked.
-            // SQLite typically handles this but the user might need to restart.
-            File.Copy(sourcePath, destinationPath, true);
+            var dbPath = DatabasePathProvider.GetDatabasePath();
+            var dbDir = Path.GetDirectoryName(dbPath)!;
+
+            if (!File.Exists(zipPath))
+                throw new FileNotFoundException("Backup file not found.");
+
+            // 1. Ensure all DB connections are released
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+
+            // 2. Delete existing DB files
+            DeleteIfExists(dbPath);
+            DeleteIfExists(dbPath + "-wal");
+            DeleteIfExists(dbPath + "-shm");
+
+            // 3. Extract ZIP into DB folder
+            ZipFile.ExtractToDirectory(zipPath, dbDir, overwriteFiles: true);
+
+            // 4. Force app restart
+            throw new ApplicationException("RESTORE_SUCCESS_RESTART_REQUIRED");
         });
     }
+
+    private void DeleteIfExists(string path)
+    {
+        if (File.Exists(path))
+            File.Delete(path);
+    }
+
 }

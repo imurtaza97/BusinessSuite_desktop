@@ -159,13 +159,22 @@ public partial class SettingsViewModel : ViewModelBase
         {
             var service = new BLL.Services.BackupService();
             await service.RestoreDatabaseAsync(path);
-            IsSuccess = true;
-            StatusMessage = "Database restored successfully! Please restart the application.";
         }
-        catch (Exception ex)
+        catch (ApplicationException ex)
+            when (ex.Message == "RESTORE_SUCCESS_RESTART_REQUIRED")
         {
-            IsSuccess = false;
-            StatusMessage = "Restore failed: " + ex.Message;
+            IsSuccess = true;
+            StatusMessage = "Restore completed. Restarting application...";
+
+            await Task.Delay(800); // allow UI to update
+
+            var exePath = Environment.ProcessPath;
+            if (!string.IsNullOrEmpty(exePath))
+            {
+                System.Diagnostics.Process.Start(exePath);
+            }
+
+            Environment.Exit(0);
         }
     }
 }

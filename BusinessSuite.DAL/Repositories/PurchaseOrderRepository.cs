@@ -17,209 +17,121 @@ public class PurchaseOrderRepository
         _context = context;
     }
 
+    private static string GetFinancialYear(DateTime date)
+    {
+        if (date.Month >= 4)
+            return $"{date.Year % 100}-{(date.Year + 1) % 100}";
+        else
+            return $"{(date.Year - 1) % 100}-{date.Year % 100}";
+    }
+
     public async Task<List<PurchaseOrder>> GetAllAsync(int businessId)
     {
         return await _context.PurchaseOrders
-            .Include(i => i.Vendor)
-            .Where(i => i.BusinessId == businessId)
-            .OrderByDescending(i => i.PODate)
+            .Include(p => p.Vendor)
+            .Where(p => p.BusinessId == businessId)
+            .OrderByDescending(p => p.PODate)
             .ToListAsync();
     }
 
     public async Task<PurchaseOrder?> GetByIdAsync(int id)
     {
         return await _context.PurchaseOrders
-            .Include(i => i.Business)
-            .Include(i => i.Vendor)
-            .Include(i => i.Items)
-            .ThenInclude(ii => ii.Product)
-            .FirstOrDefaultAsync(i => i.PurchaseOrderID == id);
+            .Include(p => p.Business)
+            .Include(p => p.Vendor)
+            .Include(p => p.Items)
+                .ThenInclude(i => i.Product)
+            .FirstOrDefaultAsync(p => p.PurchaseOrderID == id);
     }
 
+    // ✅ CREATE PO (NO STOCK)
     public async Task<bool> AddAsync(PurchaseOrder po)
     {
-        using var transaction = await _context.Database.BeginTransactionAsync();
-        try
-        {
-            await _context.PurchaseOrders.AddAsync(po);
-
-            // Update Stock
-            foreach (var item in po.Items)
-            {
-                var product = await _context.Products.FindAsync(item.ProductID);
-                if (product != null)
-                {
-                    product.StockQty += item.Quantity;
-
-                    await _context.StockTransactions.AddAsync(new StockTransaction
-                    {
-                        ProductID = item.ProductID,
-                        BusinessId = po.BusinessId,
-                        TransactionType = "Purchase",
-                        Quantity = item.Quantity,
-                        ReferenceID = po.PurchaseOrderID,
-                        Description = $"Purchase Order #{po.PONumber}",
-                        TransactionDate = po.PODate
-                    });
-                }
-            }
-
-            var result = await _context.SaveChangesAsync() > 0;
-            await transaction.CommitAsync();
-            return result;
-        }
-        catch
-        {
-            await transaction.RollbackAsync();
-            throw;
-        }
+        await _context.PurchaseOrders.AddAsync(po);
+        return await _context.SaveChangesAsync() > 0;
     }
 
+    // ✅ UPDATE PO (NO STOCK)
     public async Task<bool> UpdateAsync(PurchaseOrder po)
     {
-        using var transaction = await _context.Database.BeginTransactionAsync();
-        try
+        var existing = await _context.PurchaseOrders
+            .Include(p => p.Items)
+            .FirstOrDefaultAsync(p => p.PurchaseOrderID == po.PurchaseOrderID);
+
+        if (existing == null)
+            return false;
+
+        // 🔹 Update header
+        existing.PODate = po.PODate;
+        existing.ExpectedDeliveryDate = po.ExpectedDeliveryDate;
+        existing.IsAutoRoundOff = po.IsAutoRoundOff;
+        existing.VendorId = po.VendorId;
+        existing.TotalAmount = po.TotalAmount;
+        existing.TotalTax = po.TotalTax;
+        existing.Discount = po.Discount;
+        existing.GrandTotal = po.GrandTotal;
+        existing.ShippingCharges = po.ShippingCharges;
+        existing.PaymentMethod = po.PaymentMethod;
+        existing.PaymentTerms = po.PaymentTerms;
+        existing.TermsAndConditions = po.TermsAndConditions;
+        existing.Notes = po.Notes;
+        existing.Status = po.Status;
+        existing.IsItemLevelDiscount = po.IsItemLevelDiscount;
+        existing.PlaceOfSupply = po.PlaceOfSupply;
+        existing.ReverseCharge = po.ReverseCharge;
+        existing.RoundOff = po.RoundOff;
+        existing.TotalCGST = po.TotalCGST;
+        existing.TotalSGST = po.TotalSGST;
+        existing.TotalIGST = po.TotalIGST;
+        existing.VendorBillPath = po.VendorBillPath;
+
+        // 🔹 Replace items (safe, no stock impact)
+        _context.PurchaseOrderItems.RemoveRange(existing.Items);
+        await _context.SaveChangesAsync();
+
+        foreach (var item in po.Items)
         {
-            var existing = await _context.PurchaseOrders
-                .Include(i => i.Items)
-                .FirstOrDefaultAsync(i => i.PurchaseOrderID == po.PurchaseOrderID);
-            
-            if (existing == null) return false;
-
-            // 1. Revert previous stock changes
-            foreach (var item in existing.Items)
-            {
-                var product = await _context.Products.FindAsync(item.ProductID);
-                if (product != null)
-                {
-                    product.StockQty -= item.Quantity;
-                }
-            }
-
-            // Remove old stock transactions for this PO
-            var oldTransactions = await _context.StockTransactions
-                .Where(t => t.ReferenceID == po.PurchaseOrderID && t.TransactionType == "Purchase")
-                .ToListAsync();
-            _context.StockTransactions.RemoveRange(oldTransactions);
-
-            // 2. Map fields
-            existing.PODate = po.PODate;
-            existing.ExpectedDeliveryDate = po.ExpectedDeliveryDate;
-            existing.IsAutoRoundOff = po.IsAutoRoundOff;
-            existing.VendorId = po.VendorId;
-            existing.TotalAmount = po.TotalAmount;
-            existing.TotalTax = po.TotalTax;
-            existing.Discount = po.Discount;
-            existing.GrandTotal = po.GrandTotal;
-            existing.ShippingCharges = po.ShippingCharges;
-            existing.PaymentMethod = po.PaymentMethod;
-            existing.PaymentTerms = po.PaymentTerms;
-            existing.TermsAndConditions = po.TermsAndConditions;
-            existing.Notes = po.Notes;
-            existing.Status = po.Status;
-            existing.IsItemLevelDiscount = po.IsItemLevelDiscount;
-            existing.PlaceOfSupply = po.PlaceOfSupply;
-            existing.ReverseCharge = po.ReverseCharge;
-            existing.RoundOff = po.RoundOff;
-            existing.TotalCGST = po.TotalCGST;
-            existing.TotalSGST = po.TotalSGST;
-            existing.TotalIGST = po.TotalIGST;
-            existing.VendorBillPath = po.VendorBillPath; // Also sync the attachment path
-            
-            // 3. Update items and apply new stock changes
-            _context.PurchaseOrderItems.RemoveRange(existing.Items);
-            foreach (var item in po.Items)
-            {
-                item.PurchaseOrderID = existing.PurchaseOrderID;
-                _context.PurchaseOrderItems.Add(item);
-
-                var product = await _context.Products.FindAsync(item.ProductID);
-                if (product != null)
-                {
-                    product.StockQty += item.Quantity;
-
-                    await _context.StockTransactions.AddAsync(new StockTransaction
-                    {
-                        ProductID = item.ProductID,
-                        BusinessId = po.BusinessId,
-                        TransactionType = "Purchase",
-                        Quantity = item.Quantity,
-                        ReferenceID = po.PurchaseOrderID,
-                        Description = $"Purchase Order Updated #{po.PONumber}",
-                        TransactionDate = po.PODate
-                    });
-                }
-            }
-
-            var result = await _context.SaveChangesAsync() > 0;
-            await transaction.CommitAsync();
-            return result;
+            item.PurchaseOrderID = existing.PurchaseOrderID;
+            _context.PurchaseOrderItems.Add(item);
         }
-        catch
-        {
-            await transaction.RollbackAsync();
-            throw;
-        }
+
+        return await _context.SaveChangesAsync() > 0;
     }
 
+    // ✅ DELETE PO (NO STOCK)
     public async Task<bool> DeleteAsync(int id)
     {
-        using var transaction = await _context.Database.BeginTransactionAsync();
-        try
-        {
-            var po = await _context.PurchaseOrders
-                .Include(i => i.Items)
-                .FirstOrDefaultAsync(i => i.PurchaseOrderID == id);
-                
-            if (po == null) return false;
+        var po = await _context.PurchaseOrders
+            .Include(p => p.Items)
+            .FirstOrDefaultAsync(p => p.PurchaseOrderID == id);
 
-            // Revert stock
-            foreach (var item in po.Items)
-            {
-                var product = await _context.Products.FindAsync(item.ProductID);
-                if (product != null)
-                {
-                    product.StockQty -= item.Quantity;
-                }
-            }
+        if (po == null)
+            return false;
 
-            // Remove transactions
-            var transactions = await _context.StockTransactions
-                .Where(t => t.ReferenceID == id && t.TransactionType == "Purchase")
-                .ToListAsync();
-            _context.StockTransactions.RemoveRange(transactions);
+        _context.PurchaseOrderItems.RemoveRange(po.Items);
+        _context.PurchaseOrders.Remove(po);
 
-            _context.PurchaseOrders.Remove(po);
-            var result = await _context.SaveChangesAsync() > 0;
-            await transaction.CommitAsync();
-            return result;
-        }
-        catch
-        {
-            await transaction.RollbackAsync();
-            throw;
-        }
+        return await _context.SaveChangesAsync() > 0;
     }
 
-    public async Task<string> GetNextPONumberAsync(int businessId)
+    // ✅ PO NUMBER GENERATION
+    public async Task<string> GetNextPONumberAsync(int businessId, DateTime poDate, int padLength = 5)
     {
-        string prefix = "PO-";
-        var pos = await _context.PurchaseOrders
-            .Where(i => i.BusinessId == businessId && i.PONumber.StartsWith(prefix))
+        var fy = GetFinancialYear(poDate);
+        string prefix = $"PO/{fy}/";
+
+        var numbers = await _context.PurchaseOrders
+            .Where(p => p.BusinessId == businessId && p.PONumber.StartsWith(prefix))
+            .Select(p => p.PONumber.Substring(prefix.Length))
             .ToListAsync();
 
         int maxNum = 0;
-        foreach (var po in pos)
+        foreach (var n in numbers)
         {
-            var part = po.PONumber.Substring(prefix.Length);
-            var numericPart = new string(part.TakeWhile(char.IsDigit).ToArray());
-            if (int.TryParse(numericPart, out int num))
-            {
-                if (num > maxNum) maxNum = num;
-            }
+            if (int.TryParse(n, out int num) && num > maxNum)
+                maxNum = num;
         }
 
-        int nextNum = maxNum + 1;
-        return $"{prefix}{nextNum:D4}";
+        return $"{prefix}{(maxNum + 1).ToString().PadLeft(padLength, '0')}";
     }
 }
