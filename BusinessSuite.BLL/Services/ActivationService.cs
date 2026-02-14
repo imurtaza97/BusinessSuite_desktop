@@ -1,5 +1,6 @@
 using System;
-using System.Linq;
+using System.Net.Http;
+using System.Net.Http.Json;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using BusinessSuite.DAL.Data;
@@ -10,6 +11,11 @@ namespace BusinessSuite.BLL.Services;
 public class ActivationService
 {
     private readonly IDbContextFactory<AppDbContext> _dbFactory;
+    private static readonly HttpClient _httpClient = new HttpClient();
+
+    // Secure API URL from environment variables, defaulting to localhost for dev
+    private string ApiUrl => Environment.GetEnvironmentVariable("BUSINESS_SUITE_API_URL") 
+                            ?? "http://localhost:3000/api/business-suite/verify-license";
 
     public ActivationService(IDbContextFactory<AppDbContext> dbFactory)
     {
@@ -17,26 +23,27 @@ public class ActivationService
     }
 
     /// <summary>
-    /// Activates the application using a license key.
-    /// In a real system, this would call an online API.
+    /// Activates the application using a license key and email.
+    /// Verifies against a secure Next.js API endpoint.
     /// </summary>
-    public async Task<string> ActivateLicenseAsync(string licenseKey)
+    public async Task<string> ActivateLicenseAsync(string licenseKey, string email)
     {
         if (string.IsNullOrWhiteSpace(licenseKey))
             return "License key is required.";
+        
+        if (string.IsNullOrWhiteSpace(email))
+            return "Email is required.";
 
         try
         {
             // 1. Get Hardware ID
             string hardwareId = HardwareService.GetHardwareId();
 
-            // 2. Simulated Online Verification
-            // In a real system, you would do: 
-            // var response = await _httpClient.PostAsync("https://api.businesssuite.com/activate", ...);
-            bool isKeyValid = await SimulateOnlineVerification(licenseKey, hardwareId);
+            // 2. Remote Verification via Next.js API
+            var verificationResponse = await VerifyKeyViaApiAsync(licenseKey, email, hardwareId);
 
-            if (!isKeyValid)
-                return "Invalid license key or key already used on another machine.";
+            if (!verificationResponse.Success)
+                return verificationResponse.Message ?? "Verification failed.";
 
             // 3. Store Activation Locally
             using var db = _dbFactory.CreateDbContext();
@@ -48,14 +55,14 @@ public class ActivationService
             var activation = new LicenseActivation
             {
                 HardwareIdHash = secureHash,
-                LicenseKeyHash = secureHash, // In a more complex scenario, these could be different
+                LicenseKeyHash = secureHash, 
                 ActivatedOn = DateTime.Now,
                 IsValid = true
             };
 
             db.LicenseActivations.Add(activation);
-
             await db.SaveChangesAsync();
+
             return "Success";
         }
         catch (Exception ex)
@@ -64,10 +71,45 @@ public class ActivationService
         }
     }
 
-    private async Task<bool> SimulateOnlineVerification(string key, string hwId)
+    private async Task<ActivationResponse> VerifyKeyViaApiAsync(string key, string email, string hwId)
     {
-        // For demonstration, any key starting with "BS-VALID-" is accepted
-        await Task.Delay(1500); // Simulate network latency
-        return key.StartsWith("BS-VALID-", StringComparison.OrdinalIgnoreCase);
+        try 
+        {
+            var requestBody = new 
+            { 
+                email = email, 
+                licenseKey = key, 
+                hardwareId = hwId 
+            };
+
+            var response = await _httpClient.PostAsJsonAsync(ApiUrl, requestBody);
+            
+            if (response.IsSuccessStatusCode)
+            {
+                return await response.Content.ReadFromJsonAsync<ActivationResponse>() 
+                       ?? new ActivationResponse { Success = false, Message = "Empty response from server" };
+            }
+            
+            var errorResponse = await response.Content.ReadFromJsonAsync<ActivationResponse>();
+            return errorResponse ?? new ActivationResponse { Success = false, Message = $"Server returned {response.StatusCode}" };
+        }
+        catch (Exception ex)
+        {
+            return new ActivationResponse { Success = false, Message = $"Network Error: {ex.Message}" };
+        }
     }
+}
+
+public class ActivationResponse
+{
+    public bool Success { get; set; }
+    public string? Message { get; set; }
+    public UserInfo? User { get; set; }
+}
+
+public class UserInfo
+{
+    public string? FullName { get; set; }
+    public string? BusinessName { get; set; }
+    public bool IsPaid { get; set; }
 }

@@ -14,8 +14,13 @@ public class StatusColorConverter : IValueConverter
             return status.ToLower() switch
             {
                 "paid" => SolidColorBrush.Parse("#E1F5FE"),
+                "shipped" => SolidColorBrush.Parse("#E8F5E9"),
+                "received" => SolidColorBrush.Parse("#E8F5E9"),
                 "unpaid" => SolidColorBrush.Parse("#FFF9C4"),
                 "pending" => SolidColorBrush.Parse("#FFF9C4"),
+                "partially paid" => SolidColorBrush.Parse("#FFF3E0"),
+                "returned" => SolidColorBrush.Parse("#F3E5F5"),
+                "returned-to-vendor" => SolidColorBrush.Parse("#F3E5F5"),
                 "overdue" => SolidColorBrush.Parse("#FFEBEE"),
                 "cancelled" => SolidColorBrush.Parse("#EEEEEE"),
                 _ => Brushes.Transparent

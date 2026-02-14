@@ -20,6 +20,7 @@ public partial class ProductFormViewModel : ViewModelBase, INotifyDataErrorInfo
     private readonly GstRateRepository _gstRateRepository;
     private readonly CategoryRepository _categoryRepository;
     private readonly VendorRepository _vendorRepository;
+    private readonly WarehouseRepository _warehouseRepository;
     private readonly Dictionary<string, List<string>> _errors = new();
     private readonly int _businessId;
     
@@ -83,6 +84,9 @@ public partial class ProductFormViewModel : ViewModelBase, INotifyDataErrorInfo
         if (string.IsNullOrWhiteSpace(Unit))
             AddError(nameof(Unit), "Unit (UOM) is required");
 
+        if (StockQty > 0 && SelectedWarehouse == null)
+            AddError(nameof(SelectedWarehouse), "Warehouse is required for initial stock");
+
         OnPropertyChanged(nameof(HasErrors));
     }
 
@@ -131,6 +135,9 @@ public partial class ProductFormViewModel : ViewModelBase, INotifyDataErrorInfo
     [ObservableProperty] private ObservableCollection<Vendor> _vendors = new();
     [ObservableProperty] private Vendor? _selectedPreferredVendor;
 
+    [ObservableProperty] private ObservableCollection<Warehouse> _warehouses = new();
+    [ObservableProperty] private Warehouse? _selectedWarehouse;
+
     partial void OnSelectedCategoryChanged(Category? value)
     {
         if (ValidationVisible) ValidateAll();
@@ -164,8 +171,8 @@ public partial class ProductFormViewModel : ViewModelBase, INotifyDataErrorInfo
         }
     }
 
-    private int _stockQty;
-    public int StockQty
+    private decimal _stockQty;
+    public decimal StockQty
     {
         get => _stockQty;
         set 
@@ -198,7 +205,7 @@ public partial class ProductFormViewModel : ViewModelBase, INotifyDataErrorInfo
         set 
         {
             var sanitized = value;
-            if (sanitized != null && sanitized.Contains("BusinessSuite.DAL.Entities")) sanitized = "PCS";
+            if (sanitized != null && sanitized.Contains("BusinessSuite.DAL.Entities")) sanitized = "nos";
 
             if (SetProperty(ref _unit, sanitized))
             {
@@ -220,6 +227,7 @@ public partial class ProductFormViewModel : ViewModelBase, INotifyDataErrorInfo
         _gstRateRepository = new GstRateRepository(db);
         _categoryRepository = new CategoryRepository(db);
         _vendorRepository = new VendorRepository(db);
+        _warehouseRepository = new WarehouseRepository(db);
 
         SaveCommand = new RelayCommand(Save);
         CancelCommand = new RelayCommand(Cancel);
@@ -231,7 +239,8 @@ public partial class ProductFormViewModel : ViewModelBase, INotifyDataErrorInfo
         IsGstRegistered = business?.IsGSTRegistered ?? false;
 
         _ = LoadRatesAsync();
-        _ = LoadCategoriesAndVendorsAsync();
+        _ = LoadCategoriesVendorsAndWarehousesAsync();
+        Unit = "nos";
     }
 
     public IRelayCommand AddCategoryCommand { get; }
@@ -255,10 +264,11 @@ public partial class ProductFormViewModel : ViewModelBase, INotifyDataErrorInfo
         }
     }
 
-    private async Task LoadCategoriesAndVendorsAsync()
+    private async Task LoadCategoriesVendorsAndWarehousesAsync()
     {
         var categories = await _categoryRepository.GetAllAsync(_businessId);
         var vendors = await _vendorRepository.GetAllAsync(_businessId);
+        var warehouses = await _warehouseRepository.GetAllAsync(_businessId);
 
         await Dispatcher.UIThread.InvokeAsync(() =>
         {
@@ -267,6 +277,10 @@ public partial class ProductFormViewModel : ViewModelBase, INotifyDataErrorInfo
             
             Vendors.Clear();
             foreach (var v in vendors) Vendors.Add(v);
+
+            Warehouses.Clear();
+            foreach (var w in warehouses) Warehouses.Add(w);
+            SelectedWarehouse = Warehouses.FirstOrDefault(w => w.IsMainWarehouse) ?? Warehouses.FirstOrDefault();
 
             // Re-select if editing
             if (_pendingCategoryId.HasValue)

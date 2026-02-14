@@ -68,6 +68,17 @@ public class RegisterService
             context.Businesses.Add(business);
             await context.SaveChangesAsync();
 
+            // 4a. Create Default Warehouse
+            var warehouse = new Warehouse
+            {
+                BusinessId = business.BusinessID,
+                WarehouseName = "Main Warehouse",
+                Address = business.Address,
+                State = business.State,
+                IsMainWarehouse = true
+            };
+            context.Warehouses.Add(warehouse);
+
             // 5. Create Admin User Entity
             var adminUser = new User
             {

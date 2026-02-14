@@ -8,179 +8,125 @@
              x:Class="BusinessSuite.UI.Views.DashboardView"
              x:DataType="vm:DashboardViewModel">
 
-    <Grid ColumnDefinitions="250, *">
-        <!-- Sidebar -->
-        <Border Grid.Column="0" Background="#F3F4F6" BorderBrush="#E5E7EB" BorderThickness="0,0,1,0">
+    <UserControl.DataTemplates>
+        <DataTemplate DataType="vm:HomeViewModel"><Views:HomeView/></DataTemplate>
+        <DataTemplate DataType="vm:ProductsViewModel"><Views:ProductsView/></DataTemplate>
+        <DataTemplate DataType="vm:CustomersViewModel"><Views:CustomersView/></DataTemplate>
+        <DataTemplate DataType="vm:VendorsViewModel"><Views:VendorsView/></DataTemplate>
+        <DataTemplate DataType="vm:InvoicesViewModel"><Views:InvoicesView/></DataTemplate>
+        <DataTemplate DataType="vm:InvoiceFormViewModel"><Views:InvoiceFormView/></DataTemplate>
+        <DataTemplate DataType="vm:PurchaseOrdersViewModel"><Views:PurchaseOrdersView/></DataTemplate>
+        <DataTemplate DataType="vm:PurchaseOrderFormViewModel"><Views:PurchaseOrderFormView/></DataTemplate>
+        <DataTemplate DataType="vm:ReportsViewModel"><Views:ReportsView/></DataTemplate>
+        <DataTemplate DataType="vm:SettingsViewModel"><Views:SettingsView/></DataTemplate>
+        <DataTemplate DataType="vm:WarehousesViewModel"><Views:WarehousesView/></DataTemplate>
+        <DataTemplate DataType="vm:StockLedgerViewModel"><Views:StockLedgerView/></DataTemplate>
+        <DataTemplate DataType="vm:FinanceLedgerViewModel"><Views:FinanceLedgerView/></DataTemplate>
+    </UserControl.DataTemplates>
+
+    <Grid ColumnDefinitions="260, *">
+        <Border Grid.Column="0" Background="#F9FAFB" BorderBrush="#E5E7EB" BorderThickness="0,0,1,0">
             <DockPanel>
-                <StackPanel DockPanel.Dock="Top" Margin="20,40,20,40">
-                    <TextBlock Text="{Binding BusinessName}" 
-                               FontSize="20" 
-                               FontWeight="Bold"
-                               Foreground="#111827" 
-                               HorizontalAlignment="Center"/>
-                    <TextBlock Text="Smart GST Billing" 
-                               FontSize="12" 
-                               Foreground="#6B7280" 
-                               HorizontalAlignment="Center"
-                               IsVisible="{Binding IsGstRegistered}"/>
-                    <TextBlock Text="Smart Billing" 
-                               FontSize="12" 
-                               Foreground="#6B7280" 
-                               HorizontalAlignment="Center"
-                               IsVisible="{Binding !IsGstRegistered}"/>
+                <StackPanel DockPanel.Dock="Top" Margin="0,30,0,30">
+                    <Border Width="45" Height="45" Background="#2563EB" CornerRadius="8" Margin="0,0,0,12">
+                        <PathIcon Data="M12,2L2,7L12,12L22,7L12,2M2,17L12,22L22,17M2,12L12,17L22,12" Foreground="White" Width="20" Height="20"/>
+                    </Border>
+                    <TextBlock Text="{Binding BusinessName}" FontSize="18" FontWeight="ExtraBold" Foreground="#111827" HorizontalAlignment="Center"/>
+                    <TextBlock Text="Enterprise ERP" FontSize="12" Foreground="#9CA3AF" HorizontalAlignment="Center" LetterSpacing="1"/>
                 </StackPanel>
 
-                <StackPanel Spacing="5" Margin="0,0,0,0">
-                    <Button Classes="MenuButton" Classes.active="{Binding IsDashboardActive}" Command="{Binding NavigateCommand}" CommandParameter="Dashboard" Content="Dashboard"/>
-                    <Button Classes="MenuButton" Classes.active="{Binding IsProductsActive}" Command="{Binding NavigateCommand}" CommandParameter="Products" Content="Products"/>
-                    <Button Classes="MenuButton" Classes.active="{Binding IsCustomersActive}" Command="{Binding NavigateCommand}" CommandParameter="Customers" Content="Customers"/>
-                    <Button Classes="MenuButton" Classes.active="{Binding IsVendorsActive}" Command="{Binding NavigateCommand}" CommandParameter="Vendors" Content="Vendors"/>
-                    <Button Classes="MenuButton" Classes.active="{Binding IsSalesActive}" Command="{Binding NavigateCommand}" CommandParameter="Sales" Content="Sales"/>
-                    <Button Classes="MenuButton" Classes.active="{Binding IsPurchasesActive}" Command="{Binding NavigateCommand}" CommandParameter="Purchases" Content="Purchases"/>
-                    <Button Classes="MenuButton" Classes.active="{Binding IsReportsActive}" Command="{Binding NavigateCommand}" CommandParameter="Reports" Content="Reports"/>
-                    <Button Classes="MenuButton" Classes.active="{Binding IsSettingsActive}" Command="{Binding NavigateCommand}" CommandParameter="Settings" Content="Settings"/>
-                </StackPanel>
+                <Button DockPanel.Dock="Bottom" Classes="MenuButtonLogout" Command="{Binding LogoutCommand}" Margin="15,20">
+                    <StackPanel Orientation="Horizontal" Spacing="12">
+                        <TextBlock Text="Logout"/>
+                    </StackPanel>
+                </Button>
 
-                <Button DockPanel.Dock="Bottom" 
-                        Classes="MenuButtonLogout" 
-                        Content="Logout" 
-                        Command="{Binding LogoutCommand}"
-                        VerticalAlignment="Bottom" 
-                        Margin="0,0,0,20"/>
+                <ScrollViewer>
+                    <StackPanel Spacing="4" Margin="15,0">
+                        <TextBlock Text="MAIN MENU" FontSize="10" FontWeight="Bold" Foreground="#9CA3AF" Margin="12,10,0,8"/>
+                        
+                        <Button Classes="MenuButton" Classes.active="{Binding IsDashboardActive}" Command="{Binding NavigateCommand}" CommandParameter="Dashboard" Content="Dashboard"/>
+                        <Button Classes="MenuButton" Classes.active="{Binding IsProductsActive}" Command="{Binding NavigateCommand}" CommandParameter="Products" Content="Products"/>
+                        <Button Classes="MenuButton" Classes.active="{Binding IsWarehousesActive}" Command="{Binding NavigateCommand}" CommandParameter="Warehouses" Content="Warehouses"/>
+                        
+                        <TextBlock Text="OPERATIONS" FontSize="10" FontWeight="Bold" Foreground="#9CA3AF" Margin="12,20,0,8"/>
+                        <Button Classes="MenuButton" Classes.active="{Binding IsSalesActive}" Command="{Binding NavigateCommand}" CommandParameter="Sales" Content="Sales Invoices"/>
+                        <Button Classes="MenuButton" Classes.active="{Binding IsPurchasesActive}" Command="{Binding NavigateCommand}" CommandParameter="Purchases" Content="Purchase Orders"/>
+                        
+                        <TextBlock Text="RELATIONS" FontSize="10" FontWeight="Bold" Foreground="#9CA3AF" Margin="12,20,0,8"/>
+                        <Button Classes="MenuButton" Classes.active="{Binding IsCustomersActive}" Command="{Binding NavigateCommand}" CommandParameter="Customers" Content="Customers"/>
+                        <Button Classes="MenuButton" Classes.active="{Binding IsVendorsActive}" Command="{Binding NavigateCommand}" CommandParameter="Vendors" Content="Vendors"/>
+                        
+                        <TextBlock Text="LEDGER" FontSize="10" FontWeight="Bold" Foreground="#9CA3AF" Margin="12,20,0,8"/>
+                        <Button Classes="MenuButton" Classes.active="{Binding IsFinanceLedgerActive}" Command="{Binding NavigateCommand}" CommandParameter="FinanceLedger" Content="Finance Ledger"/>
+                        <Button Classes="MenuButton" Classes.active="{Binding IsStockLedgerActive}" Command="{Binding NavigateCommand}" CommandParameter="StockLedger" Content="Stock Ledger"/>
+                        
+
+                        <TextBlock Text="SYSTEM" FontSize="10" FontWeight="Bold" Foreground="#9CA3AF" Margin="12,20,0,8"/>
+                        <Button Classes="MenuButton" Classes.active="{Binding IsSettingsActive}" Command="{Binding NavigateCommand}" CommandParameter="Settings" Content="Settings"/>
+                    </StackPanel>
+                </ScrollViewer>
             </DockPanel>
         </Border>
 
-        <!-- Main Content -->
         <Grid Grid.Column="1" RowDefinitions="70, *">
-            <!-- Header -->
-            <Border Grid.Row="0" Background="White" BorderBrush="#E5E7EB" BorderThickness="0,0,0,1">
-                <DockPanel Margin="20,0">
-                    <TextBlock Text="{Binding CurrentViewTitle}" 
-                               VerticalAlignment="Center" 
-                               FontSize="22" 
-                               FontWeight="SemiBold" 
-                               HorizontalAlignment="Left" 
-                               Foreground="#333333"/>
+            <Border Grid.Row="0" Background="White" BorderBrush="#E5E7EB" BorderThickness="0,0,0,1" Padding="25,0">
+                <Grid ColumnDefinitions="*, Auto">
+                    <TextBlock Grid.Column="0" Text="{Binding CurrentViewTitle}" VerticalAlignment="Center" FontSize="20" FontWeight="Bold" Foreground="#111827"/>
                     
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Spacing="15">
-                        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Right">
-                            <TextBlock Text="{Binding CurrentUserName}" FontWeight="Bold" Foreground="#333333"/>
-                            <TextBlock Text="{Binding CurrentUserType}" HorizontalAlignment="Right" FontSize="11" Foreground="#888888"/>
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="15" VerticalAlignment="Center">
+                        <StackPanel VerticalAlignment="Center">
+                            <TextBlock Text="{Binding CurrentUserName}" FontWeight="SemiBold" Foreground="#111827" HorizontalAlignment="Right"/>
+                            <TextBlock Text="{Binding CurrentUserType}" FontSize="11" Foreground="#6B7280" HorizontalAlignment="Right"/>
                         </StackPanel>
-                        <Border Width="40" Height="40" Background="#2563EB" CornerRadius="20" VerticalAlignment="Center" HorizontalAlignment="Right">
-                            <TextBlock Text="{Binding CurrentUserInitials}" 
-                                       Foreground="White" 
-                                       FontWeight="Bold" 
-                                       FontSize="16" 
-                                       VerticalAlignment="Center" 
-                                       HorizontalAlignment="Center"/>
+                        <Border Width="42" Height="42" Background="#EEF2FF" BorderBrush="#DBEAFE" BorderThickness="1" CornerRadius="21">
+                            <TextBlock Text="{Binding CurrentUserInitials}" Foreground="#2563EB" FontWeight="Bold" FontSize="14" VerticalAlignment="Center" HorizontalAlignment="Center"/>
                         </Border>
                     </StackPanel>
-                </DockPanel>
+                </Grid>
             </Border>
 
-            <!-- Dynamic Content Area -->
-            <ContentControl Grid.Row="1" Content="{Binding CurrentView}">
-                <ContentControl.DataTemplates>
-                    <DataTemplate DataType="vm:HomeViewModel">
-                        <Views:HomeView/>
-                    </DataTemplate>
-                    <DataTemplate DataType="vm:ProductsViewModel">
-                        <Views:ProductsView/>
-                    </DataTemplate>
-                    <DataTemplate DataType="vm:CustomersViewModel">
-                        <Views:CustomersView/>
-                    </DataTemplate>
-                    <DataTemplate DataType="vm:VendorsViewModel">
-                        <Views:VendorsView/>
-                    </DataTemplate>
-                    <DataTemplate DataType="vm:InvoicesViewModel">
-                        <Views:InvoicesView/>
-                    </DataTemplate>
-                    <DataTemplate DataType="vm:InvoiceFormViewModel">
-                        <Views:InvoiceFormView/>
-                    </DataTemplate>
-                    <DataTemplate DataType="vm:PurchaseOrdersViewModel">
-                        <Views:PurchaseOrdersView/>
-                    </DataTemplate>
-                    <DataTemplate DataType="vm:PurchaseOrderFormViewModel">
-                        <Views:PurchaseOrderFormView/>
-                    </DataTemplate>
-                    <DataTemplate DataType="vm:ReportsViewModel">
-                        <Views:ReportsView/>
-                    </DataTemplate>
-                    <DataTemplate DataType="vm:SettingsViewModel">
-                        <Views:SettingsView/>
-                    </DataTemplate>
-                </ContentControl.DataTemplates>
-            </ContentControl>
+            <TransitioningContentControl Grid.Row="1" Content="{Binding CurrentView}" Background="#F3F4F6">
+                <TransitioningContentControl.PageTransition>
+                    <CrossFade Duration="0:0:0.25"/>
+                </TransitioningContentControl.PageTransition>
+            </TransitioningContentControl>
         </Grid>
     </Grid>
 
     <UserControl.Styles>
-        <Style Selector="Button.MenuButtonLogout">
-            <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="Foreground" Value="#EF4444"/>
-            <Setter Property="HorizontalAlignment" Value="Stretch"/>
-            <Setter Property="HorizontalContentAlignment" Value="Left"/>
-            <Setter Property="Padding" Value="24,12"/>
-            <Setter Property="CornerRadius" Value="0"/>
-            <Setter Property="Margin" Value="0,0"/>
-        </Style> 
-        <Style Selector="Button.MenuButtonLogout:pointerover">
-            <Setter Property="Background" Value="#B91C1C"/>
-            <Setter Property="Foreground" Value="#FFFFFF"/>
-        </Style>
-        <Style Selector="Button.MenuButtonLogout:pressed">
-            <Setter Property="Background" Value="#7F1D1D"/>
-            <Setter Property="Foreground" Value="#FFFFFF"/>
-        </Style>
         <Style Selector="Button.MenuButton">
             <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="Foreground" Value="#111827"/>
+            <Setter Property="Foreground" Value="#4B5563"/>
             <Setter Property="HorizontalAlignment" Value="Stretch"/>
-            <Setter Property="HorizontalContentAlignment" Value="Left"/>
-            <Setter Property="Padding" Value="24,12"/>
-            <Setter Property="CornerRadius" Value="0"/>
-            <Setter Property="Margin" Value="0,0"/>
+            <Setter Property="Padding" Value="14,10"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Transitions">
+                <Transitions>
+                    <BrushTransition Property="Background" Duration="0:0:0.15"/>
+                </Transitions>
+            </Setter>
         </Style>
-        <Style Selector="Button.MenuButton:pointerover">
-            <Setter Property="Background" Value="#2563EB22"/>
-            <Setter Property="Foreground" Value="White"/>
+        <Style Selector="Button.MenuButton:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#F3F4F6"/>
+            <Setter Property="Foreground" Value="#2563EB"/>
         </Style>
-        <Style Selector="Button.MenuButton.active">
+        <Style Selector="Button.MenuButton.active /template/ ContentPresenter">
             <Setter Property="Background" Value="#2563EB"/>
             <Setter Property="Foreground" Value="White"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
         </Style>
-        
-        <Style Selector="Border.StatCard">
-            <Setter Property="Background" Value="White"/>
-            <Setter Property="CornerRadius" Value="12"/>
-            <Setter Property="Padding" Value="20"/>
-            <Setter Property="Margin" Value="10"/>
-            <Setter Property="BoxShadow" Value="0 4 15 0 #0A000000"/>
+
+        <Style Selector="Button.MenuButtonLogout">
+            <Setter Property="Background" Value="#FFF1F2"/>
+            <Setter Property="Foreground" Value="#E11D48"/>
+            <Setter Property="HorizontalAlignment" Value="Stretch"/>
+            <Setter Property="Padding" Value="14,10"/>
+            <Setter Property="CornerRadius" Value="8"/>
         </Style>
-        
-        <Style Selector="TextBlock.StatLabel">
-            <Setter Property="FontSize" Value="13"/>
-            <Setter Property="Foreground" Value="#888888"/>
-            <Setter Property="Margin" Value="0,0,0,5"/>
-        </Style>
-        <Style Selector="TextBlock.StatValue">
-            <Setter Property="FontSize" Value="22"/>
-            <Setter Property="FontWeight" Value="Bold"/>
-            <Setter Property="Foreground" Value="#333333"/>
-            <Setter Property="Margin" Value="0,0,0,5"/>
-        </Style>
-        <Style Selector="TextBlock.StatTrend">
-            <Setter Property="FontSize" Value="11"/>
-        </Style>
-        <Style Selector="TextBlock.Positive">
-            <Setter Property="Foreground" Value="#10B981"/>
-        </Style>
-        <Style Selector="TextBlock.Negative">
-            <Setter Property="Foreground" Value="#EF4444"/>
+        <Style Selector="Button.MenuButtonLogout:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#FFE4E6"/>
+            <Setter Property="Foreground" Value="#BE123C"/>
         </Style>
     </UserControl.Styles>
 </UserControl>

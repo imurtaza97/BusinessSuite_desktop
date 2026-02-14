@@ -1,0 +1,51 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="using:BusinessSuite.UI.ViewModels"
+        mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="350"
+        x:Class="BusinessSuite.UI.Views.StockAdjustmentWindow"
+        x:DataType="vm:StockAdjustmentViewModel"
+        Title="Adjust Stock" Width="400" Height="380"
+        WindowStartupLocation="CenterOwner"
+        CanResize="False">
+
+    <Grid RowDefinitions="Auto, *, Auto" Margin="20">
+        <TextBlock Grid.Row="0" Text="Adjust Stock" FontSize="20" FontWeight="Bold" Margin="0,0,0,20"/>
+
+        <StackPanel Grid.Row="1" Spacing="15">
+            <StackPanel>
+                <TextBlock Text="Product" FontWeight="Medium" Foreground="#6B7280"/>
+                <TextBlock Text="{Binding ProductName}" FontWeight="SemiBold" FontSize="16"/>
+            </StackPanel>
+
+            <StackPanel>
+                <TextBlock Text="Warehouse" FontWeight="Medium" Foreground="#6B7280"/>
+                <TextBlock Text="{Binding WarehouseName}" FontWeight="SemiBold"/>
+            </StackPanel>
+
+            <Grid ColumnDefinitions="*, *">
+                <StackPanel Grid.Column="0" Margin="0,0,5,0">
+                    <TextBlock Text="Current Qty" FontWeight="Medium" Foreground="#6B7280"/>
+                    <TextBlock Text="{Binding CurrentQuantity}" FontSize="18"/>
+                </StackPanel>
+                <StackPanel Grid.Column="1" Margin="5,0,0,0">
+                    <TextBlock Text="New Qty" FontWeight="Medium" Margin="0,0,0,5"/>
+                    <NumericUpDown Value="{Binding NewQuantity}" Minimum="0" FormatString="0.##"/>
+                </StackPanel>
+            </Grid>
+
+            <StackPanel>
+                <TextBlock Text="Reason for Adjustment" FontWeight="Medium" Margin="0,0,0,5"/>
+                <TextBox Text="{Binding Reason}"/>
+            </StackPanel>
+        </StackPanel>
+
+        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10" Margin="0,20,0,0">
+            <Button Content="Cancel" Command="{Binding CancelCommand}" Width="100"/>
+            <Button Content="Adjust Stock" Command="{Binding SaveCommand}" Background="#10B981" Foreground="White" Width="120" FontWeight="Bold"/>
+        </StackPanel>
+
+        <ProgressBar IsVisible="{Binding IsBusy}" IsIndeterminate="True" VerticalAlignment="Bottom"/>
+    </Grid>
+</Window>

@@ -26,7 +26,7 @@ public class Product
 
     [Required]
     [MaxLength(10)]
-    public string? Unit { get; set; } = "PCS";
+    public string? Unit { get; set; } = "nos";
 
     public int? CategoryID { get; set; }
 
@@ -44,7 +44,7 @@ public class Product
     [Required]
     public decimal SalePrice { get; set; }
 
-    public int StockQty { get; set; } = 0;
+    public decimal StockQty { get; set; } = 0;
 
     [Required]
     public decimal TaxRate { get; set; }

@@ -34,6 +34,14 @@ public partial class HomeViewModel : ViewModelBase
 
     // The Command definition that was missing
     public IAsyncRelayCommand LoadDashboardDataCommand { get; }
+    
+    [RelayCommand]
+    private void NavigateToLedger() => RequestNavigation?.Invoke("Ledger");
+
+    [RelayCommand]
+    private void NavigateToStockLedger() => RequestNavigation?.Invoke("StockLedger");
+
+    public event Action<string>? RequestNavigation;
 
     // Chart Series
     public ISeries[] SalesTrendSeries { get; set; }

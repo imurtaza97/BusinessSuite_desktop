@@ -14,7 +14,8 @@ public partial class MainWindow : Window
     public MainWindow(BusinessSuite.DAL.Entities.User user)
     {
         InitializeComponent();
-        var vm = new DashboardViewModel(user);
+        var dbFactory = new BusinessSuite.DAL.Data.AppDbContextFactory();
+        var vm = new DashboardViewModel(user, dbFactory);
         DataContext = vm;
         vm.RequestLogout += OnLogout;
     }

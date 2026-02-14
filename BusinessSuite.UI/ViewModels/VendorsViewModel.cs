@@ -10,63 +10,88 @@ using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using BusinessSuite.BLL.Services;
 
 namespace BusinessSuite.UI.ViewModels;
 
 public partial class VendorsViewModel : ViewModelBase
 {
     private readonly VendorRepository _vendorRepository;
+    private readonly LedgerService _ledgerService;
     private readonly int _businessId;
 
-    [ObservableProperty]
-    private ObservableCollection<Vendor> _vendors = new();
+    [ObservableProperty] private ObservableCollection<Vendor> _vendors = new();
+    [ObservableProperty] private decimal _selectedVendorBalance;
+    [ObservableProperty] private ObservableCollection<FinanceLedger> _selectedVendorTransactions = new();
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(EditVendorCommand))]
     [NotifyCanExecuteChangedFor(nameof(DeleteVendorCommand))]
+    [NotifyCanExecuteChangedFor(nameof(AddPaymentCommand))]
     private Vendor? _selectedVendor;
+
+    partial void OnSelectedVendorChanged(Vendor? value)
+    {
+        if (value != null)
+        {
+            _ = LoadVendorDetailsAsync(value.VendorID);
+        }
+        else
+        {
+            SelectedVendorBalance = 0;
+            SelectedVendorTransactions.Clear();
+        }
+    }
+
+    private async Task LoadVendorDetailsAsync(int vendorId)
+    {
+        SelectedVendorBalance = await _ledgerService.GetVendorBalanceAsync(_businessId, vendorId);
+        var transactions = await _ledgerService.GetVendorTransactionsAsync(_businessId, vendorId);
+        await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() => {
+            SelectedVendorTransactions = new ObservableCollection<FinanceLedger>(transactions);
+        });
+    }
 
     [ObservableProperty]
     private string _searchQuery = string.Empty;
 
-    private List<Vendor> _allVendors = new();
+    [ObservableProperty] private int _currentPage = 1;
+    [ObservableProperty] private int _pageSize = 25;
+    [ObservableProperty] private int _totalCount;
+    [ObservableProperty] private int _totalPages;
+
+    public bool HasPreviousPage => CurrentPage > 1;
+    public bool HasNextPage => CurrentPage < TotalPages;
 
     partial void OnSearchQueryChanged(string value)
     {
-        ApplyFilter();
-    }
-
-    private void ApplyFilter()
-    {
-        if (string.IsNullOrWhiteSpace(SearchQuery))
-        {
-            Vendors = new ObservableCollection<Vendor>(_allVendors);
-        }
-        else
-        {
-            var query = SearchQuery.ToLower();
-            var filtered = _allVendors.Where(v => 
-                (v.VendorName?.ToLower().Contains(query) ?? false) || 
-                (v.GSTIN?.ToLower().Contains(query) ?? false))
-                .ToList();
-            Vendors = new ObservableCollection<Vendor>(filtered);
-        }
+        CurrentPage = 1;
+        _ = LoadVendorsAsync();
     }
 
     [ObservableProperty]
     private bool _isBusy;
 
-    public VendorsViewModel(int businessId)
+    public VendorsViewModel(int businessId, LedgerService ledgerService)
     {
         var db = new AppDbContext();
         _vendorRepository = new VendorRepository(db);
+        _ledgerService = ledgerService;
         _businessId = businessId;
         
         LoadVendorsCommand = new AsyncRelayCommand(LoadVendorsAsync);
         AddVendorCommand = new AsyncRelayCommand(AddVendorAsync);
         EditVendorCommand = new AsyncRelayCommand(EditVendorAsync, () => SelectedVendor != null);
         DeleteVendorCommand = new AsyncRelayCommand(DeleteVendorAsync, () => SelectedVendor != null);
+        AddPaymentCommand = new AsyncRelayCommand(AddPaymentAsync, () => SelectedVendor != null);
+        NextPageCommand = new AsyncRelayCommand(NextPageAsync);
+        PreviousPageCommand = new AsyncRelayCommand(PreviousPageAsync);
     }
+
+    public IAsyncRelayCommand NextPageCommand { get; }
+    public IAsyncRelayCommand PreviousPageCommand { get; }
+
+    public IAsyncRelayCommand AddPaymentCommand { get; }
 
     public IAsyncRelayCommand LoadVendorsCommand { get; }
     public IAsyncRelayCommand AddVendorCommand { get; }
@@ -78,13 +103,39 @@ public partial class VendorsViewModel : ViewModelBase
         IsBusy = true;
         try
         {
-            var vendors = await _vendorRepository.GetAllAsync(_businessId);
-            _allVendors = vendors.ToList();
-            ApplyFilter();
+            TotalCount = await _vendorRepository.GetCountAsync(_businessId, SearchQuery);
+            TotalPages = (int)Math.Ceiling((double)TotalCount / PageSize);
+
+            if (CurrentPage > TotalPages && TotalPages > 0) CurrentPage = TotalPages;
+            if (CurrentPage < 1) CurrentPage = 1;
+
+            var vendors = await _vendorRepository.GetPaginatedAsync(_businessId, CurrentPage, PageSize, SearchQuery);
+            Vendors = new ObservableCollection<Vendor>(vendors);
+
+            OnPropertyChanged(nameof(HasPreviousPage));
+            OnPropertyChanged(nameof(HasNextPage));
         }
         finally
         {
             IsBusy = false;
+        }
+    }
+
+    private async Task NextPageAsync()
+    {
+        if (HasNextPage)
+        {
+            CurrentPage++;
+            await LoadVendorsAsync();
+        }
+    }
+
+    private async Task PreviousPageAsync()
+    {
+        if (HasPreviousPage)
+        {
+            CurrentPage--;
+            await LoadVendorsAsync();
         }
     }
 
@@ -105,8 +156,7 @@ public partial class VendorsViewModel : ViewModelBase
                     var success = await _vendorRepository.AddAsync(result);
                     if (success)
                     {
-                        _allVendors.Insert(0, result);
-                        ApplyFilter();
+                        await LoadVendorsAsync();
                     }
                 }
                 finally
@@ -138,10 +188,7 @@ public partial class VendorsViewModel : ViewModelBase
                     var success = await _vendorRepository.UpdateAsync(result);
                     if (success)
                     {
-                        var masterIndex = _allVendors.FindIndex(v => v.VendorID == result.VendorID);
-                        if (masterIndex >= 0) _allVendors[masterIndex] = result;
-                        
-                        ApplyFilter();
+                        await LoadVendorsAsync();
                         SelectedVendor = result;
                     }
                 }
@@ -166,16 +213,30 @@ public partial class VendorsViewModel : ViewModelBase
             var success = await _vendorRepository.DeleteAsync(SelectedVendor.VendorID);
             if (success)
             {
-                var vendorToRemove = _allVendors.FirstOrDefault(v => v.VendorID == SelectedVendor.VendorID);
-                if (vendorToRemove != null) _allVendors.Remove(vendorToRemove);
-                
-                ApplyFilter();
+                await LoadVendorsAsync();
                 SelectedVendor = null;
             }
         }
         finally
         {
             IsBusy = false;
+        }
+    }
+
+    private async Task AddPaymentAsync()
+    {
+        if (SelectedVendor == null) return;
+        
+        var vm = new PaymentFormViewModel(_businessId, "Vendor", SelectedVendor.VendorID, SelectedVendor.VendorName, _ledgerService);
+        var dialog = new Views.PaymentFormWindow { DataContext = vm };
+        
+        if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+        {
+            var result = await dialog.ShowDialog<bool>(desktop.MainWindow!);
+            if (result)
+            {
+                await LoadVendorDetailsAsync(SelectedVendor.VendorID);
+            }
         }
     }
 

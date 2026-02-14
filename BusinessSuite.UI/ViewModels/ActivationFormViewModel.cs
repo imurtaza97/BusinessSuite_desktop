@@ -19,6 +19,7 @@ public partial class ActivationFormViewModel : ViewModelBase
     private readonly ActivationService _activationService;
 
     [ObservableProperty] private string? _hardwareId;
+    [ObservableProperty] private string? _email;
     [ObservableProperty] private string? _licenseKey;
     [ObservableProperty] private string? _statusMessage;
     [ObservableProperty] private bool _isBusy;
@@ -38,6 +39,12 @@ public partial class ActivationFormViewModel : ViewModelBase
 
     private async Task ActivateLicenseAsync()
     {
+        if (string.IsNullOrWhiteSpace(Email))
+        {
+            StatusMessage = "Email required.";
+            return;
+        }
+
         if (string.IsNullOrWhiteSpace(LicenseKey))
         {
             StatusMessage = "License key required.";
@@ -50,7 +57,7 @@ public partial class ActivationFormViewModel : ViewModelBase
 
         try 
         {
-            var result = await _activationService.ActivateLicenseAsync(LicenseKey);
+            var result = await _activationService.ActivateLicenseAsync(LicenseKey, Email);
 
             if (result == "Success")
             {

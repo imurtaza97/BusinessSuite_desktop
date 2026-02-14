@@ -1,0 +1,96 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:BusinessSuite.UI.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="1000" d:DesignHeight="600"
+             x:Class="BusinessSuite.UI.Views.WarehousesView"
+             x:DataType="vm:WarehousesViewModel">
+    <Grid RowDefinitions="Auto, *">
+        <Border Grid.Row="0" Background="White" BorderBrush="#E5E7EB" BorderThickness="0,0,0,1" Padding="20,15">
+            <Grid ColumnDefinitions="*, Auto">
+                <StackPanel Orientation="Horizontal" Spacing="15">
+                    <TextBlock Text="Warehouses" FontSize="20" FontWeight="Bold" VerticalAlignment="Center"/>
+                    <Button Content="Add Warehouse" Command="{Binding AddWarehouseCommand}" Classes="Primary" Padding="15,8"/>
+                    <Button Content="Refresh" Command="{Binding LoadWarehousesCommand}" Padding="15,8"/>
+                </StackPanel>
+                
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10">
+                    <Button Content="Edit Details" Command="{Binding EditWarehouseCommand}" IsEnabled="{Binding !!SelectedWarehouse}"/>
+                    <Button Content="Delete" Command="{Binding DeleteWarehouseCommand}" Classes="Danger" IsEnabled="{Binding !!SelectedWarehouse}"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <Grid Grid.Row="1" ColumnDefinitions="*, 450" Margin="20">
+            <!-- Left: Warehouse List -->
+            <Border Grid.Column="0" CornerRadius="8" BorderBrush="#E5E7EB" BorderThickness="1">
+                <Grid RowDefinitions="*, Auto">
+                    <DataGrid Grid.Row="0" ItemsSource="{Binding Warehouses}" SelectedItem="{Binding SelectedWarehouse}" IsReadOnly="True" GridLinesVisibility="Horizontal">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Name" Binding="{Binding WarehouseName}" Width="*"/>
+                            <DataGridTextColumn Header="City" Binding="{Binding City}" Width="150"/>
+                            <DataGridCheckBoxColumn Header="Main" Binding="{Binding IsMainWarehouse}" Width="60"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+
+                    <!-- Pagination -->
+                    <Border Grid.Row="1" Background="#F9FAFB" BorderBrush="#E5E7EB" BorderThickness="0,1,0,0" Padding="10,5">
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="15">
+                            <Button Content="Prev" Command="{Binding PreviousPageCommand}" IsEnabled="{Binding HasPreviousPage}"/>
+                            <TextBlock Text="{Binding CurrentPage, StringFormat='Page {0}'}" VerticalAlignment="Center" FontSize="12"/>
+                            <Button Content="Next" Command="{Binding NextPageCommand}" IsEnabled="{Binding HasNextPage}"/>
+                        </StackPanel>
+                    </Border>
+                    
+                    <ProgressBar Grid.Row="1" IsVisible="{Binding IsBusy}" IsIndeterminate="True" VerticalAlignment="Top"/>
+                </Grid>
+            </Border>
+
+            <!-- Right: Stock Details -->
+            <Border Grid.Column="1" Margin="20,0,0,0" Background="White" CornerRadius="8" BorderBrush="#E5E7EB" BorderThickness="1">
+                <Grid RowDefinitions="Auto, *">
+                    <Border Grid.Row="0" Padding="15" Background="#F9FAFB" CornerRadius="8,8,0,0" BorderBrush="#E5E7EB" BorderThickness="0,0,0,1">
+                        <StackPanel>
+                            <TextBlock Text="Inventory in Warehouse" FontSize="12" Foreground="#6B7280"/>
+                            <TextBlock Text="{Binding SelectedWarehouse.WarehouseName, FallbackValue='Select a Warehouse'}" FontSize="18" FontWeight="Bold"/>
+                        </StackPanel>
+                    </Border>
+                    
+                    <DataGrid Grid.Row="1" ItemsSource="{Binding WarehouseStock}" IsReadOnly="True" GridLinesVisibility="Horizontal">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Product" Binding="{Binding Product.ProductName}" Width="*"/>
+                            <DataGridTextColumn Header="Stock" Binding="{Binding Quantity}" Width="80"/>
+                            <DataGridTemplateColumn Header="Actions" Width="100">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Button Content="Adjust" 
+                                                Command="{Binding $parent[UserControl].((vm:WarehousesViewModel)DataContext).AdjustStockCommand}"
+                                                CommandParameter="{Binding}"
+                                                Padding="5,2" FontSize="11" Margin="2"
+                                                Background="#10B981" Foreground="White"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+
+                    <TextBlock Grid.Row="1" Text="No stock in this warehouse" IsVisible="{Binding !WarehouseStock.Count}" 
+                               HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#9CA3AF"/>
+                </Grid>
+            </Border>
+        </Grid>
+    </Grid>
+
+    <UserControl.Styles>
+        <Style Selector="Button.Primary">
+            <Setter Property="Background" Value="#2563EB"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+        </Style>
+        <Style Selector="Button.Danger">
+            <Setter Property="Background" Value="#EF4444"/>
+            <Setter Property="Foreground" Value="White"/>
+        </Style>
+    </UserControl.Styles>
+</UserControl>

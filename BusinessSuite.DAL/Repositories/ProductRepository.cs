@@ -19,12 +19,78 @@ public class ProductRepository
 
     public async Task<List<Product>> GetAllAsync(int businessId)
     {
-        return await _context.Products
+        var products = await _context.Products
             .Include(p => p.Category)
             .Include(p => p.PreferredVendor)
             .Where(p => p.BusinessID == businessId)
             .OrderByDescending(p => p.CreatedAt)
             .ToListAsync();
+
+        // Calculate real-time stock for each product
+        foreach (var p in products)
+        {
+            p.StockQty = (decimal)await _context.Stocks
+                .Where(s => s.ProductID == p.ProductID)
+                .SumAsync(s => (double)s.Quantity);
+        }
+
+        return products;
+    }
+
+    public async Task<List<Product>> GetPaginatedAsync(int businessId, int page, int pageSize, string? searchTerm = null, int? categoryId = null)
+    {
+        var query = _context.Products
+            .Include(p => p.Category)
+            .Where(p => p.BusinessID == businessId);
+
+        if (categoryId.HasValue)
+        {
+            query = query.Where(p => p.CategoryID == categoryId.Value);
+        }
+
+        if (!string.IsNullOrWhiteSpace(searchTerm))
+        {
+            var search = searchTerm.ToLower();
+            query = query.Where(p => 
+                p.ProductName.ToLower().Contains(search) || 
+                (p.SKU != null && p.SKU.ToLower().Contains(search)));
+        }
+
+        var products = await query
+            .OrderByDescending(p => p.CreatedAt)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+                .ToListAsync();
+
+        // Calculate real-time stock for each product
+        foreach (var p in products)
+        {
+            p.StockQty = (decimal)await _context.Stocks
+                .Where(s => s.ProductID == p.ProductID)
+                .SumAsync(s => (double)s.Quantity);
+        }
+
+        return products;
+    }
+
+    public async Task<int> GetCountAsync(int businessId, string? searchTerm = null, int? categoryId = null)
+    {
+        var query = _context.Products.Where(p => p.BusinessID == businessId);
+
+        if (categoryId.HasValue)
+        {
+            query = query.Where(p => p.CategoryID == categoryId.Value);
+        }
+
+        if (!string.IsNullOrWhiteSpace(searchTerm))
+        {
+            var search = searchTerm.ToLower();
+            query = query.Where(p => 
+                p.ProductName.ToLower().Contains(search) || 
+                (p.SKU != null && p.SKU.ToLower().Contains(search)));
+        }
+
+        return await query.CountAsync();
     }
 
     public async Task<Product?> GetByIdAsync(int id)

@@ -39,11 +39,17 @@ public class PurchaseOrder
     [Column(TypeName = "decimal(18, 2)")]
     public decimal GrandTotal { get; set; }
 
+    [Column(TypeName = "decimal(18, 2)")]
+    public decimal TotalPaid { get; set; }
+
     [MaxLength(500)]
     public string? Notes { get; set; }
 
     [MaxLength(20)]
-    public string Status { get; set; } = "Issued"; // Issued, Received, Cancelled, Partial
+    public string DeliveryStatus { get; set; } = "Pending"; // Pending, Received, Returned-to-Vendor, Cancelled
+
+    [MaxLength(20)]
+    public string PaymentStatus { get; set; } = "Unpaid"; // Unpaid, Paid, Partially Paid
 
     public bool IsItemLevelDiscount { get; set; }
 

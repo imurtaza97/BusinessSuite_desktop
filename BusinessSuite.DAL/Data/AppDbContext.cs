@@ -20,6 +20,10 @@ public class AppDbContext : DbContext
     public DbSet<UnitOfMeasure> UnitsOfMeasure => Set<UnitOfMeasure>();
     public DbSet<Category> Categories => Set<Category>();
     public DbSet<StockTransaction> StockTransactions => Set<StockTransaction>();
+    public DbSet<Warehouse> Warehouses => Set<Warehouse>();
+    public DbSet<Stock> Stocks => Set<Stock>();
+    public DbSet<FinanceLedger> FinanceLedgers => Set<FinanceLedger>();
+    public DbSet<Payment> Payments => Set<Payment>();
 
     protected override void OnConfiguring(DbContextOptionsBuilder options)
     {
@@ -45,7 +49,7 @@ public class AppDbContext : DbContext
             new UnitOfMeasure { UnitID = 2, BusinessId = 0, Name = "BOX", Description = "Box" },
             new UnitOfMeasure { UnitID = 3, BusinessId = 0, Name = "KG", Description = "Kilograms" },
             new UnitOfMeasure { UnitID = 4, BusinessId = 0, Name = "MTR", Description = "Meters" },
-            new UnitOfMeasure { UnitID = 5, BusinessId = 0, Name = "NOS", Description = "Numbers" },
+            new UnitOfMeasure { UnitID = 5, BusinessId = 0, Name = "nos", Description = "Numbers" },
             new UnitOfMeasure { UnitID = 6, BusinessId = 0, Name = "LTR", Description = "Litres" },
             new UnitOfMeasure { UnitID = 7, BusinessId = 0, Name = "GMS", Description = "Grams" },
             new UnitOfMeasure { UnitID = 8, BusinessId = 0, Name = "ML", Description = "Millilitres" },

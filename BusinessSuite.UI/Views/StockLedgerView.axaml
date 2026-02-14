@@ -1,0 +1,87 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:BusinessSuite.UI.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="1000" d:DesignHeight="600"
+             x:Class="BusinessSuite.UI.Views.StockLedgerView"
+             x:DataType="vm:StockLedgerViewModel">
+
+    <Grid RowDefinitions="Auto, *, Auto">
+        <!-- Filters -->
+        <Border Grid.Row="0" Background="White" BorderBrush="#E5E7EB" BorderThickness="0,0,0,1" Padding="20,15">
+            <StackPanel Orientation="Horizontal" Spacing="20">
+                <StackPanel Spacing="5">
+                    <TextBlock Text="Product" FontSize="12" Foreground="#6B7280"/>
+                    <ComboBox Width="200" ItemsSource="{Binding Products}" SelectedItem="{Binding SelectedProduct}">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding ProductName}"/>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                </StackPanel>
+
+                <StackPanel Spacing="5">
+                    <TextBlock Text="Warehouse" FontSize="12" Foreground="#6B7280"/>
+                    <ComboBox Width="200" ItemsSource="{Binding Warehouses}" SelectedItem="{Binding SelectedWarehouse}">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding WarehouseName}"/>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                </StackPanel>
+
+                <Button Content="Reset Filters" VerticalAlignment="Bottom" 
+                        Command="{Binding LoadDataCommand}"/>
+                
+                <Button Content="Refresh" VerticalAlignment="Bottom"
+                        Command="{Binding RefreshCommand}"/>
+            </StackPanel>
+        </Border>
+
+        <!-- Ledger Table -->
+        <Grid Grid.Row="1" Margin="20">
+            <DataGrid ItemsSource="{Binding Transactions}" 
+                      IsReadOnly="True" 
+                      BorderThickness="1"
+                      BorderBrush="#E5E7EB"
+                      GridLinesVisibility="Horizontal">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Date" Binding="{Binding TransactionDate, StringFormat='\{0:dd/MM/yy HH:mm\}'}" Width="150"/>
+                    <DataGridTextColumn Header="Product" Binding="{Binding Product.ProductName}" Width="*"/>
+                    <DataGridTextColumn Header="Type" Binding="{Binding TransactionType}" Width="100"/>
+                    <DataGridTextColumn Header="Warehouse" Binding="{Binding Warehouse.WarehouseName}" Width="120"/>
+                    <DataGridTextColumn Header="To" Binding="{Binding ToWarehouse.WarehouseName}" Width="120"/>
+                    <DataGridTextColumn Header="Qty" Binding="{Binding Quantity}" Width="80"/>
+                    <DataGridTextColumn Header="Ref" Binding="{Binding TransactionNumber}" Width="100"/>
+                    <DataGridTextColumn Header="Description" Binding="{Binding Description}" Width="150"/>
+                </DataGrid.Columns>
+            </DataGrid>
+            
+            <ProgressBar IsVisible="{Binding IsBusy}" IsIndeterminate="True" VerticalAlignment="Top"/>
+        </Grid>
+
+        <!-- Pagination -->
+        <Border Grid.Row="2" Background="White" BorderBrush="#E5E7EB" BorderThickness="0,1,0,0" Padding="20,10">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="20">
+                <Button Content="Previous" 
+                        Command="{Binding PreviousPageCommand}" 
+                        IsEnabled="{Binding HasPreviousPage}"/>
+                
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Spacing="5">
+                    <TextBlock Text="Page" VerticalAlignment="Center" Foreground="#6B7280"/>
+                    <TextBlock Text="{Binding CurrentPage}" FontWeight="Bold" VerticalAlignment="Center"/>
+                    <TextBlock Text="of" VerticalAlignment="Center" Foreground="#6B7280"/>
+                    <TextBlock Text="{Binding TotalPages}" FontWeight="Bold" VerticalAlignment="Center"/>
+                    <TextBlock Text="{Binding TotalCount, StringFormat='({0} total)'}" FontSize="12" VerticalAlignment="Center" Foreground="#9CA3AF" Margin="5,0,0,0"/>
+                </StackPanel>
+
+                <Button Content="Next" 
+                        Command="{Binding NextPageCommand}" 
+                        IsEnabled="{Binding HasNextPage}"/>
+            </StackPanel>
+        </Border>
+    </Grid>
+</UserControl>

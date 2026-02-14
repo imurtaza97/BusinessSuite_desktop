@@ -68,7 +68,7 @@
                 </Border>
                 
                 <Border Background="White" BorderBrush="#E5E7EB" BorderThickness="1" CornerRadius="8" Padding="20" Margin="0,10,0,0">
-                    <Grid ColumnDefinitions="*, *, *, *">
+                    <Grid ColumnDefinitions="*, *, *, *, *, *">
                         <StackPanel Grid.Column="0" Spacing="5" Margin="0,0,10,0">
                             <TextBlock Text="Date" FontWeight="Medium" Foreground="#374151"/>
                             <CalendarDatePicker SelectedDate="{Binding InvoiceDate}" HorizontalAlignment="Stretch" SelectedDateFormat="Short"/>
@@ -80,11 +80,29 @@
                         </StackPanel>
 
                         <StackPanel Grid.Column="2" Spacing="5" Margin="10,0,10,0">
-                            <TextBlock Text="Status" FontWeight="Medium" Foreground="#374151"/>
-                            <ComboBox ItemsSource="{Binding StatusOptions}" SelectedItem="{Binding Status}" HorizontalAlignment="Stretch"/>
+                            <TextBlock Text="Warehouse" FontWeight="Medium" Foreground="#374151"/>
+                            <ComboBox ItemsSource="{Binding Warehouses}" 
+                                      SelectedItem="{Binding SelectedWarehouse}" 
+                                      HorizontalAlignment="Stretch">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding WarehouseName}"/>
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
                         </StackPanel>
 
-                        <StackPanel Grid.Column="3" Spacing="5" Margin="10,0,0,0">
+                        <StackPanel Grid.Column="3" Spacing="5" Margin="10,0,10,0">
+                            <TextBlock Text="Delivery" FontWeight="Medium" Foreground="#374151"/>
+                            <ComboBox ItemsSource="{Binding DeliveryStatusOptions}" SelectedItem="{Binding DeliveryStatus}" HorizontalAlignment="Stretch"/>
+                        </StackPanel>
+                        
+                        <StackPanel Grid.Column="4" Spacing="5" Margin="10,0,10,0">
+                            <TextBlock Text="Payment" FontWeight="Medium" Foreground="#374151"/>
+                            <ComboBox ItemsSource="{Binding PaymentStatusOptions}" SelectedItem="{Binding PaymentStatus}" HorizontalAlignment="Stretch"/>
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="5" Spacing="5" Margin="10,0,0,0">
                             <TextBlock Text="Reverse Charge" FontWeight="Medium" Foreground="#374151"/>
                             <ToggleSwitch OnContent="Yes" OffContent="No" IsChecked="{Binding ReverseCharge}"/>
                         </StackPanel>
@@ -298,6 +316,11 @@
                             <TextBlock Text="{Binding RoundOff, StringFormat=₹ \{0:N2\}}" VerticalAlignment="Center" FontWeight="SemiBold" Foreground="#6B7280"/>
                         </StackPanel>
                     </Grid>
+                    <Grid ColumnDefinitions="*, Auto" Margin="0,5">
+                        <TextBlock Text="Total Paid:" FontWeight="Bold" VerticalAlignment="Center"/>
+                        <NumericUpDown Grid.Column="1" Value="{Binding TotalPaid, Converter={StaticResource NullToZeroConverter}}" Width="120" ShowButtonSpinner="False" Foreground="#059669" FontWeight="Bold"/>
+                    </Grid>
+
                     <Separator/>
                     <Border Background="#2563EB" CornerRadius="4" Padding="10" Margin="0,5">
                         <StackPanel Grid.ColumnSpan="2">

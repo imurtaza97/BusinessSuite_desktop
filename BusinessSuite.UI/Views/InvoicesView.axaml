@@ -8,7 +8,7 @@
              x:Class="BusinessSuite.UI.Views.InvoicesView"
              x:DataType="vm:InvoicesViewModel">
 
-    <Grid RowDefinitions="Auto, *">
+    <Grid RowDefinitions="Auto, *, Auto">
         <!-- Header Actions -->
         <Border Grid.Row="0" Background="White" BorderBrush="#E5E7EB" BorderThickness="0,0,0,1" Padding="20,15">
             <Grid ColumnDefinitions="*, Auto">
@@ -48,12 +48,34 @@
                     <DataGridTextColumn Header="Amount" Binding="{Binding TotalAmount, Converter={x:Static conv:SafeDisplayConverter.Instance}, ConverterParameter='₹ {0:N2}'}" Width="120"/>
                     <DataGridTextColumn Header="Tax" Binding="{Binding TotalTax, Converter={x:Static conv:SafeDisplayConverter.Instance}, ConverterParameter='₹ {0:N2}'}" Width="120"/>
                     <DataGridTextColumn Header="Grand Total" Binding="{Binding GrandTotal, Converter={x:Static conv:SafeDisplayConverter.Instance}, ConverterParameter='₹ {0:N2}'}" Width="130"/>
-                    <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="100"/>
+                    <DataGridTextColumn Header="Delivery" Binding="{Binding DeliveryStatus}" Width="100"/>
+                    <DataGridTextColumn Header="Payment" Binding="{Binding PaymentStatus}" Width="100"/>
                 </DataGrid.Columns>
             </DataGrid>
             
             <ProgressBar IsVisible="{Binding IsBusy}" IsIndeterminate="True" VerticalAlignment="Top"/>
         </Grid>
+
+        <!-- Pagination -->
+        <Border Grid.Row="2" Background="White" BorderBrush="#E5E7EB" BorderThickness="0,1,0,0" Padding="20,10">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="20">
+                <Button Content="Previous" 
+                        Command="{Binding PreviousPageCommand}" 
+                        IsEnabled="{Binding HasPreviousPage}"/>
+                
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Spacing="5">
+                    <TextBlock Text="Page" VerticalAlignment="Center" Foreground="#6B7280"/>
+                    <TextBlock Text="{Binding CurrentPage}" FontWeight="Bold" VerticalAlignment="Center"/>
+                    <TextBlock Text="of" VerticalAlignment="Center" Foreground="#6B7280"/>
+                    <TextBlock Text="{Binding TotalPages}" FontWeight="Bold" VerticalAlignment="Center"/>
+                    <TextBlock Text="{Binding TotalCount, StringFormat='({0} total)'}" FontSize="12" VerticalAlignment="Center" Foreground="#9CA3AF" Margin="5,0,0,0"/>
+                </StackPanel>
+
+                <Button Content="Next" 
+                        Command="{Binding NextPageCommand}" 
+                        IsEnabled="{Binding HasNextPage}"/>
+            </StackPanel>
+        </Border>
     </Grid>
 
     <UserControl.Styles>

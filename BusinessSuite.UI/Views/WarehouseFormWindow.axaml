@@ -1,0 +1,53 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="using:BusinessSuite.UI.ViewModels"
+        mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="450"
+        x:Class="BusinessSuite.UI.Views.WarehouseFormWindow"
+        x:DataType="vm:WarehouseFormViewModel"
+        Title="{Binding Title}" Width="400" Height="450"
+        WindowStartupLocation="CenterOwner"
+        CanResize="False">
+
+    <Grid RowDefinitions="Auto, *, Auto" Margin="20">
+        <TextBlock Grid.Row="0" Text="{Binding Title}" FontSize="20" FontWeight="Bold" Margin="0,0,0,20"/>
+
+        <ScrollViewer Grid.Row="1">
+            <StackPanel Spacing="15">
+                <StackPanel>
+                    <TextBlock Text="Warehouse Name" FontWeight="Medium" Margin="0,0,0,5"/>
+                    <TextBox Text="{Binding WarehouseName}"/>
+                </StackPanel>
+
+                <StackPanel>
+                    <TextBlock Text="Address" FontWeight="Medium" Margin="0,0,0,5"/>
+                    <TextBox Text="{Binding Address}" AcceptsReturn="True" Height="60"/>
+                </StackPanel>
+
+                <Grid ColumnDefinitions="*, *">
+                    <StackPanel Grid.Column="0" Margin="0,0,5,0">
+                        <TextBlock Text="City" FontWeight="Medium" Margin="0,0,0,5"/>
+                        <TextBox Text="{Binding City}"/>
+                    </StackPanel>
+                    <StackPanel Grid.Column="1" Margin="5,0,0,0">
+                        <TextBlock Text="State" FontWeight="Medium" Margin="0,0,0,5"/>
+                        <TextBox Text="{Binding State}"/>
+                    </StackPanel>
+                </Grid>
+
+                <StackPanel>
+                    <TextBlock Text="Zip Code" FontWeight="Medium" Margin="0,0,0,5"/>
+                    <TextBox Text="{Binding ZipCode}"/>
+                </StackPanel>
+
+                <CheckBox IsChecked="{Binding IsMainWarehouse}" Content="Is Main Warehouse"/>
+            </StackPanel>
+        </ScrollViewer>
+
+        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10" Margin="0,20,0,0">
+            <Button Content="Cancel" Command="{Binding CancelCommand}" Width="100"/>
+            <Button Content="Save" Command="{Binding SaveCommand}" Background="#2563EB" Foreground="White" Width="100" FontWeight="Bold"/>
+        </StackPanel>
+    </Grid>
+</Window>

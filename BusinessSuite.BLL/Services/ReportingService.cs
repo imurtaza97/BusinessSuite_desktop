@@ -22,18 +22,18 @@ public class ReportingService
         var summary = new DashboardSummary();
 
         var invoices = await _context.Invoices
-            .Where(i => i.BusinessID == businessId && i.Status != "Cancelled")
+            .Where(i => i.BusinessID == businessId && i.DeliveryStatus != "Cancelled")
             .ToListAsync();
 
         var purchaseOrders = await _context.PurchaseOrders
-            .Where(p => p.BusinessId == businessId && p.Status != "Cancelled")
+            .Where(p => p.BusinessId == businessId && p.DeliveryStatus != "Cancelled")
             .ToListAsync();
 
         summary.TotalSales = invoices.Sum(i => i.GrandTotal);
         summary.TotalPurchases = purchaseOrders.Sum(p => p.GrandTotal);
         summary.NetProfit = summary.TotalSales - summary.TotalPurchases;
-        summary.ActiveOrdersCount = invoices.Count(i => i.Status == "Unpaid");
-        summary.TotalReceivable = invoices.Where(i => i.Status == "Unpaid").Sum(i => i.GrandTotal);
+        summary.ActiveOrdersCount = invoices.Count(i => i.PaymentStatus == "Unpaid");
+        summary.TotalReceivable = invoices.Where(i => i.PaymentStatus == "Unpaid").Sum(i => i.GrandTotal);
 
         return summary;
     }
@@ -47,7 +47,7 @@ public class ReportingService
         var endDate = new DateTime(year, 12, 31, 23, 59, 59);
         
         var salesData = await _context.Invoices
-            .Where(i => i.BusinessID == businessId && i.Status != "Cancelled" && 
+            .Where(i => i.BusinessID == businessId && i.DeliveryStatus != "Cancelled" && 
                         i.InvoiceDate >= startDate && i.InvoiceDate <= endDate)
             .GroupBy(i => new { i.InvoiceDate.Year, i.InvoiceDate.Month })
             .Select(g => new 
@@ -77,7 +77,7 @@ public class ReportingService
     public async Task<List<VendorPerformanceStats>> GetVendorPerformanceAsync(int businessId)
     {
         var data = await _context.PurchaseOrders
-            .Where(p => p.BusinessId == businessId && p.Status != "Cancelled")
+            .Where(p => p.BusinessId == businessId && p.DeliveryStatus != "Cancelled")
             .GroupBy(p => p.VendorId)
             .Select(g => new VendorPerformanceStats
             {
@@ -99,7 +99,7 @@ public class ReportingService
     public async Task<List<CustomerInsightStats>> GetCustomerInsightsAsync(int businessId)
     {
         var data = await _context.Invoices
-            .Where(i => i.BusinessID == businessId && i.Status != "Cancelled")
+            .Where(i => i.BusinessID == businessId && i.DeliveryStatus != "Cancelled")
             .GroupBy(i => i.CustomerID)
             .Select(g => new CustomerInsightStats
             {
@@ -122,12 +122,12 @@ public class ReportingService
         // In a real scenario, you'd group by rate (5%, 12%, 18%)
         
         var invoices = await _context.Invoices
-            .Where(i => i.BusinessID == businessId && i.Status != "Cancelled" && 
+            .Where(i => i.BusinessID == businessId && i.DeliveryStatus != "Cancelled" && 
                         i.InvoiceDate >= startDate && i.InvoiceDate <= endDate)
             .ToListAsync();
 
         var purchases = await _context.PurchaseOrders
-            .Where(p => p.BusinessId == businessId && p.Status != "Cancelled" && 
+            .Where(p => p.BusinessId == businessId && p.DeliveryStatus != "Cancelled" && 
                         p.PODate >= startDate && p.PODate <= endDate)
             .ToListAsync();
 
@@ -146,7 +146,7 @@ public class ReportingService
     {
         return await _context.Invoices
             .Include(i => i.Customer)
-            .Where(i => i.BusinessID == businessId && i.Status != "Cancelled")
+            .Where(i => i.BusinessID == businessId && i.DeliveryStatus != "Cancelled")
             .OrderByDescending(i => i.InvoiceDate)
             .Take(count)
             .ToListAsync();

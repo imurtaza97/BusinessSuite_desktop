@@ -180,6 +180,52 @@ namespace BusinessSuite.DAL.Migrations
                     b.ToTable("Customers");
                 });
 
+            modelBuilder.Entity("BusinessSuite.DAL.Entities.FinanceLedger", b =>
+                {
+                    b.Property<int>("LedgerID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("BusinessId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(255)
+                        .HasColumnType("TEXT");
+
+                    b.Property<int?>("ReferenceID")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("ReferenceType")
+                        .HasMaxLength(50)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("RelatedEntity")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("TEXT");
+
+                    b.Property<int?>("RelatedEntityID")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("TransactionDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("LedgerID");
+
+                    b.HasIndex("BusinessId");
+
+                    b.ToTable("FinanceLedgers");
+                });
+
             modelBuilder.Entity("BusinessSuite.DAL.Entities.GstRate", b =>
                 {
                     b.Property<int>("RateID")
@@ -245,6 +291,11 @@ namespace BusinessSuite.DAL.Migrations
                     b.Property<int>("CustomerID")
                         .HasColumnType("INTEGER");
 
+                    b.Property<string>("DeliveryStatus")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("TEXT");
+
                     b.Property<decimal>("Discount")
                         .HasColumnType("decimal(18, 2)");
 
@@ -276,6 +327,11 @@ namespace BusinessSuite.DAL.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("PaymentStatus")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("PaymentTerms")
                         .HasMaxLength(100)
                         .HasColumnType("TEXT");
@@ -293,11 +349,6 @@ namespace BusinessSuite.DAL.Migrations
                     b.Property<decimal>("ShippingCharges")
                         .HasColumnType("decimal(18, 2)");
 
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("TEXT");
-
                     b.Property<string>("TermsAndConditions")
                         .HasColumnType("TEXT");
 
@@ -308,6 +359,9 @@ namespace BusinessSuite.DAL.Migrations
                         .HasColumnType("decimal(18, 2)");
 
                     b.Property<decimal>("TotalIGST")
+                        .HasColumnType("decimal(18, 2)");
+
+                    b.Property<decimal>("TotalPaid")
                         .HasColumnType("decimal(18, 2)");
 
                     b.Property<decimal>("TotalSGST")
@@ -421,6 +475,55 @@ namespace BusinessSuite.DAL.Migrations
                     b.ToTable("LicenseActivations");
                 });
 
+            modelBuilder.Entity("BusinessSuite.DAL.Entities.Payment", b =>
+                {
+                    b.Property<int>("PaymentID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("BusinessId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int?>("CustomerID")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Note")
+                        .HasMaxLength(255)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("PaymentDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("PaymentMethod")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("PaymentType")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("TEXT");
+
+                    b.Property<int?>("ReferenceID")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int?>("VendorID")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("PaymentID");
+
+                    b.HasIndex("BusinessId");
+
+                    b.HasIndex("CustomerID");
+
+                    b.HasIndex("VendorID");
+
+                    b.ToTable("Payments");
+                });
+
             modelBuilder.Entity("BusinessSuite.DAL.Entities.Product", b =>
                 {
                     b.Property<int>("ProductID")
@@ -458,8 +561,8 @@ namespace BusinessSuite.DAL.Migrations
                     b.Property<decimal>("SalePrice")
                         .HasColumnType("TEXT");
 
-                    b.Property<int>("StockQty")
-                        .HasColumnType("INTEGER");
+                    b.Property<decimal>("StockQty")
+                        .HasColumnType("TEXT");
 
                     b.Property<decimal>("TaxRate")
                         .HasColumnType("TEXT");
@@ -490,6 +593,11 @@ namespace BusinessSuite.DAL.Migrations
                         .HasColumnType("INTEGER");
 
                     b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("DeliveryStatus")
+                        .IsRequired()
+                        .HasMaxLength(20)
                         .HasColumnType("TEXT");
 
                     b.Property<decimal>("Discount")
@@ -523,6 +631,11 @@ namespace BusinessSuite.DAL.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("PaymentStatus")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("PaymentTerms")
                         .HasMaxLength(100)
                         .HasColumnType("TEXT");
@@ -540,11 +653,6 @@ namespace BusinessSuite.DAL.Migrations
                     b.Property<decimal>("ShippingCharges")
                         .HasColumnType("decimal(18, 2)");
 
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("TEXT");
-
                     b.Property<string>("TermsAndConditions")
                         .HasColumnType("TEXT");
 
@@ -555,6 +663,9 @@ namespace BusinessSuite.DAL.Migrations
                         .HasColumnType("decimal(18, 2)");
 
                     b.Property<decimal>("TotalIGST")
+                        .HasColumnType("decimal(18, 2)");
+
+                    b.Property<decimal>("TotalPaid")
                         .HasColumnType("decimal(18, 2)");
 
                     b.Property<decimal>("TotalSGST")
@@ -696,18 +807,17 @@ namespace BusinessSuite.DAL.Migrations
                     b.Property<int>("ProductID")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("Quantity")
-                        .HasColumnType("INTEGER");
+                    b.Property<decimal>("Quantity")
+                        .HasColumnType("TEXT");
 
                     b.Property<int>("WarehouseID")
                         .HasColumnType("INTEGER");
 
                     b.HasKey("StockID");
 
-                    b.HasIndex("WarehouseID");
+                    b.HasIndex("ProductID");
 
-                    b.HasIndex("ProductID", "WarehouseID")
-                        .IsUnique();
+                    b.HasIndex("WarehouseID");
 
                     b.ToTable("Stocks");
                 });
@@ -725,19 +835,31 @@ namespace BusinessSuite.DAL.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("TEXT");
 
+                    b.Property<decimal?>("NewQuantity")
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal?>("PreviousQuantity")
+                        .HasColumnType("TEXT");
+
                     b.Property<int>("ProductID")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("Quantity")
-                        .HasColumnType("INTEGER");
+                    b.Property<decimal>("Quantity")
+                        .HasColumnType("TEXT");
 
                     b.Property<int?>("ReferenceID")
                         .HasColumnType("INTEGER");
+
+                    b.Property<string>("ReferenceType")
+                        .HasColumnType("TEXT");
 
                     b.Property<int?>("ToWarehouseID")
                         .HasColumnType("INTEGER");
 
                     b.Property<DateTime>("TransactionDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("TransactionNumber")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("TransactionType")
@@ -816,7 +938,7 @@ namespace BusinessSuite.DAL.Migrations
                             UnitID = 5,
                             BusinessId = 0,
                             Description = "Numbers",
-                            Name = "NOS"
+                            Name = "nos"
                         },
                         new
                         {
@@ -1119,6 +1241,17 @@ namespace BusinessSuite.DAL.Migrations
                     b.Navigation("Business");
                 });
 
+            modelBuilder.Entity("BusinessSuite.DAL.Entities.FinanceLedger", b =>
+                {
+                    b.HasOne("BusinessSuite.DAL.Entities.Business", "Business")
+                        .WithMany()
+                        .HasForeignKey("BusinessId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Business");
+                });
+
             modelBuilder.Entity("BusinessSuite.DAL.Entities.Invoice", b =>
                 {
                     b.HasOne("BusinessSuite.DAL.Entities.Business", "Business")
@@ -1155,6 +1288,29 @@ namespace BusinessSuite.DAL.Migrations
                     b.Navigation("Invoice");
 
                     b.Navigation("Product");
+                });
+
+            modelBuilder.Entity("BusinessSuite.DAL.Entities.Payment", b =>
+                {
+                    b.HasOne("BusinessSuite.DAL.Entities.Business", "Business")
+                        .WithMany()
+                        .HasForeignKey("BusinessId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("BusinessSuite.DAL.Entities.Customer", "Customer")
+                        .WithMany()
+                        .HasForeignKey("CustomerID");
+
+                    b.HasOne("BusinessSuite.DAL.Entities.Vendor", "Vendor")
+                        .WithMany()
+                        .HasForeignKey("VendorID");
+
+                    b.Navigation("Business");
+
+                    b.Navigation("Customer");
+
+                    b.Navigation("Vendor");
                 });
 
             modelBuilder.Entity("BusinessSuite.DAL.Entities.Product", b =>

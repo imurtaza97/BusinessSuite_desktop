@@ -23,6 +23,8 @@ public partial class PurchaseOrderFormViewModel : ViewModelBase, INotifyDataErro
     private readonly PurchaseOrderRepository _poRepository;
     private readonly VendorRepository _vendorRepository;
     private readonly ProductRepository _productRepository;
+    private readonly WarehouseRepository _warehouseRepository;
+    private readonly LedgerService _ledgerService;
     private readonly TaxCalculator _taxCalculator;
     private readonly Business _business;
     private readonly int _businessId;
@@ -61,6 +63,7 @@ public partial class PurchaseOrderFormViewModel : ViewModelBase, INotifyDataErro
     {
         ClearAllErrors();
         if (SelectedVendor == null) AddError(nameof(SelectedVendor), "Vendor is required");
+        if (SelectedWarehouse == null) AddError(nameof(SelectedWarehouse), "Warehouse is required");
         if (!Items.Any()) 
             AddError(nameof(Items), "At least one item is required");
         else
@@ -100,7 +103,31 @@ public partial class PurchaseOrderFormViewModel : ViewModelBase, INotifyDataErro
     [ObservableProperty] private string? _notes;
     [ObservableProperty] private decimal _shippingCharges;
     [ObservableProperty] private bool _reverseCharge;
-    [ObservableProperty] private string _status = "Issued";
+    [ObservableProperty] private string _deliveryStatus = "Pending";
+    [ObservableProperty] private string _paymentStatus = "Unpaid";
+    [ObservableProperty] private decimal _totalPaid;
+
+    partial void OnTotalPaidChanged(decimal value)
+    {
+        if (value <= 0) PaymentStatus = "Unpaid";
+        else if (value < GrandTotal) PaymentStatus = "Partially Paid";
+        else PaymentStatus = "Paid";
+    }
+
+    partial void OnPaymentStatusChanged(string value)
+    {
+        if (value == "Paid")
+            TotalPaid = GrandTotal;
+        else if (value == "Unpaid")
+            TotalPaid = 0;
+    }
+
+    partial void OnGrandTotalChanged(decimal value)
+    {
+        if (PaymentStatus == "Paid")
+            TotalPaid = value;
+    }
+    
     [ObservableProperty] private string? _vendorBillPath;
     [ObservableProperty] private string? _vendorBillFileName;
 
@@ -117,6 +144,9 @@ public partial class PurchaseOrderFormViewModel : ViewModelBase, INotifyDataErro
     [ObservableProperty] private ObservableCollection<Product> _products = new();
     [ObservableProperty] private ObservableCollection<UnitOfMeasure> _units = new();
     [ObservableProperty] private ObservableCollection<string> _unitNames = new();
+
+    [ObservableProperty] private ObservableCollection<Warehouse> _warehouses = new();
+    [ObservableProperty] private Warehouse? _selectedWarehouse;
 
     [ObservableProperty] private ObservableCollection<PurchaseOrderItemViewModel> _items = new();
 
@@ -142,6 +172,9 @@ public partial class PurchaseOrderFormViewModel : ViewModelBase, INotifyDataErro
         _poRepository = new PurchaseOrderRepository(db);
         _vendorRepository = new VendorRepository(db);
         _productRepository = new ProductRepository(db);
+        _warehouseRepository = new WarehouseRepository(db);
+        var dbFactory = new AppDbContextFactory();
+        _ledgerService = new LedgerService(dbFactory);
         _taxCalculator = new TaxCalculator();
 
         _business = db.Businesses.FirstOrDefault(b => b.BusinessID == businessId) ?? new Business();
@@ -165,7 +198,9 @@ public partial class PurchaseOrderFormViewModel : ViewModelBase, INotifyDataErro
             Notes = existingPO.Notes;
             ShippingCharges = existingPO.ShippingCharges;
             Discount = existingPO.Discount;
-            Status = existingPO.Status ?? "Issued";
+            DeliveryStatus = existingPO.DeliveryStatus ?? "Pending";
+            PaymentStatus = existingPO.PaymentStatus ?? "Unpaid";
+            TotalPaid = existingPO.TotalPaid;
             PlaceOfSupply = existingPO.PlaceOfSupply ?? _business.State;
             RoundOff = existingPO.RoundOff;
             ExpectedDeliveryDate = existingPO.ExpectedDeliveryDate;
@@ -187,7 +222,8 @@ public partial class PurchaseOrderFormViewModel : ViewModelBase, INotifyDataErro
     public IAsyncRelayCommand AddProductCommand { get; }
 
     public List<string> PaymentMethodsList { get; } = new() { "Cash", "Bank Transfer", "UPI/QR", "Card", "Cheque" };
-    public List<string> StatusOptions { get; } = new() { "Issued", "Received", "Paid", "Cancelled" };
+    public List<string> DeliveryStatusOptions { get; } = new() { "Pending", "Received", "Returned-to-Vendor", "Cancelled" };
+    public List<string> PaymentStatusOptions { get; } = new() { "Unpaid", "Paid", "Partially Paid" };
     public List<decimal> TaxRatesList { get; } = new() { 0, 5, 12, 18, 28 };
 
     public IAsyncRelayCommand AddVendorCommand { get; }
@@ -242,6 +278,7 @@ public partial class PurchaseOrderFormViewModel : ViewModelBase, INotifyDataErro
         }
         var vendorsList = await _vendorRepository.GetAllAsync(_businessId);
         var productsList = await _productRepository.GetAllAsync(_businessId);
+        var warehousesList = await _warehouseRepository.GetAllAsync(_businessId);
 
         using var db = new AppDbContext();
         var unitList = await db.UnitsOfMeasure.Where(u => u.BusinessId == 0 || u.BusinessId == _businessId).ToListAsync();
@@ -272,6 +309,10 @@ public partial class PurchaseOrderFormViewModel : ViewModelBase, INotifyDataErro
                 Units.Add(u);
                 UnitNames.Add(u.Name);
             }
+
+            Warehouses.Clear();
+            foreach (var w in warehousesList) Warehouses.Add(w);
+            SelectedWarehouse = Warehouses.FirstOrDefault(w => w.IsMainWarehouse) ?? Warehouses.FirstOrDefault();
 
             if (existing != null)
             {
@@ -531,7 +572,9 @@ public partial class PurchaseOrderFormViewModel : ViewModelBase, INotifyDataErro
             PaymentTerms = PaymentTerms,
             TermsAndConditions = TermsAndConditions,
             Notes = Notes,
-            Status = Status,
+            DeliveryStatus = DeliveryStatus,
+            PaymentStatus = PaymentStatus,
+            TotalPaid = TotalPaid,
             IsItemLevelDiscount = IsItemLevelDiscount,
             ExpectedDeliveryDate = ExpectedDeliveryDate,
             IsAutoRoundOff = IsAutoRoundOff,
@@ -556,17 +599,39 @@ public partial class PurchaseOrderFormViewModel : ViewModelBase, INotifyDataErro
             }).ToList()
         };
 
-        bool success;
+        bool success = false;
         if (_existingPOId.HasValue)
-            success = await _poRepository.UpdateAsync(po);
+        {
+            try 
+            {
+                await _ledgerService.ProcessPurchaseOrderAsync(po, SelectedWarehouse!.WarehouseID);
+                success = true;
+            }
+            catch(Exception ex)
+            {
+                GeneralErrorMessage = "Failed to update PO: " + ex.Message;
+                success = false;
+            }
+        }
         else
-            success = await _poRepository.AddAsync(po);
+        {
+            try
+            {
+                await _ledgerService.ProcessPurchaseOrderAsync(po, SelectedWarehouse!.WarehouseID);
+                success = true;
+            }
+            catch (Exception ex)
+            {
+                success = false;
+                GeneralErrorMessage = "Failed to process purchase order: " + ex.Message;
+            }
+        }
 
         if (success)
         {
             RequestClose?.Invoke(po);
         }
-        else
+        else if (string.IsNullOrEmpty(GeneralErrorMessage))
         {
             GeneralErrorMessage = "Failed to save purchase order to database.";
         }
@@ -617,7 +682,7 @@ public partial class PurchaseOrderItemViewModel : ObservableObject
         set 
         {
             var sanitized = value;
-            if (sanitized != null && sanitized.Contains("BusinessSuite.DAL.Entities")) sanitized = "PCS";
+            if (sanitized != null && sanitized.Contains("BusinessSuite.DAL.Entities")) sanitized = "nos";
             SetProperty(ref _unit, sanitized);
         }
     }

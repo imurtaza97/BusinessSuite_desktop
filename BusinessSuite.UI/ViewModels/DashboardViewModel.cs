@@ -11,6 +11,8 @@ using BusinessSuite.UI.Views;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using BusinessSuite.BLL.StaticData;
+using BusinessSuite.BLL.Services;
+using Microsoft.EntityFrameworkCore;
 
 namespace BusinessSuite.UI.ViewModels;
 
@@ -53,29 +55,38 @@ public partial class DashboardViewModel : ViewModelBase
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsDashboardActive))]
     [NotifyPropertyChangedFor(nameof(IsProductsActive))]
+    [NotifyPropertyChangedFor(nameof(IsWarehousesActive))]
     [NotifyPropertyChangedFor(nameof(IsCustomersActive))]
     [NotifyPropertyChangedFor(nameof(IsVendorsActive))]
     [NotifyPropertyChangedFor(nameof(IsSalesActive))]
     [NotifyPropertyChangedFor(nameof(IsPurchasesActive))]
     [NotifyPropertyChangedFor(nameof(IsReportsActive))]
+    [NotifyPropertyChangedFor(nameof(IsFinanceLedgerActive))]
+    [NotifyPropertyChangedFor(nameof(IsStockLedgerActive))]
     [NotifyPropertyChangedFor(nameof(IsSettingsActive))]
     private string _currentViewTitle = "Dashboard";
 
     public bool IsDashboardActive => CurrentViewTitle == "Dashboard";
     public bool IsProductsActive => CurrentViewTitle == "Products";
+    public bool IsWarehousesActive => CurrentViewTitle == "Warehouses";
     public bool IsCustomersActive => CurrentViewTitle == "Customers";
     public bool IsVendorsActive => CurrentViewTitle == "Vendors";
     public bool IsSalesActive => CurrentViewTitle == "Sales";
     public bool IsPurchasesActive => CurrentViewTitle == "Purchases";
     public bool IsReportsActive => CurrentViewTitle == "Reports";
+    public bool IsFinanceLedgerActive => CurrentViewTitle == "FinanceLedger";
+    public bool IsStockLedgerActive => CurrentViewTitle == "StockLedger";
     public bool IsSettingsActive => CurrentViewTitle == "Settings";
 
-    public DashboardViewModel(BusinessSuite.DAL.Entities.User user)
+    private readonly IDbContextFactory<AppDbContext> _dbFactory;
+
+    public DashboardViewModel(BusinessSuite.DAL.Entities.User user, IDbContextFactory<AppDbContext> dbFactory)
     {
+        _dbFactory = dbFactory;
         CurrentUserName = user.FullName ?? user.UserName;
         CurrentUserType = user.Designation?.ToString() ?? "User";
         
-        using var db = new AppDbContext();
+        using var db = _dbFactory.CreateDbContext();
         var business = db.Businesses.FirstOrDefault();
         if (business != null)
         {
@@ -89,6 +100,7 @@ public partial class DashboardViewModel : ViewModelBase
 
     public DashboardViewModel()
     {
+        _dbFactory = new BusinessSuite.DAL.Data.AppDbContextFactory();
         // Parameterless constructor for designer support if needed
         CurrentUserName = "Admin";
         BusinessName = "My Tech Store";
@@ -114,26 +126,46 @@ public partial class DashboardViewModel : ViewModelBase
         {
             case "Dashboard":
                 var homeVm = new HomeViewModel(_businessId);
+                homeVm.RequestNavigation += (target) => NavigateInternal(target);
                 CurrentView = homeVm;
                 _ = homeVm.LoadDashboardDataCommand.ExecuteAsync(null);
                 break;
             case "Products":
-                var productsVm = new ProductsViewModel(_businessId);
+                var ledgerServiceP = new LedgerService(_dbFactory);
+                var productsVm = new ProductsViewModel(_businessId, ledgerServiceP);
                 CurrentView = productsVm;
                 _ = productsVm.LoadProductsCommand.ExecuteAsync(null);
                 break;
+            case "Warehouses":
+                var warehousesVm = new WarehousesViewModel(_dbFactory, _businessId);
+                CurrentView = warehousesVm;
+                _ = warehousesVm.LoadWarehousesCommand.ExecuteAsync(null);
+                break;
+            case "StockLedger":
+                var stockLedgerVm = new StockLedgerViewModel(_dbFactory, _businessId);
+                CurrentView = stockLedgerVm;
+                _ = stockLedgerVm.LoadDataCommand.ExecuteAsync(null);
+                break;
             case "Customers":
-                var customersVm = new CustomersViewModel(_businessId);
+                var ledgerService = new LedgerService(_dbFactory);
+                var customersVm = new CustomersViewModel(_businessId, ledgerService);
                 CurrentView = customersVm;
                 _ = customersVm.LoadCustomersCommand.ExecuteAsync(null);
                 break;
             case "Vendors":
-                var vendorsVm = new VendorsViewModel(_businessId);
+                var ledgerServiceV = new LedgerService(_dbFactory);
+                var vendorsVm = new VendorsViewModel(_businessId, ledgerServiceV);
                 CurrentView = vendorsVm;
                 _ = vendorsVm.LoadVendorsCommand.ExecuteAsync(null);
                 break;
+            case "FinanceLedger":
+                var financeLedgerVm = new FinanceLedgerViewModel(_dbFactory, _businessId);
+                CurrentView = financeLedgerVm;
+                _ = financeLedgerVm.LoadDataCommand.ExecuteAsync(null);
+                break;
             case "Sales":
-                var invoicesVm = new InvoicesViewModel(_businessId);
+                var ledgerServiceS = new LedgerService(_dbFactory);
+                var invoicesVm = new InvoicesViewModel(_businessId, ledgerServiceS);
                 invoicesVm.RequestInvoiceForm += (invoice) => NavigateInternal("InvoiceForm", invoice);
                 CurrentView = invoicesVm;
                 _ = invoicesVm.LoadInvoicesCommand.ExecuteAsync(null);
@@ -144,7 +176,8 @@ public partial class DashboardViewModel : ViewModelBase
                 CurrentView = invoiceFormVm;
                 break;
             case "Purchases":
-                var posVm = new PurchaseOrdersViewModel(_businessId);
+                var ledgerServiceP2 = new LedgerService(_dbFactory);
+                var posVm = new PurchaseOrdersViewModel(_businessId, ledgerServiceP2);
                 posVm.RequestPOForm += (po) => NavigateInternal("PurchaseOrderForm", po);
                 CurrentView = posVm;
                 _ = posVm.LoadPOsCommand.ExecuteAsync(null);

@@ -1,0 +1,75 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:BusinessSuite.UI.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="1000" d:DesignHeight="600"
+             x:Class="BusinessSuite.UI.Views.FinanceLedgerView"
+             x:DataType="vm:FinanceLedgerViewModel">
+
+    <Grid RowDefinitions="Auto, *, Auto">
+        <!-- Summary Dashboard -->
+        <Border Grid.Row="0" Background="White" BorderBrush="#E5E7EB" BorderThickness="0,0,0,1" Padding="20">
+            <StackPanel Orientation="Horizontal" Spacing="40">
+                <StackPanel Spacing="5">
+                    <TextBlock Text="Total Debit (Receivable)" FontSize="12" Foreground="#6B7280"/>
+                    <TextBlock Text="{Binding TotalDebit, StringFormat='{}₹{0:N2}'}" FontSize="20" FontWeight="Bold" Foreground="#2563EB"/>
+                </StackPanel>
+                
+                <StackPanel Spacing="5">
+                    <TextBlock Text="Total Credit (Payable)" FontSize="12" Foreground="#6B7280"/>
+                    <TextBlock Text="{Binding TotalCredit, StringFormat='{}₹{0:N2}'}" FontSize="20" FontWeight="Bold" Foreground="#EF4444"/>
+                </StackPanel>
+
+                <StackPanel Spacing="5">
+                    <TextBlock Text="Net Business Balance" FontSize="12" Foreground="#6B7280"/>
+                    <TextBlock Text="{Binding NetBalance, StringFormat='{}₹{0:N2}'}" FontSize="20" FontWeight="Bold" Foreground="#111827"/>
+                </StackPanel>
+
+                <Button Content="Refresh" VerticalAlignment="Center" Command="{Binding LoadDataCommand}"/>
+            </StackPanel>
+        </Border>
+
+        <!-- Transaction List -->
+        <Grid Grid.Row="1" Margin="20">
+            <DataGrid ItemsSource="{Binding Transactions}" 
+                      IsReadOnly="True" 
+                      BorderThickness="1"
+                      BorderBrush="#E5E7EB"
+                      GridLinesVisibility="Horizontal">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Date" Binding="{Binding TransactionDate, StringFormat='\{0:dd/MM/yy\}'}" Width="120"/>
+                    <DataGridTextColumn Header="Entity" Binding="{Binding RelatedEntity}" Width="120"/>
+                    <DataGridTextColumn Header="Entity ID" Binding="{Binding RelatedEntityID}" Width="80"/>
+                    <DataGridTextColumn Header="Type" Binding="{Binding Type}" Width="100"/>
+                    <DataGridTextColumn Header="Reference" Binding="{Binding ReferenceID}" Width="100"/>
+                    <DataGridTextColumn Header="Amount" Binding="{Binding Amount, StringFormat='\{0:N2\}'}" Width="120"/>
+                    <DataGridTextColumn Header="Description" Binding="{Binding Description}" Width="*"/>
+                </DataGrid.Columns>
+            </DataGrid>
+            
+            <ProgressBar IsVisible="{Binding IsBusy}" IsIndeterminate="True" VerticalAlignment="Top"/>
+        </Grid>
+
+        <!-- Pagination -->
+        <Border Grid.Row="2" Background="White" BorderBrush="#E5E7EB" BorderThickness="0,1,0,0" Padding="20,10">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="20">
+                <Button Content="Previous" 
+                        Command="{Binding PreviousPageCommand}" 
+                        IsEnabled="{Binding HasPreviousPage}"/>
+                
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Spacing="5">
+                    <TextBlock Text="Page" VerticalAlignment="Center" Foreground="#6B7280"/>
+                    <TextBlock Text="{Binding CurrentPage}" FontWeight="Bold" VerticalAlignment="Center"/>
+                    <TextBlock Text="of" VerticalAlignment="Center" Foreground="#6B7280"/>
+                    <TextBlock Text="{Binding TotalPages}" FontWeight="Bold" VerticalAlignment="Center"/>
+                    <TextBlock Text="{Binding TotalCount, StringFormat='({0} total)'}" FontSize="12" VerticalAlignment="Center" Foreground="#9CA3AF" Margin="5,0,0,0"/>
+                </StackPanel>
+
+                <Button Content="Next" 
+                        Command="{Binding NextPageCommand}" 
+                        IsEnabled="{Binding HasNextPage}"/>
+            </StackPanel>
+        </Border>
+    </Grid>
+</UserControl>

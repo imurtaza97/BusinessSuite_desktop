@@ -25,6 +25,40 @@ public class CustomerRepository
             .ToListAsync();
     }
 
+    public async Task<List<Customer>> GetPaginatedAsync(int businessId, int page, int pageSize, string? searchTerm = null)
+    {
+        var query = _context.Customers.Where(c => c.BusinessId == businessId);
+
+        if (!string.IsNullOrWhiteSpace(searchTerm))
+        {
+            var search = searchTerm.ToLower();
+            query = query.Where(c => 
+                c.CustomerName.ToLower().Contains(search) || 
+                (c.ContactNo != null && c.ContactNo.Contains(search)));
+        }
+
+        return await query
+            .OrderByDescending(c => c.CreatedAt)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+    }
+
+    public async Task<int> GetCountAsync(int businessId, string? searchTerm = null)
+    {
+        var query = _context.Customers.Where(c => c.BusinessId == businessId);
+
+        if (!string.IsNullOrWhiteSpace(searchTerm))
+        {
+            var search = searchTerm.ToLower();
+            query = query.Where(c => 
+                c.CustomerName.ToLower().Contains(search) || 
+                (c.ContactNo != null && c.ContactNo.Contains(search)));
+        }
+
+        return await query.CountAsync();
+    }
+
     public async Task<Customer?> GetByIdAsync(int id)
     {
         return await _context.Customers.FindAsync(id);

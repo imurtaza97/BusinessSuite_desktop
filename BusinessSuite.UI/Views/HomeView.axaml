@@ -15,7 +15,23 @@
     </UserControl.Resources>
 
     <ScrollViewer Background="#F8F9FA">
-        <StackPanel Margin="30" Spacing="30">
+        <StackPanel Margin="30" Spacing="25">
+            <!-- Quick Links -->
+            <StackPanel Orientation="Horizontal" Spacing="15" Margin="0,0,0,10">
+                <Button Command="{Binding NavigateToLedgerCommand}" Classes="QuickLink">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <TextBlock Text="📄" VerticalAlignment="Center"/>
+                        <TextBlock Text="Finance Ledger" VerticalAlignment="Center" FontWeight="Medium"/>
+                    </StackPanel>
+                </Button>
+                <Button Command="{Binding NavigateToStockLedgerCommand}" Classes="QuickLink">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <TextBlock Text="📦" VerticalAlignment="Center"/>
+                        <TextBlock Text="Stock Ledger" VerticalAlignment="Center" FontWeight="Medium"/>
+                    </StackPanel>
+                </Button>
+            </StackPanel>
+
             <!-- Stats Section -->
             <UniformGrid Columns="4" Rows="1">
                 <Border Classes="StatCard">
@@ -77,9 +93,14 @@
                                 <TextBlock Grid.Column="1" Text="{Binding Customer.CustomerName}" Foreground="#333333"/>
                                 <TextBlock Grid.Column="2" Text="{Binding InvoiceDate, StringFormat='{}{0:MMM dd, yyyy}'}" Foreground="#333333"/>
                                 <TextBlock Grid.Column="3" Text="{Binding GrandTotal, StringFormat='{}₹{0:N2}'}" Foreground="#333333" FontWeight="Bold"/>
-                                <Border Grid.Column="4" Background="{Binding Status, Converter={StaticResource StatusColorConverter}}" CornerRadius="10" HorizontalAlignment="Left" Padding="10,2">
-                                    <TextBlock Text="{Binding Status}" FontSize="12" Foreground="Black"/>
-                                </Border>
+                                <StackPanel Grid.Column="4" Spacing="4" VerticalAlignment="Center" Orientation="Horizontal">
+                                    <Border Background="{Binding PaymentStatus, Converter={StaticResource StatusColorConverter}}" CornerRadius="4" Padding="6,2">
+                                        <TextBlock Text="{Binding PaymentStatus}" FontSize="10" Foreground="Black"/>
+                                    </Border>
+                                    <Border Background="{Binding DeliveryStatus, Converter={StaticResource StatusColorConverter}}" CornerRadius="4" Padding="6,2">
+                                        <TextBlock Text="{Binding DeliveryStatus}" FontSize="10" Foreground="Black"/>
+                                    </Border>
+                                </StackPanel>
                             </Grid>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
@@ -116,6 +137,18 @@
         </Style>
         <Style Selector="TextBlock.Negative">
             <Setter Property="Foreground" Value="#EF4444"/>
+        </Style>
+
+        <Style Selector="Button.QuickLink">
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="BorderBrush" Value="#E5E7EB"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="15,10"/>
+            <Setter Property="CornerRadius" Value="8"/>
+        </Style>
+        <Style Selector="Button.QuickLink:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#F3F4F6"/>
+            <Setter Property="BorderBrush" Value="#D1D5DB"/>
         </Style>
     </UserControl.Styles>
 </UserControl>

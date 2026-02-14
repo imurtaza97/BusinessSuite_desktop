@@ -30,6 +30,42 @@ public class InvoiceRepository
             .ToListAsync();
     }
 
+    public async Task<List<Invoice>> GetPaginatedAsync(int businessId, int page, int pageSize, string? searchTerm = null)
+    {
+        var query = _context.Invoices
+            .Include(i => i.Customer)
+            .Where(i => i.BusinessID == businessId);
+
+        if (!string.IsNullOrWhiteSpace(searchTerm))
+        {
+            var search = searchTerm.ToLower();
+            query = query.Where(i => 
+                i.InvoiceNumber.ToLower().Contains(search) || 
+                (i.Customer != null && i.Customer.CustomerName.ToLower().Contains(search)));
+        }
+
+        return await query
+            .OrderByDescending(i => i.InvoiceDate)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+    }
+
+    public async Task<int> GetCountAsync(int businessId, string? searchTerm = null)
+    {
+        var query = _context.Invoices.Where(i => i.BusinessID == businessId);
+
+        if (!string.IsNullOrWhiteSpace(searchTerm))
+        {
+            var search = searchTerm.ToLower();
+            query = query.Where(i => 
+                i.InvoiceNumber.ToLower().Contains(search) || 
+                (i.Customer != null && i.Customer.CustomerName.ToLower().Contains(search)));
+        }
+
+        return await query.CountAsync();
+    }
+
     public async Task<Invoice?> GetByIdAsync(int id)
     {
         return await _context.Invoices
@@ -82,7 +118,8 @@ public class InvoiceRepository
             existing.InvoiceDate = invoice.InvoiceDate;
             existing.DueDate = invoice.DueDate;
             existing.CustomerID = invoice.CustomerID;
-            existing.Status = invoice.Status;
+            existing.DeliveryStatus = invoice.DeliveryStatus;
+            existing.PaymentStatus = invoice.PaymentStatus;
 
             existing.TotalAmount = invoice.TotalAmount;
             existing.TotalTax = invoice.TotalTax;
@@ -160,13 +197,23 @@ public class InvoiceRepository
        STATUS
     ============================ */
 
-    public async Task<bool> UpdateStatusAsync(int id, string status)
+    public async Task<bool> UpdateDeliveryStatusAsync(int id, string status)
     {
         var invoice = await _context.Invoices.FindAsync(id);
         if (invoice == null)
             return false;
 
-        invoice.Status = status;
+        invoice.DeliveryStatus = status;
+        return await _context.SaveChangesAsync() > 0;
+    }
+
+    public async Task<bool> UpdatePaymentStatusAsync(int id, string status)
+    {
+        var invoice = await _context.Invoices.FindAsync(id);
+        if (invoice == null)
+            return false;
+
+        invoice.PaymentStatus = status;
         return await _context.SaveChangesAsync() > 0;
     }
 

@@ -100,14 +100,32 @@
 
                 <Grid ColumnDefinitions="*, *">
                     <StackPanel Grid.Column="0" Margin="0,0,7,0">
-                        <TextBlock Text="Initial Stock" Margin="0,0,0,5" FontWeight="Medium" Foreground="#374151"/>
-                        <NumericUpDown Value="{Binding StockQty}" Minimum="0"/>
-                    </StackPanel>
-                    <StackPanel Grid.Column="1" Margin="7,0,0,0">
                         <TextBlock Text="Tax Rate (GST %) *" Margin="0,0,0,5" FontWeight="Medium" Foreground="#374151"/>
                         <ComboBox ItemsSource="{Binding AvailableTaxRates}" 
                                   SelectedItem="{Binding TaxRate}"
                                   HorizontalAlignment="Stretch"/>
+                    </StackPanel>
+                    <StackPanel Grid.Column="1" Margin="7,0,0,0">
+                    </StackPanel>
+                </Grid>
+
+                <Grid ColumnDefinitions="*, *">
+                    <StackPanel Grid.Column="0" Margin="0,0,7,0">
+                        <TextBlock Text="Initial Stock" Margin="0,0,0,5" FontWeight="Medium" Foreground="#374151"/>
+                        <NumericUpDown Value="{Binding StockQty}" Minimum="0"/>
+                    </StackPanel>
+                    <StackPanel Grid.Column="1" Margin="7,0,0,0">
+                        <TextBlock Text="Warehouse (for stock)" Margin="0,0,0,5" FontWeight="Medium" Foreground="#374151"/>
+                        <ComboBox ItemsSource="{Binding Warehouses}" 
+                                  SelectedItem="{Binding SelectedWarehouse}"
+                                  PlaceholderText="Select warehouse"
+                                  HorizontalAlignment="Stretch">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding WarehouseName}"/>
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
                     </StackPanel>
                 </Grid>
             </StackPanel>

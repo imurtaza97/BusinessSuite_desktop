@@ -25,6 +25,40 @@ public class VendorRepository
             .ToListAsync();
     }
 
+    public async Task<List<Vendor>> GetPaginatedAsync(int businessId, int page, int pageSize, string? searchTerm = null)
+    {
+        var query = _context.Vendors.Where(v => v.BusinessId == businessId);
+
+        if (!string.IsNullOrWhiteSpace(searchTerm))
+        {
+            var search = searchTerm.ToLower();
+            query = query.Where(v => 
+                v.VendorName.ToLower().Contains(search) || 
+                (v.ContactNo != null && v.ContactNo.Contains(search)));
+        }
+
+        return await query
+            .OrderByDescending(v => v.CreatedAt)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+    }
+
+    public async Task<int> GetCountAsync(int businessId, string? searchTerm = null)
+    {
+        var query = _context.Vendors.Where(v => v.BusinessId == businessId);
+
+        if (!string.IsNullOrWhiteSpace(searchTerm))
+        {
+            var search = searchTerm.ToLower();
+            query = query.Where(v => 
+                v.VendorName.ToLower().Contains(search) || 
+                (v.ContactNo != null && v.ContactNo.Contains(search)));
+        }
+
+        return await query.CountAsync();
+    }
+
     public async Task<Vendor?> GetByIdAsync(int id)
     {
         return await _context.Vendors.FindAsync(id);

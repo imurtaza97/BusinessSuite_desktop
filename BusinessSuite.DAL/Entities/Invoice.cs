@@ -39,11 +39,17 @@ public class Invoice
     [Column(TypeName = "decimal(18, 2)")]
     public decimal GrandTotal { get; set; }
 
+    [Column(TypeName = "decimal(18, 2)")]
+    public decimal TotalPaid { get; set; }
+
     [MaxLength(500)]
     public string? Notes { get; set; }
 
     [MaxLength(20)]
-    public string Status { get; set; } = "Unpaid"; // Unpaid, Paid, Cancelled
+    public string DeliveryStatus { get; set; } = "Pending"; // Pending, Shipped, Returned, Cancelled
+
+    [MaxLength(20)]
+    public string PaymentStatus { get; set; } = "Unpaid"; // Unpaid, Paid, Partially Paid
 
     public bool IsItemLevelDiscount { get; set; }
 

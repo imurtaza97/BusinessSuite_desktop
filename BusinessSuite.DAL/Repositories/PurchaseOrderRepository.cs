@@ -34,6 +34,42 @@ public class PurchaseOrderRepository
             .ToListAsync();
     }
 
+    public async Task<List<PurchaseOrder>> GetPaginatedAsync(int businessId, int page, int pageSize, string? searchTerm = null)
+    {
+        var query = _context.PurchaseOrders
+            .Include(p => p.Vendor)
+            .Where(p => p.BusinessId == businessId);
+
+        if (!string.IsNullOrWhiteSpace(searchTerm))
+        {
+            var search = searchTerm.ToLower();
+            query = query.Where(p => 
+                p.PONumber.ToLower().Contains(search) || 
+                (p.Vendor != null && p.Vendor.VendorName.ToLower().Contains(search)));
+        }
+
+        return await query
+            .OrderByDescending(p => p.PODate)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+    }
+
+    public async Task<int> GetCountAsync(int businessId, string? searchTerm = null)
+    {
+        var query = _context.PurchaseOrders.Where(p => p.BusinessId == businessId);
+
+        if (!string.IsNullOrWhiteSpace(searchTerm))
+        {
+            var search = searchTerm.ToLower();
+            query = query.Where(p => 
+                p.PONumber.ToLower().Contains(search) || 
+                (p.Vendor != null && p.Vendor.VendorName.ToLower().Contains(search)));
+        }
+
+        return await query.CountAsync();
+    }
+
     public async Task<PurchaseOrder?> GetByIdAsync(int id)
     {
         return await _context.PurchaseOrders
@@ -75,7 +111,8 @@ public class PurchaseOrderRepository
         existing.PaymentTerms = po.PaymentTerms;
         existing.TermsAndConditions = po.TermsAndConditions;
         existing.Notes = po.Notes;
-        existing.Status = po.Status;
+        existing.DeliveryStatus = po.DeliveryStatus;
+        existing.PaymentStatus = po.PaymentStatus;
         existing.IsItemLevelDiscount = po.IsItemLevelDiscount;
         existing.PlaceOfSupply = po.PlaceOfSupply;
         existing.ReverseCharge = po.ReverseCharge;
@@ -133,5 +170,24 @@ public class PurchaseOrderRepository
         }
 
         return $"{prefix}{(maxNum + 1).ToString().PadLeft(padLength, '0')}";
+    }
+    public async Task<bool> UpdateDeliveryStatusAsync(int id, string status)
+    {
+        var po = await _context.PurchaseOrders.FindAsync(id);
+        if (po == null)
+            return false;
+
+        po.DeliveryStatus = status;
+        return await _context.SaveChangesAsync() > 0;
+    }
+
+    public async Task<bool> UpdatePaymentStatusAsync(int id, string status)
+    {
+        var po = await _context.PurchaseOrders.FindAsync(id);
+        if (po == null)
+            return false;
+
+        po.PaymentStatus = status;
+        return await _context.SaveChangesAsync() > 0;
     }
 }

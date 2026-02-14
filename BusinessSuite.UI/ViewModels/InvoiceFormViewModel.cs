@@ -23,6 +23,8 @@ public partial class InvoiceFormViewModel : ViewModelBase, INotifyDataErrorInfo
     private readonly InvoiceRepository _invoiceRepository;
     private readonly CustomerRepository _customerRepository;
     private readonly ProductRepository _productRepository;
+    private readonly WarehouseRepository _warehouseRepository;
+    private readonly LedgerService _ledgerService;
     private readonly TaxCalculator _taxCalculator;
     private readonly Business _business;
     private readonly int _businessId;
@@ -61,6 +63,7 @@ public partial class InvoiceFormViewModel : ViewModelBase, INotifyDataErrorInfo
     {
         ClearAllErrors();
         if (SelectedCustomer == null) AddError(nameof(SelectedCustomer), "Customer is required");
+        if (SelectedWarehouse == null) AddError(nameof(SelectedWarehouse), "Warehouse is required");
         if (!Items.Any()) 
             AddError(nameof(Items), "At least one item is required");
         else
@@ -102,7 +105,30 @@ public partial class InvoiceFormViewModel : ViewModelBase, INotifyDataErrorInfo
     [ObservableProperty] private string? _notes;
     [ObservableProperty] private decimal _shippingCharges;
     [ObservableProperty] private bool _reverseCharge;
-    [ObservableProperty] private string _status = "Unpaid";
+    [ObservableProperty] private string _deliveryStatus = "Pending";
+    [ObservableProperty] private string _paymentStatus = "Unpaid";
+    [ObservableProperty] private decimal _totalPaid;
+
+    partial void OnTotalPaidChanged(decimal value)
+    {
+        if (value <= 0) PaymentStatus = "Unpaid";
+        else if (value < GrandTotal) PaymentStatus = "Partially Paid";
+        else PaymentStatus = "Paid";
+    }
+
+    partial void OnPaymentStatusChanged(string value)
+    {
+        if (value == "Paid")
+            TotalPaid = GrandTotal;
+        else if (value == "Unpaid")
+            TotalPaid = 0;
+    }
+
+    partial void OnGrandTotalChanged(decimal value)
+    {
+        if (PaymentStatus == "Paid")
+            TotalPaid = value;
+    }
 
     private readonly int? _existingInvoiceId;
 
@@ -115,6 +141,9 @@ public partial class InvoiceFormViewModel : ViewModelBase, INotifyDataErrorInfo
     [ObservableProperty] private ObservableCollection<Product> _products = new();
     [ObservableProperty] private ObservableCollection<UnitOfMeasure> _units = new();
     [ObservableProperty] private ObservableCollection<string> _unitNames = new();
+
+    [ObservableProperty] private ObservableCollection<Warehouse> _warehouses = new();
+    [ObservableProperty] private Warehouse? _selectedWarehouse;
 
     [ObservableProperty] private ObservableCollection<InvoiceItemViewModel> _items = new();
 
@@ -150,6 +179,9 @@ public partial class InvoiceFormViewModel : ViewModelBase, INotifyDataErrorInfo
         _invoiceRepository = new InvoiceRepository(db);
         _customerRepository = new CustomerRepository(db);
         _productRepository = new ProductRepository(db);
+        _warehouseRepository = new WarehouseRepository(db);
+        var dbFactory = new AppDbContextFactory();
+        _ledgerService = new LedgerService(dbFactory);
         _taxCalculator = new TaxCalculator();
 
         _business = db.Businesses.FirstOrDefault(b => b.BusinessID == businessId) ?? new Business();
@@ -173,7 +205,9 @@ public partial class InvoiceFormViewModel : ViewModelBase, INotifyDataErrorInfo
             Notes = existingInvoice.Notes;
             ShippingCharges = existingInvoice.ShippingCharges;
             Discount = existingInvoice.Discount;
-            Status = existingInvoice.Status ?? "Unpaid";
+            DeliveryStatus = existingInvoice.DeliveryStatus ?? "Pending";
+            PaymentStatus = existingInvoice.PaymentStatus ?? "Unpaid";
+            TotalPaid = existingInvoice.TotalPaid;
             PlaceOfSupply = existingInvoice.PlaceOfSupply ?? _business.State;
             RoundOff = existingInvoice.RoundOff;
             DueDate = existingInvoice.DueDate;
@@ -194,7 +228,8 @@ public partial class InvoiceFormViewModel : ViewModelBase, INotifyDataErrorInfo
     public IAsyncRelayCommand AddProductCommand { get; }
 
     public List<string> PaymentMethodsList { get; } = new() { "Cash", "Bank Transfer", "UPI/QR", "Card", "Cheque" };
-    public List<string> StatusOptions { get; } = new() { "Unpaid", "Paid", "Partial", "Cancelled" };
+    public List<string> DeliveryStatusOptions { get; } = new() { "Pending", "Shipped", "Returned", "Cancelled" };
+    public List<string> PaymentStatusOptions { get; } = new() { "Unpaid", "Paid", "Partially Paid" };
     public List<decimal> TaxRatesList { get; } = new() { 0, 5, 12, 18, 28 };
 
     public IAsyncRelayCommand AddCustomerCommand { get; }
@@ -256,6 +291,7 @@ public partial class InvoiceFormViewModel : ViewModelBase, INotifyDataErrorInfo
 
         var customersList = await _customerRepository.GetAllAsync(_businessId);
         var productsList = await _productRepository.GetAllAsync(_businessId);
+        var warehousesList = await _warehouseRepository.GetAllAsync(_businessId);
 
         using var db = new AppDbContext();
         var unitList = await db.UnitsOfMeasure.Where(u => u.BusinessId == 0 || u.BusinessId == _businessId).ToListAsync();
@@ -286,6 +322,10 @@ public partial class InvoiceFormViewModel : ViewModelBase, INotifyDataErrorInfo
                 Units.Add(u);
                 UnitNames.Add(u.Name);
             }
+
+            Warehouses.Clear();
+            foreach (var w in warehousesList) Warehouses.Add(w);
+            SelectedWarehouse = Warehouses.FirstOrDefault(w => w.IsMainWarehouse) ?? Warehouses.FirstOrDefault();
 
             if (existing != null)
             {
@@ -560,7 +600,9 @@ public partial class InvoiceFormViewModel : ViewModelBase, INotifyDataErrorInfo
             PaymentTerms = PaymentTerms,
             TermsAndConditions = TermsAndConditions,
             Notes = Notes,
-            Status = Status,
+            DeliveryStatus = DeliveryStatus,
+            PaymentStatus = PaymentStatus,
+            TotalPaid = TotalPaid,
             IsItemLevelDiscount = IsItemLevelDiscount,
             DueDate = DueDate,
             IsAutoRoundOff = IsAutoRoundOff,
@@ -584,17 +626,40 @@ public partial class InvoiceFormViewModel : ViewModelBase, INotifyDataErrorInfo
             }).ToList()
         };
 
-        bool success;
+        bool success = false;
         if (_existingInvoiceId.HasValue)
-            success = await _invoiceRepository.UpdateAsync(invoice);
+        {
+             try 
+             {
+                // We use process even for updates to handle status changes (e.g. Draft -> Shipped)
+                await _ledgerService.ProcessInvoiceAsync(invoice, SelectedWarehouse!.WarehouseID);
+                success = true;
+             }
+             catch(Exception ex)
+             {
+                 GeneralErrorMessage = "Failed to update invoice: " + ex.Message;
+                 success = false;
+             }
+        }
         else
-            success = await _invoiceRepository.AddAsync(invoice);
+        {
+            try
+            {
+                await _ledgerService.ProcessInvoiceAsync(invoice, SelectedWarehouse!.WarehouseID);
+                success = true;
+            }
+            catch (Exception ex)
+            {
+                success = false;
+                GeneralErrorMessage = "Failed to process invoice: " + ex.Message;
+            }
+        }
 
         if (success)
         {
             RequestClose?.Invoke(invoice);
         }
-        else
+        else if (string.IsNullOrEmpty(GeneralErrorMessage))
         {
             GeneralErrorMessage = "Failed to save invoice to database.";
         }
@@ -632,7 +697,7 @@ public partial class InvoiceItemViewModel : ObservableObject
         set 
         {
             var sanitized = value;
-            if (sanitized != null && sanitized.Contains("BusinessSuite.DAL.Entities")) sanitized = "PCS";
+            if (sanitized != null && sanitized.Contains("BusinessSuite.DAL.Entities")) sanitized = "nos";
             SetProperty(ref _unit, sanitized);
         }
     }

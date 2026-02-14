@@ -36,30 +36,63 @@
             </Grid>
         </Border>
 
-        <!-- Product List -->
-        <Grid Grid.Row="1" Margin="20">
-            <DataGrid ItemsSource="{Binding Products}" 
-                      SelectedItem="{Binding SelectedProduct}"
-                      IsReadOnly="True" 
-                      CanUserReorderColumns="True"
-                      CanUserResizeColumns="True"
-                      BorderThickness="1"
-                      BorderBrush="#E5E7EB"
-                      GridLinesVisibility="All"
-                      DoubleTapped="DataGrid_DoubleTapped">
-                <DataGrid.Columns>
-                    <DataGridTextColumn Header="Product Name" Binding="{Binding ProductName}" Width="*"/>
-                    <DataGridTextColumn Header="Category" Binding="{Binding Category.Name}" Width="150"/>
-                    <DataGridTextColumn Header="SKU" Binding="{Binding SKU}" Width="100"/>
-                    <DataGridTextColumn Header="HSN Code" Binding="{Binding HSNCode}" Width="100"/>
-                    <DataGridTextColumn Header="Purchase Price" Binding="{Binding PurchasePrice, StringFormat='{}₹{0:N2}'}" Width="120"/>
-                    <DataGridTextColumn Header="Sale Price" Binding="{Binding SalePrice, StringFormat='{}₹{0:N2}'}" Width="120"/>
-                    <DataGridTextColumn Header="Stock" Binding="{Binding StockQty}" Width="80"/>
-                    <DataGridTextColumn Header="Tax Rate (GST %)" Binding="{Binding TaxRate, StringFormat='\{0\}%'}" Width="110"/>
-                </DataGrid.Columns>
-            </DataGrid>
-            
-            <ProgressBar IsVisible="{Binding IsBusy}" IsIndeterminate="True" VerticalAlignment="Top"/>
+        <!-- Product Content -->
+        <Grid Grid.Row="1" ColumnDefinitions="*, 350" Margin="20">
+            <!-- Product List -->
+            <Grid Grid.Column="0" RowDefinitions="*, Auto">
+                <DataGrid Grid.Row="0" ItemsSource="{Binding Products}" 
+                          SelectedItem="{Binding SelectedProduct}"
+                          IsReadOnly="True" 
+                          CanUserReorderColumns="True"
+                          CanUserResizeColumns="True"
+                          BorderThickness="1"
+                          BorderBrush="#E5E7EB"
+                          GridLinesVisibility="All">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Product Name" Binding="{Binding ProductName}" Width="*"/>
+                        <DataGridTextColumn Header="Category" Binding="{Binding Category.Name}" Width="150"/>
+                        <DataGridTextColumn Header="SKU" Binding="{Binding SKU}" Width="100"/>
+                        <DataGridTextColumn Header="Stock" Binding="{Binding StockQty}" Width="80"/>
+                        <DataGridTextColumn Header="Sale Price" Binding="{Binding SalePrice, StringFormat='{}₹{0:N2}'}" Width="110"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+                
+                <!-- Pagination for Products -->
+                <Border Grid.Row="1" Background="White" BorderBrush="#E5E7EB" BorderThickness="1,0,1,1" Padding="10,5">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="10">
+                        <Button Content="&lt;" Command="{Binding PreviousPageCommand}" IsEnabled="{Binding HasPreviousPage}" Padding="5,2"/>
+                        <TextBlock Text="{Binding CurrentPage}" FontWeight="Bold" VerticalAlignment="Center" FontSize="12"/>
+                        <TextBlock Text="/" VerticalAlignment="Center" FontSize="12"/>
+                        <TextBlock Text="{Binding TotalPages}" VerticalAlignment="Center" FontSize="12"/>
+                        <Button Content="&gt;" Command="{Binding NextPageCommand}" IsEnabled="{Binding HasNextPage}" Padding="5,2"/>
+                    </StackPanel>
+                </Border>
+                
+                <ProgressBar IsVisible="{Binding IsBusy}" IsIndeterminate="True" VerticalAlignment="Top"/>
+            </Grid>
+
+            <!-- Stock Distribution Panel -->
+            <Border Grid.Column="1" Margin="15,0,0,0" Background="White" CornerRadius="8" BorderBrush="#E5E7EB" BorderThickness="1">
+                <Grid RowDefinitions="Auto, *">
+                    <Border Grid.Row="0" Padding="15" Background="#F9FAFB" CornerRadius="8,8,0,0" BorderBrush="#E5E7EB" BorderThickness="0,0,0,1">
+                        <StackPanel Spacing="5">
+                            <TextBlock Text="Stock Distribution" FontSize="14" FontWeight="Bold" Foreground="#374151"/>
+                            <TextBlock Text="{Binding SelectedProduct.ProductName}" FontSize="12" Foreground="#6B7280" TextWrapping="Wrap"/>
+                            <StackPanel Orientation="Horizontal" Spacing="10" Margin="0,5,0,0">
+                                <TextBlock Text="Total:" FontSize="12" FontWeight="SemiBold"/>
+                                <TextBlock Text="{Binding SelectedProduct.StockQty}" FontSize="12" FontWeight="Bold"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+
+                    <DataGrid Grid.Row="1" ItemsSource="{Binding SelectedProductWarehouseStock}" IsReadOnly="True" GridLinesVisibility="Horizontal">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Warehouse" Binding="{Binding Warehouse.WarehouseName}" Width="*"/>
+                            <DataGridTextColumn Header="Qty" Binding="{Binding Quantity}" Width="80"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Grid>
+            </Border>
         </Grid>
     </Grid>
     

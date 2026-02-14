@@ -10,63 +10,77 @@ using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using BusinessSuite.BLL.Services;
 
 namespace BusinessSuite.UI.ViewModels;
 
 public partial class ProductsViewModel : ViewModelBase
 {
     private readonly ProductRepository _productRepository;
+    private readonly LedgerService _ledgerService;
     private readonly int _businessId;
 
-    [ObservableProperty]
-    private ObservableCollection<Product> _products = new();
-
-    [ObservableProperty]
-    private ObservableCollection<Category> _categories = new();
-
-    [ObservableProperty]
-    private Category? _selectedCategory;
+    [ObservableProperty] private ObservableCollection<Product> _products = new();
+    [ObservableProperty] private ObservableCollection<Stock> _selectedProductWarehouseStock = new();
+    [ObservableProperty] private ObservableCollection<Category> _categories = new();
+    [ObservableProperty] private Category? _selectedCategory;
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(EditProductCommand))]
     [NotifyCanExecuteChangedFor(nameof(DeleteProductCommand))]
     private Product? _selectedProduct;
 
+    partial void OnSelectedProductChanged(Product? value)
+    {
+        if (value != null)
+        {
+            _ = LoadWarehouseStockAsync(value.ProductID);
+        }
+        else
+        {
+            SelectedProductWarehouseStock.Clear();
+        }
+    }
+
+    private async Task LoadWarehouseStockAsync(int productId)
+    {
+        var stocks = await _ledgerService.GetProductStockAsync(productId);
+        await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() => {
+            SelectedProductWarehouseStock = new ObservableCollection<Stock>(stocks);
+        });
+    }
+
     [ObservableProperty]
     private string _searchQuery = string.Empty;
 
-    private List<Product> _allProducts = new();
+    [ObservableProperty] private int _currentPage = 1;
+    [ObservableProperty] private int _pageSize = 25;
+    [ObservableProperty] private int _totalCount;
+    [ObservableProperty] private int _totalPages;
 
-    partial void OnSearchQueryChanged(string value) => ApplyFilter();
-    partial void OnSelectedCategoryChanged(Category? value) => ApplyFilter();
+    public bool HasPreviousPage => CurrentPage > 1;
+    public bool HasNextPage => CurrentPage < TotalPages;
 
-    private void ApplyFilter()
+    partial void OnSearchQueryChanged(string value)
     {
-        var filtered = _allProducts.AsEnumerable();
+        CurrentPage = 1;
+        _ = LoadProductsAsync();
+    }
 
-        if (!string.IsNullOrWhiteSpace(SearchQuery))
-        {
-            var query = SearchQuery.ToLower();
-            filtered = filtered.Where(p => 
-                (p.ProductName?.ToLower().Contains(query) ?? false) || 
-                (p.SKU?.ToLower().Contains(query) ?? false));
-        }
-
-        if (SelectedCategory != null)
-        {
-            filtered = filtered.Where(p => p.CategoryID == SelectedCategory.CategoryID);
-        }
-
-        Products = new ObservableCollection<Product>(filtered);
+    partial void OnSelectedCategoryChanged(Category? value)
+    {
+        CurrentPage = 1;
+        _ = LoadProductsAsync();
     }
 
     [ObservableProperty]
     private bool _isBusy;
 
-    public ProductsViewModel(int businessId)
+    public ProductsViewModel(int businessId, LedgerService ledgerService)
     {
         var db = new AppDbContext();
         _productRepository = new ProductRepository(db);
+        _ledgerService = ledgerService;
         _businessId = businessId;
         
         LoadProductsCommand = new AsyncRelayCommand(LoadProductsAsync);
@@ -74,9 +88,14 @@ public partial class ProductsViewModel : ViewModelBase
         EditProductCommand = new AsyncRelayCommand(EditProductAsync, () => SelectedProduct != null);
         DeleteProductCommand = new AsyncRelayCommand(DeleteProductAsync, () => SelectedProduct != null);
         ClearCategoryFilterCommand = new RelayCommand(() => SelectedCategory = null);
+        NextPageCommand = new AsyncRelayCommand(NextPageAsync);
+        PreviousPageCommand = new AsyncRelayCommand(PreviousPageAsync);
 
         _ = LoadCategoriesAsync(db);
     }
+
+    public IAsyncRelayCommand NextPageCommand { get; }
+    public IAsyncRelayCommand PreviousPageCommand { get; }
 
     public IRelayCommand ClearCategoryFilterCommand { get; }
 
@@ -101,13 +120,39 @@ public partial class ProductsViewModel : ViewModelBase
         IsBusy = true;
         try
         {
-            var products = await _productRepository.GetAllAsync(_businessId);
-            _allProducts = products.ToList();
-            await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(ApplyFilter);
+            TotalCount = await _productRepository.GetCountAsync(_businessId, SearchQuery, SelectedCategory?.CategoryID);
+            TotalPages = (int)Math.Ceiling((double)TotalCount / PageSize);
+
+            if (CurrentPage > TotalPages && TotalPages > 0) CurrentPage = TotalPages;
+            if (CurrentPage < 1) CurrentPage = 1;
+
+            var products = await _productRepository.GetPaginatedAsync(_businessId, CurrentPage, PageSize, SearchQuery, SelectedCategory?.CategoryID);
+            Products = new ObservableCollection<Product>(products);
+
+            OnPropertyChanged(nameof(HasPreviousPage));
+            OnPropertyChanged(nameof(HasNextPage));
         }
         finally
         {
             IsBusy = false;
+        }
+    }
+
+    private async Task NextPageAsync()
+    {
+        if (HasNextPage)
+        {
+            CurrentPage++;
+            await LoadProductsAsync();
+        }
+    }
+
+    private async Task PreviousPageAsync()
+    {
+        if (HasPreviousPage)
+        {
+            CurrentPage--;
+            await LoadProductsAsync();
         }
     }
 
@@ -125,11 +170,19 @@ public partial class ProductsViewModel : ViewModelBase
                 IsBusy = true;
                 try
                 {
-                    var success = await _productRepository.AddAsync(result);
+                    bool success;
+                    if (vm.StockQty > 0 && vm.SelectedWarehouse != null)
+                    {
+                        success = await _ledgerService.AddProductWithStockAsync(result, vm.SelectedWarehouse.WarehouseID, vm.StockQty);
+                    }
+                    else
+                    {
+                        success = await _productRepository.AddAsync(result);
+                    }
+
                     if (success)
                     {
-                        _allProducts.Insert(0, result);
-                        ApplyFilter();
+                        await LoadProductsAsync();
                     }
                 }
                 finally
@@ -161,10 +214,7 @@ public partial class ProductsViewModel : ViewModelBase
                     var success = await _productRepository.UpdateAsync(result);
                     if (success)
                     {
-                        var masterIndex = _allProducts.FindIndex(p => p.ProductID == result.ProductID);
-                        if (masterIndex >= 0) _allProducts[masterIndex] = result;
-                        
-                        ApplyFilter();
+                        await LoadProductsAsync();
                         SelectedProduct = result;
                     }
                 }
@@ -191,10 +241,7 @@ public partial class ProductsViewModel : ViewModelBase
             var success = await _productRepository.DeleteAsync(SelectedProduct.ProductID);
             if (success)
             {
-                var productToRemove = _allProducts.FirstOrDefault(p => p.ProductID == SelectedProduct.ProductID);
-                if (productToRemove != null) _allProducts.Remove(productToRemove);
-                
-                ApplyFilter();
+                await LoadProductsAsync();
                 SelectedProduct = null;
             }
         }

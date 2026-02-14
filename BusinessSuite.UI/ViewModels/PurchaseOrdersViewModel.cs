@@ -22,6 +22,7 @@ public partial class PurchaseOrdersViewModel : ViewModelBase
 {
     private readonly PurchaseOrderRepository _poRepository;
     private readonly PurchaseOrderPdfService _pdfService;
+    private readonly LedgerService _ledgerService;
     private readonly int _businessId;
 
     [ObservableProperty]
@@ -35,35 +36,29 @@ public partial class PurchaseOrdersViewModel : ViewModelBase
     [ObservableProperty]
     private string _searchQuery = string.Empty;
 
-    private List<PurchaseOrder> _allPOs = new();
+    [ObservableProperty] private int _currentPage = 1;
+    [ObservableProperty] private int _pageSize = 25;
+    [ObservableProperty] private int _totalCount;
+    [ObservableProperty] private int _totalPages;
 
-    partial void OnSearchQueryChanged(string value) => ApplyFilter();
+    public bool HasPreviousPage => CurrentPage > 1;
+    public bool HasNextPage => CurrentPage < TotalPages;
 
-    private void ApplyFilter()
+    partial void OnSearchQueryChanged(string value)
     {
-        if (string.IsNullOrWhiteSpace(SearchQuery))
-        {
-            PurchaseOrders = new ObservableCollection<PurchaseOrder>(_allPOs);
-        }
-        else
-        {
-            var query = SearchQuery.ToLower();
-            var filtered = _allPOs.Where(i => 
-                (i.PONumber?.ToLower().Contains(query) ?? false) || 
-                (i.Vendor?.VendorName?.ToLower().Contains(query) ?? false))
-                .ToList();
-            PurchaseOrders = new ObservableCollection<PurchaseOrder>(filtered);
-        }
+        CurrentPage = 1;
+        _ = LoadPOsAsync();
     }
 
     [ObservableProperty]
     private bool _isBusy;
 
-    public PurchaseOrdersViewModel(int businessId)
+    public PurchaseOrdersViewModel(int businessId, LedgerService ledgerService)
     {
         var db = new AppDbContext();
         _poRepository = new PurchaseOrderRepository(db);
         _pdfService = new PurchaseOrderPdfService();
+        _ledgerService = ledgerService;
         _businessId = businessId;
         
         LoadPOsCommand = new AsyncRelayCommand(LoadPOsAsync);
@@ -72,8 +67,13 @@ public partial class PurchaseOrdersViewModel : ViewModelBase
         DeletePOCommand = new AsyncRelayCommand(DeletePOAsync);
         PrintPOCommand = new AsyncRelayCommand(PrintPOAsync);
         ViewBillCommand = new RelayCommand(ViewBill, CanViewBill);
-        RefreshCommand = new AsyncRelayCommand(LoadPOsAsync);
+        RefreshCommand = new AsyncRelayCommand(() => { CurrentPage = 1; return LoadPOsAsync(); });
+        NextPageCommand = new AsyncRelayCommand(NextPageAsync);
+        PreviousPageCommand = new AsyncRelayCommand(PreviousPageAsync);
     }
+
+    public IAsyncRelayCommand NextPageCommand { get; }
+    public IAsyncRelayCommand PreviousPageCommand { get; }
 
     public IAsyncRelayCommand LoadPOsCommand { get; }
     public IAsyncRelayCommand AddPOCommand { get; }
@@ -90,13 +90,39 @@ public partial class PurchaseOrdersViewModel : ViewModelBase
         IsBusy = true;
         try
         {
-            var pos = await _poRepository.GetAllAsync(_businessId);
-            _allPOs = pos.ToList();
-            ApplyFilter();
+            TotalCount = await _poRepository.GetCountAsync(_businessId, SearchQuery);
+            TotalPages = (int)Math.Ceiling((double)TotalCount / PageSize);
+
+            if (CurrentPage > TotalPages && TotalPages > 0) CurrentPage = TotalPages;
+            if (CurrentPage < 1) CurrentPage = 1;
+
+            var pos = await _poRepository.GetPaginatedAsync(_businessId, CurrentPage, PageSize, SearchQuery);
+            PurchaseOrders = new ObservableCollection<PurchaseOrder>(pos);
+
+            OnPropertyChanged(nameof(HasPreviousPage));
+            OnPropertyChanged(nameof(HasNextPage));
         }
         finally
         {
             IsBusy = false;
+        }
+    }
+
+    private async Task NextPageAsync()
+    {
+        if (HasNextPage)
+        {
+            CurrentPage++;
+            await LoadPOsAsync();
+        }
+    }
+
+    private async Task PreviousPageAsync()
+    {
+        if (HasPreviousPage)
+        {
+            CurrentPage--;
+            await LoadPOsAsync();
         }
     }
 
@@ -129,10 +155,18 @@ public partial class PurchaseOrdersViewModel : ViewModelBase
     {
         if (SelectedPO == null) return;
 
-        var success = await _poRepository.DeleteAsync(SelectedPO.PurchaseOrderID);
-        if (success)
+        IsBusy = true;
+        try
         {
-            await LoadPOsAsync();
+            var success = await _ledgerService.DeletePurchaseOrderWithReversalAsync(SelectedPO.PurchaseOrderID);
+            if (success)
+            {
+                await LoadPOsAsync();
+            }
+        }
+        finally
+        {
+            IsBusy = false;
         }
     }
 

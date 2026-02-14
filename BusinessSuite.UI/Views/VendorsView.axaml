@@ -3,9 +3,14 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="clr-namespace:BusinessSuite.UI.ViewModels"
+             xmlns:converters="clr-namespace:BusinessSuite.UI.Converters"
              mc:Ignorable="d" d:DesignWidth="1000" d:DesignHeight="600"
              x:Class="BusinessSuite.UI.Views.VendorsView"
              x:DataType="vm:VendorsViewModel">
+
+    <UserControl.Resources>
+        <converters:BalanceToColorConverter x:Key="BalanceToColorConverter"/>
+    </UserControl.Resources>
 
     <Grid RowDefinitions="Auto, *">
         <!-- Header Actions -->
@@ -26,27 +31,87 @@
             </Grid>
         </Border>
 
-        <!-- Vendor List -->
-        <Grid Grid.Row="1" Margin="20">
-            <DataGrid ItemsSource="{Binding Vendors}" 
-                      SelectedItem="{Binding SelectedVendor}"
-                      IsReadOnly="True" 
-                      CanUserReorderColumns="True"
-                      CanUserResizeColumns="True"
-                      BorderThickness="1"
-                      BorderBrush="#E5E7EB"
-                      GridLinesVisibility="All"
-                      DoubleTapped="DataGrid_DoubleTapped">
-                <DataGrid.Columns>
-                    <DataGridTextColumn Header="Vendor Name" Binding="{Binding VendorName}" Width="*"/>
-                    <DataGridTextColumn Header="GSTIN" Binding="{Binding GSTIN}" Width="150"/>
-                    <DataGridTextColumn Header="Contact" Binding="{Binding ContactNo}" Width="130"/>
-                    <DataGridTextColumn Header="Email" Binding="{Binding Email}" Width="180"/>
-                    <DataGridTextColumn Header="State" Binding="{Binding State}" Width="120"/>
-                </DataGrid.Columns>
-            </DataGrid>
-            
-            <ProgressBar IsVisible="{Binding IsBusy}" IsIndeterminate="True" VerticalAlignment="Top"/>
+        <!-- Vendor List and Details -->
+        <Grid Grid.Row="1" ColumnDefinitions="*, 400" Margin="20">
+            <!-- Left Side: List -->
+            <Grid Grid.Column="0" RowDefinitions="*, Auto">
+                <DataGrid Grid.Row="0" ItemsSource="{Binding Vendors}" 
+                          SelectedItem="{Binding SelectedVendor}"
+                          IsReadOnly="True" 
+                          CanUserReorderColumns="True"
+                          CanUserResizeColumns="True"
+                          BorderThickness="1"
+                          BorderBrush="#E5E7EB"
+                          GridLinesVisibility="All">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Vendor Name" Binding="{Binding VendorName}" Width="*"/>
+                        <DataGridTextColumn Header="Contact" Binding="{Binding ContactNo}" Width="130"/>
+                        <DataGridTextColumn Header="State" Binding="{Binding State}" Width="120"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+                
+                <!-- Pagination for Vendors -->
+                <Border Grid.Row="1" Background="White" BorderBrush="#E5E7EB" BorderThickness="1,0,1,1" Padding="10,5">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="10">
+                        <Button Content="&lt;" Command="{Binding PreviousPageCommand}" IsEnabled="{Binding HasPreviousPage}" Padding="5,2"/>
+                        <TextBlock Text="{Binding CurrentPage}" FontWeight="Bold" VerticalAlignment="Center" FontSize="12"/>
+                        <TextBlock Text="/" VerticalAlignment="Center" FontSize="12"/>
+                        <TextBlock Text="{Binding TotalPages}" VerticalAlignment="Center" FontSize="12"/>
+                        <Button Content="&gt;" Command="{Binding NextPageCommand}" IsEnabled="{Binding HasNextPage}" Padding="5,2"/>
+                    </StackPanel>
+                </Border>
+                
+                <ProgressBar IsVisible="{Binding IsBusy}" IsIndeterminate="True" VerticalAlignment="Top"/>
+            </Grid>
+
+            <!-- Right Side: Details / Ledger -->
+            <Border Grid.Column="1" Margin="15,0,0,0" Background="White" CornerRadius="8" BorderBrush="#E5E7EB" BorderThickness="1">
+                <Grid RowDefinitions="Auto, *">
+                    <!-- Summary -->
+                    <Border Grid.Row="0" Padding="20" Background="#F9FAFB" CornerRadius="8,8,0,0" BorderBrush="#E5E7EB" BorderThickness="0,0,0,1">
+                        <Grid ColumnDefinitions="*, Auto">
+                            <StackPanel Spacing="5">
+                                <TextBlock Text="Total Payable" FontSize="12" Foreground="#6B7280"/>
+                                <TextBlock Text="{Binding SelectedVendorBalance, StringFormat='{}₹{0:N2}'}" 
+                                           FontSize="24" FontWeight="Bold" 
+                                           Foreground="{Binding SelectedVendorBalance, Converter={StaticResource BalanceToColorConverter}}"/>
+                                <TextBlock Text="{Binding SelectedVendor.VendorName}" FontSize="14" FontWeight="Medium" Margin="0,5,0,0"/>
+                            </StackPanel>
+                            <Button Grid.Column="1" 
+                                    Content="Add Payment" 
+                                    Command="{Binding AddPaymentCommand}"
+                                    Classes="Primary"
+                                    VerticalAlignment="Center"/>
+                        </Grid>
+                    </Border>
+
+                    <!-- Tabs/Details -->
+                    <TabControl Grid.Row="1">
+                        <TabItem Header="Transactions">
+                            <DataGrid ItemsSource="{Binding SelectedVendorTransactions}" IsReadOnly="True" GridLinesVisibility="Horizontal">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Date" Binding="{Binding TransactionDate, StringFormat='\{0:dd/MM/yy\}'}" Width="80"/>
+                                    <DataGridTextColumn Header="Ref" Binding="{Binding ReferenceID}" Width="60"/>
+                                    <DataGridTextColumn Header="Type" Binding="{Binding Type}" Width="70"/>
+                                    <DataGridTextColumn Header="Amount" Binding="{Binding Amount, StringFormat='\{0:N2\}'}" Width="*"/>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </TabItem>
+                        <TabItem Header="Info">
+                            <ScrollViewer Padding="15">
+                                <StackPanel Spacing="10">
+                                    <TextBlock Text="GSTIN" FontWeight="Bold"/>
+                                    <TextBlock Text="{Binding SelectedVendor.GSTIN}"/>
+                                    <TextBlock Text="Email" FontWeight="Bold"/>
+                                    <TextBlock Text="{Binding SelectedVendor.Email}"/>
+                                    <TextBlock Text="Address" FontWeight="Bold"/>
+                                    <TextBlock Text="{Binding SelectedVendor.Address}" TextWrapping="Wrap"/>
+                                </StackPanel>
+                            </ScrollViewer>
+                        </TabItem>
+                    </TabControl>
+                </Grid>
+            </Border>
         </Grid>
     </Grid>
     

@@ -22,6 +22,7 @@ public partial class InvoicesViewModel : ViewModelBase
 {
     private readonly InvoiceRepository _invoiceRepository;
     private readonly InvoicePdfService _pdfService;
+    private readonly LedgerService _ledgerService;
     private readonly int _businessId;
 
     [ObservableProperty]
@@ -34,38 +35,29 @@ public partial class InvoicesViewModel : ViewModelBase
     [ObservableProperty]
     private string _searchQuery = string.Empty;
 
-    private List<Invoice> _allInvoices = new();
+    [ObservableProperty] private int _currentPage = 1;
+    [ObservableProperty] private int _pageSize = 25;
+    [ObservableProperty] private int _totalCount;
+    [ObservableProperty] private int _totalPages;
+
+    public bool HasPreviousPage => CurrentPage > 1;
+    public bool HasNextPage => CurrentPage < TotalPages;
 
     partial void OnSearchQueryChanged(string value)
     {
-        ApplyFilter();
-    }
-
-    private void ApplyFilter()
-    {
-        if (string.IsNullOrWhiteSpace(SearchQuery))
-        {
-            Invoices = new ObservableCollection<Invoice>(_allInvoices);
-        }
-        else
-        {
-            var query = SearchQuery.ToLower();
-            var filtered = _allInvoices.Where(i => 
-                (i.InvoiceNumber?.ToLower().Contains(query) ?? false) || 
-                (i.Customer?.CustomerName?.ToLower().Contains(query) ?? false))
-                .ToList();
-            Invoices = new ObservableCollection<Invoice>(filtered);
-        }
+        CurrentPage = 1;
+        _ = LoadInvoicesAsync();
     }
 
     [ObservableProperty]
     private bool _isBusy;
 
-    public InvoicesViewModel(int businessId)
+    public InvoicesViewModel(int businessId, LedgerService ledgerService)
     {
         var db = new AppDbContext();
         _invoiceRepository = new InvoiceRepository(db);
         _pdfService = new InvoicePdfService();
+        _ledgerService = ledgerService;
         _businessId = businessId;
         
         LoadInvoicesCommand = new AsyncRelayCommand(LoadInvoicesAsync);
@@ -73,8 +65,13 @@ public partial class InvoicesViewModel : ViewModelBase
         EditInvoiceCommand = new AsyncRelayCommand(EditInvoiceAsync);
         DeleteInvoiceCommand = new AsyncRelayCommand(DeleteInvoiceAsync);
         PrintInvoiceCommand = new AsyncRelayCommand(PrintInvoiceAsync);
-        RefreshCommand = new AsyncRelayCommand(LoadInvoicesAsync);
+        RefreshCommand = new AsyncRelayCommand(() => { CurrentPage = 1; return LoadInvoicesAsync(); });
+        NextPageCommand = new AsyncRelayCommand(NextPageAsync);
+        PreviousPageCommand = new AsyncRelayCommand(PreviousPageAsync);
     }
+
+    public IAsyncRelayCommand NextPageCommand { get; }
+    public IAsyncRelayCommand PreviousPageCommand { get; }
 
     public IAsyncRelayCommand LoadInvoicesCommand { get; }
     public IAsyncRelayCommand AddInvoiceCommand { get; }
@@ -90,13 +87,39 @@ public partial class InvoicesViewModel : ViewModelBase
         IsBusy = true;
         try
         {
-            var invoices = await _invoiceRepository.GetAllAsync(_businessId);
-            _allInvoices = invoices.ToList();
-            ApplyFilter();
+            TotalCount = await _invoiceRepository.GetCountAsync(_businessId, SearchQuery);
+            TotalPages = (int)Math.Ceiling((double)TotalCount / PageSize);
+            
+            if (CurrentPage > TotalPages && TotalPages > 0) CurrentPage = TotalPages;
+            if (CurrentPage < 1) CurrentPage = 1;
+
+            var invoices = await _invoiceRepository.GetPaginatedAsync(_businessId, CurrentPage, PageSize, SearchQuery);
+            Invoices = new ObservableCollection<Invoice>(invoices);
+            
+            OnPropertyChanged(nameof(HasPreviousPage));
+            OnPropertyChanged(nameof(HasNextPage));
         }
         finally
         {
             IsBusy = false;
+        }
+    }
+
+    private async Task NextPageAsync()
+    {
+        if (HasNextPage)
+        {
+            CurrentPage++;
+            await LoadInvoicesAsync();
+        }
+    }
+
+    private async Task PreviousPageAsync()
+    {
+        if (HasPreviousPage)
+        {
+            CurrentPage--;
+            await LoadInvoicesAsync();
         }
     }
 
@@ -128,11 +151,19 @@ public partial class InvoicesViewModel : ViewModelBase
     private async Task DeleteInvoiceAsync()
     {
         if (SelectedInvoice == null) return;
-
-        var success = await _invoiceRepository.DeleteAsync(SelectedInvoice.InvoiceID);
-        if (success)
+        
+        IsBusy = true;
+        try
         {
-            await LoadInvoicesAsync();
+            var success = await _ledgerService.DeleteInvoiceWithReversalAsync(SelectedInvoice.InvoiceID);
+            if (success)
+            {
+                await LoadInvoicesAsync();
+            }
+        }
+        finally
+        {
+            IsBusy = false;
         }
     }
 
