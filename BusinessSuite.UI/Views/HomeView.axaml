@@ -18,15 +18,13 @@
         <StackPanel Margin="30" Spacing="25">
             <!-- Quick Links -->
             <StackPanel Orientation="Horizontal" Spacing="15" Margin="0,0,0,10">
-                <Button Command="{Binding NavigateToLedgerCommand}" Classes="QuickLink">
+                <Button Command="{Binding NavigateToFinanceLedgerCommand}" Classes="QuickLink">
                     <StackPanel Orientation="Horizontal" Spacing="8">
-                        <TextBlock Text="📄" VerticalAlignment="Center"/>
                         <TextBlock Text="Finance Ledger" VerticalAlignment="Center" FontWeight="Medium"/>
                     </StackPanel>
                 </Button>
                 <Button Command="{Binding NavigateToStockLedgerCommand}" Classes="QuickLink">
                     <StackPanel Orientation="Horizontal" Spacing="8">
-                        <TextBlock Text="📦" VerticalAlignment="Center"/>
                         <TextBlock Text="Stock Ledger" VerticalAlignment="Center" FontWeight="Medium"/>
                     </StackPanel>
                 </Button>

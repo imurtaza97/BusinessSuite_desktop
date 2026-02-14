@@ -199,8 +199,9 @@ public partial class PurchaseOrderFormViewModel : ViewModelBase, INotifyDataErro
             ShippingCharges = existingPO.ShippingCharges;
             Discount = existingPO.Discount;
             DeliveryStatus = existingPO.DeliveryStatus ?? "Pending";
-            PaymentStatus = existingPO.PaymentStatus ?? "Unpaid";
-            TotalPaid = existingPO.TotalPaid;
+            // Use default initialization for PaymentStatus and TotalPaid
+            // They will be set in InitializeAsync after Wait for CalculateTotals
+
             PlaceOfSupply = existingPO.PlaceOfSupply ?? _business.State;
             RoundOff = existingPO.RoundOff;
             ExpectedDeliveryDate = existingPO.ExpectedDeliveryDate;
@@ -331,6 +332,10 @@ public partial class PurchaseOrderFormViewModel : ViewModelBase, INotifyDataErro
                     Items.Add(itemVm);
                 }
                 CalculateTotals();
+                
+                // Moved from constructor to ensure GrandTotal is calculated first
+                PaymentStatus = existing.PaymentStatus ?? "Unpaid";
+                TotalPaid = existing.TotalPaid;
             }
             else
             {

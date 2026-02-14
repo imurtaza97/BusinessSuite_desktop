@@ -36,7 +36,7 @@ public partial class HomeViewModel : ViewModelBase
     public IAsyncRelayCommand LoadDashboardDataCommand { get; }
     
     [RelayCommand]
-    private void NavigateToLedger() => RequestNavigation?.Invoke("Ledger");
+    private void NavigateToFinanceLedger() => RequestNavigation?.Invoke("FinanceLedger");
 
     [RelayCommand]
     private void NavigateToStockLedger() => RequestNavigation?.Invoke("StockLedger");
