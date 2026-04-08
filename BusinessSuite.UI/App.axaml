@@ -3,8 +3,8 @@
              xmlns:converters="clr-namespace:BusinessSuite.UI.Converters"
              x:Class="BusinessSuite.UI.App"
              Name="BusinessSuite"
-             RequestedThemeVariant="Default">
-             <!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
+             RequestedThemeVariant="Light">
+             <!-- Force light theme for the app, regardless of system dark mode. -->
 
     <Application.Resources>
         <converters:BalanceToColorConverter x:Key="BalanceToColorConverter"/>

@@ -10,8 +10,17 @@ namespace BusinessSuite.DAL.Data
             var appDataPath = Environment.GetFolderPath(
                 Environment.SpecialFolder.ApplicationData);
 
-            var businessSuiteFolder = Path.Combine(appDataPath, "BusinessSuite");
+            // 1. Determine the folder name based on the build mode
+            string folderName = "BusinessSuite";
 
+            #if DEBUG
+                        // This code only runs when you press "Run" in VS Code/Visual Studio
+                        folderName = "BusinessSuite_Dev"; 
+            #endif
+
+            var businessSuiteFolder = Path.Combine(appDataPath, folderName);
+
+            // 2. Ensure the directory exists
             if (!Directory.Exists(businessSuiteFolder))
             {
                 Directory.CreateDirectory(businessSuiteFolder);
