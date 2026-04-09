@@ -170,11 +170,56 @@ public class LedgerService
         {
             // 1. Add/Update Invoice
             if (invoice.InvoiceID == 0)
+            {
                 db.Invoices.Add(invoice);
+                await db.SaveChangesAsync();
+            }
             else
-                db.Entry(invoice).State = EntityState.Modified;
+            {
+                var existingInvoice = await db.Invoices
+                    .Include(i => i.Items)
+                    .FirstOrDefaultAsync(i => i.InvoiceID == invoice.InvoiceID);
 
-            await db.SaveChangesAsync();
+                if (existingInvoice == null)
+                    throw new InvalidOperationException($"Invoice {invoice.InvoiceID} not found.");
+
+                existingInvoice.BusinessID = invoice.BusinessID;
+                existingInvoice.CustomerID = invoice.CustomerID;
+                existingInvoice.InvoiceNumber = invoice.InvoiceNumber;
+                existingInvoice.InvoiceDate = invoice.InvoiceDate;
+                existingInvoice.DueDate = invoice.DueDate;
+                existingInvoice.IsAutoRoundOff = invoice.IsAutoRoundOff;
+                existingInvoice.TotalAmount = invoice.TotalAmount;
+                existingInvoice.TotalTax = invoice.TotalTax;
+                existingInvoice.Discount = invoice.Discount;
+                existingInvoice.GrandTotal = invoice.GrandTotal;
+                existingInvoice.TotalPaid = invoice.TotalPaid;
+                existingInvoice.Notes = invoice.Notes;
+                existingInvoice.DeliveryStatus = invoice.DeliveryStatus;
+                existingInvoice.PaymentStatus = invoice.PaymentStatus;
+                existingInvoice.IsItemLevelDiscount = invoice.IsItemLevelDiscount;
+                existingInvoice.PaymentMethod = invoice.PaymentMethod;
+                existingInvoice.PaymentTerms = invoice.PaymentTerms;
+                existingInvoice.TermsAndConditions = invoice.TermsAndConditions;
+                existingInvoice.PlaceOfSupply = invoice.PlaceOfSupply;
+                existingInvoice.ReverseCharge = invoice.ReverseCharge;
+                existingInvoice.RoundOff = invoice.RoundOff;
+                existingInvoice.TotalCGST = invoice.TotalCGST;
+                existingInvoice.TotalSGST = invoice.TotalSGST;
+                existingInvoice.TotalIGST = invoice.TotalIGST;
+                existingInvoice.ShippingCharges = invoice.ShippingCharges;
+
+                db.InvoiceItems.RemoveRange(existingInvoice.Items);
+                await db.SaveChangesAsync();
+
+                foreach (var item in invoice.Items)
+                {
+                    item.InvoiceID = existingInvoice.InvoiceID;
+                    db.InvoiceItems.Add(item);
+                }
+
+                await db.SaveChangesAsync();
+            }
 
             // 2. Handle Status-Triggered Side Effects
             if (invoice.DeliveryStatus == "Cancelled")
@@ -361,11 +406,57 @@ public class LedgerService
         {
             // 1. Add/Update PO
             if (po.PurchaseOrderID == 0)
+            {
                 db.PurchaseOrders.Add(po);
+                await db.SaveChangesAsync();
+            }
             else
-                db.Entry(po).State = EntityState.Modified;
+            {
+                var existingPO = await db.PurchaseOrders
+                    .Include(p => p.Items)
+                    .FirstOrDefaultAsync(p => p.PurchaseOrderID == po.PurchaseOrderID);
 
-            await db.SaveChangesAsync();
+                if (existingPO == null)
+                    throw new InvalidOperationException($"Purchase order {po.PurchaseOrderID} not found.");
+
+                existingPO.BusinessId = po.BusinessId;
+                existingPO.VendorId = po.VendorId;
+                existingPO.PONumber = po.PONumber;
+                existingPO.PODate = po.PODate;
+                existingPO.ExpectedDeliveryDate = po.ExpectedDeliveryDate;
+                existingPO.IsAutoRoundOff = po.IsAutoRoundOff;
+                existingPO.TotalAmount = po.TotalAmount;
+                existingPO.TotalTax = po.TotalTax;
+                existingPO.Discount = po.Discount;
+                existingPO.GrandTotal = po.GrandTotal;
+                existingPO.TotalPaid = po.TotalPaid;
+                existingPO.Notes = po.Notes;
+                existingPO.DeliveryStatus = po.DeliveryStatus;
+                existingPO.PaymentStatus = po.PaymentStatus;
+                existingPO.IsItemLevelDiscount = po.IsItemLevelDiscount;
+                existingPO.PaymentMethod = po.PaymentMethod;
+                existingPO.PaymentTerms = po.PaymentTerms;
+                existingPO.TermsAndConditions = po.TermsAndConditions;
+                existingPO.PlaceOfSupply = po.PlaceOfSupply;
+                existingPO.ReverseCharge = po.ReverseCharge;
+                existingPO.RoundOff = po.RoundOff;
+                existingPO.TotalCGST = po.TotalCGST;
+                existingPO.TotalSGST = po.TotalSGST;
+                existingPO.TotalIGST = po.TotalIGST;
+                existingPO.ShippingCharges = po.ShippingCharges;
+                existingPO.VendorBillPath = po.VendorBillPath;
+
+                db.PurchaseOrderItems.RemoveRange(existingPO.Items);
+                await db.SaveChangesAsync();
+
+                foreach (var item in po.Items)
+                {
+                    item.PurchaseOrderID = existingPO.PurchaseOrderID;
+                    db.PurchaseOrderItems.Add(item);
+                }
+
+                await db.SaveChangesAsync();
+            }
 
             // 2. Handle Status-Triggered Side Effects
             if (po.DeliveryStatus == "Cancelled")

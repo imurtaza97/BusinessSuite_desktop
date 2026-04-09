@@ -128,12 +128,31 @@
                     <DataGrid ItemsSource="{Binding Items}" 
                               CanUserSortColumns="False" 
                               CanUserResizeColumns="True"
+                              IsReadOnly="False"
                               GridLinesVisibility="All"
                               BorderThickness="0,0,0,1"
                               x:Name="POGrid">
                         <DataGrid.Columns>
                             <DataGridTemplateColumn Header="Product" Width="*">
                                 <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Grid ColumnDefinitions="*, Auto">
+                                            <TextBlock Text="{Binding SelectedProduct.ProductName}"
+                                                       VerticalAlignment="Center"
+                                                       Margin="4,0,0,0"
+                                                       TextTrimming="CharacterEllipsis"
+                                                       TextWrapping="NoWrap"
+                                                       HorizontalAlignment="Stretch"/>
+                                            <Button Grid.Column="1" 
+                                                    Content="+" 
+                                                    Command="{Binding ((vm:PurchaseOrderFormViewModel)DataContext).AddProductCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                    Padding="5,0"
+                                                    Margin="2,0"
+                                                    Background="Transparent"/>
+                                        </Grid>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                                <DataGridTemplateColumn.CellEditingTemplate>
                                     <DataTemplate>
                                         <Grid ColumnDefinitions="*, Auto">
                                             <ComboBox ItemsSource="{Binding FilteredProducts}"
@@ -162,7 +181,7 @@
                                                     Background="Transparent"/>
                                         </Grid>
                                     </DataTemplate>
-                                </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn.CellEditingTemplate>
                             </DataGridTemplateColumn>
 
                             <DataGridTextColumn Header="HSN" Binding="{Binding HsnCode}" Width="80" IsVisible="{Binding ((vm:PurchaseOrderFormViewModel)DataContext).ShowGstFields, RelativeSource={RelativeSource AncestorType=UserControl}}"/>

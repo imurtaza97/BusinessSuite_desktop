@@ -322,6 +322,7 @@ public partial class PurchaseOrderFormViewModel : ViewModelBase, INotifyDataErro
                 {
                     var itemVm = new PurchaseOrderItemViewModel(Products, Units.ToList(), TaxRatesList);
                     itemVm.PropertyChanged += Item_PropertyChanged;
+                    itemVm.PurchaseOrderItemId = item.PurchaseOrderItemID;
                     itemVm.SelectedProduct = Products.FirstOrDefault(p => p.ProductID == item.ProductID);
                     itemVm.Quantity = item.Quantity;
                     itemVm.UnitPrice = item.UnitPrice;
@@ -586,6 +587,7 @@ public partial class PurchaseOrderFormViewModel : ViewModelBase, INotifyDataErro
             VendorBillPath = VendorBillPath,
             Items = Items.Select(i => new PurchaseOrderItem
             {
+                PurchaseOrderItemID = i.PurchaseOrderItemId,
                 ProductID = i.SelectedProduct!.ProductID,
                 Quantity = i.Quantity,
                 UnitPrice = i.UnitPrice,
@@ -668,6 +670,7 @@ public partial class PurchaseOrderItemViewModel : ObservableObject
     [ObservableProperty] private bool _isDropDownOpen;
     private bool _ignoreSearchUpdate;
 
+    [ObservableProperty] private int _purchaseOrderItemId;
     [ObservableProperty] private Product? _selectedProduct;
     [ObservableProperty] private int _quantity = 1;
     [ObservableProperty] private decimal _unitPrice;

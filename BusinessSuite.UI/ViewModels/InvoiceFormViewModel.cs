@@ -335,6 +335,7 @@ public partial class InvoiceFormViewModel : ViewModelBase, INotifyDataErrorInfo
                 {
                     var itemVm = new InvoiceItemViewModel(Products, Units.ToList(), TaxRatesList);
                     itemVm.PropertyChanged += Item_PropertyChanged;
+                    itemVm.InvoiceItemId = item.InvoiceItemID;
                     itemVm.SelectedProduct = Products.FirstOrDefault(p => p.ProductID == item.ProductID);
                     itemVm.Quantity = item.Quantity;
                     itemVm.UnitPrice = item.UnitPrice;
@@ -608,6 +609,7 @@ public partial class InvoiceFormViewModel : ViewModelBase, INotifyDataErrorInfo
             IsAutoRoundOff = IsAutoRoundOff,
             Items = Items.Select(i => new InvoiceItem
             {
+                InvoiceItemID = i.InvoiceItemId,
                 ProductID = i.SelectedProduct!.ProductID,
                 Quantity = i.Quantity,
                 UnitPrice = i.UnitPrice,
@@ -679,6 +681,7 @@ public partial class InvoiceItemViewModel : ObservableObject
     [ObservableProperty] private bool _isDropDownOpen;
     private bool _ignoreSearchUpdate;
 
+    [ObservableProperty] private int _invoiceItemId;
     [ObservableProperty] private Product? _selectedProduct;
     [ObservableProperty] private int _quantity = 1;
     [ObservableProperty] private decimal _unitPrice;
