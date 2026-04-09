@@ -10,8 +10,8 @@
     <Grid RowDefinitions="Auto, *">
         <!-- Header Actions -->
         <Border Grid.Row="0" Background="White" BorderBrush="#E5E7EB" BorderThickness="0,0,0,1" Padding="20,15">
-            <Grid ColumnDefinitions="*, Auto">
-                <StackPanel Orientation="Horizontal" Spacing="15">
+            <Grid RowDefinitions="Auto, Auto" ColumnDefinitions="*, Auto">
+                <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="15">
                     <TextBox Width="250" 
                              Watermark="Search products..." 
                              Text="{Binding SearchQuery}"/>
@@ -28,11 +28,16 @@
                     <Button Classes="Primary" Content="Add New Product" Command="{Binding AddProductCommand}"/>
                 </StackPanel>
                 
-                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10">
+                <StackPanel Grid.Row="0" Grid.Column="1" Orientation="Horizontal" Spacing="10">
                     <Button Content="Edit" Command="{Binding EditProductCommand}" IsEnabled="{Binding !!SelectedProduct}" />
-                    <Button Classes="Danger" Content="Delete" Command="{Binding DeleteProductCommand}" IsEnabled="{Binding !!SelectedProduct}" />
+                    <Button Classes="Danger" Content="Delete" Command="{Binding DeleteProductCommand}" />
                     <Button Content="Refresh" Command="{Binding LoadProductsCommand}"/>
                 </StackPanel>
+
+                <TextBlock Grid.Row="1" Grid.ColumnSpan="2" Text="{Binding StatusMessage}"
+                           Foreground="{Binding StatusMessageColor}"
+                           FontSize="12"
+                           Margin="0,12,0,0"/>
             </Grid>
         </Border>
 
@@ -42,18 +47,20 @@
             <Grid Grid.Column="0" RowDefinitions="*, Auto">
                 <DataGrid Grid.Row="0" ItemsSource="{Binding Products}" 
                           SelectedItem="{Binding SelectedProduct}"
-                          IsReadOnly="True" 
+                          SelectionChanged="DataGrid_SelectionChanged"
+                          SelectionMode="Extended"
+                          IsReadOnly="False" 
                           CanUserReorderColumns="True"
                           CanUserResizeColumns="True"
                           BorderThickness="1"
                           BorderBrush="#E5E7EB"
                           GridLinesVisibility="All">
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="Product Name" Binding="{Binding ProductName}" Width="*"/>
-                        <DataGridTextColumn Header="Category" Binding="{Binding Category.Name}" Width="150"/>
-                        <DataGridTextColumn Header="SKU" Binding="{Binding SKU}" Width="100"/>
-                        <DataGridTextColumn Header="Stock" Binding="{Binding StockQty}" Width="80"/>
-                        <DataGridTextColumn Header="Sale Price" Binding="{Binding SalePrice, StringFormat='{}₹{0:N2}'}" Width="110"/>
+                        <DataGridTextColumn Header="Product Name" Binding="{Binding ProductName}" Width="*" IsReadOnly="True"/>
+                        <DataGridTextColumn Header="Category" Binding="{Binding Category.Name}" Width="150" IsReadOnly="True"/>
+                        <DataGridTextColumn Header="SKU" Binding="{Binding SKU}" Width="100" IsReadOnly="True"/>
+                        <DataGridTextColumn Header="Stock" Binding="{Binding StockQty}" Width="80" IsReadOnly="True"/>
+                        <DataGridTextColumn Header="Sale Price" Binding="{Binding SalePrice, StringFormat='{}₹{0:N2}'}" Width="110" IsReadOnly="True"/>
                     </DataGrid.Columns>
                 </DataGrid>
                 

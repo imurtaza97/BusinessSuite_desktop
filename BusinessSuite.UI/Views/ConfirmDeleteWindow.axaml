@@ -4,7 +4,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="200"
         x:Class="BusinessSuite.UI.Views.ConfirmDeleteWindow"
-        Title="Delete Product"
+        Title="Confirm Delete"
         Width="400" Height="180"
         WindowStartupLocation="CenterOwner"
         CanResize="False"
@@ -12,7 +12,8 @@
 
     <Grid RowDefinitions="*, Auto" Margin="20">
         <StackPanel Grid.Row="0" Spacing="10">
-            <TextBlock Text="Are you sure you want to delete this product?" 
+            <TextBlock x:Name="MessageTextBlock"
+                       Text="Are you sure you want to delete the selected item?" 
                        FontSize="16" 
                        FontWeight="SemiBold" 
                        Foreground="#111827"/>

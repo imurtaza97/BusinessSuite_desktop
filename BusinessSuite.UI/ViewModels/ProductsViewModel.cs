@@ -18,6 +18,7 @@ public partial class ProductsViewModel : ViewModelBase
 {
     private readonly ProductRepository _productRepository;
     private readonly LedgerService _ledgerService;
+    private readonly EntityDeletionService _deletionService;
     private readonly int _businessId;
 
     [ObservableProperty] private ObservableCollection<Product> _products = new();
@@ -29,6 +30,11 @@ public partial class ProductsViewModel : ViewModelBase
     [NotifyCanExecuteChangedFor(nameof(EditProductCommand))]
     [NotifyCanExecuteChangedFor(nameof(DeleteProductCommand))]
     private Product? _selectedProduct;
+
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(DeleteProductCommand))]
+    private ObservableCollection<Product> _selectedProducts = new();
+
 
     partial void OnSelectedProductChanged(Product? value)
     {
@@ -81,18 +87,21 @@ public partial class ProductsViewModel : ViewModelBase
         var db = new AppDbContext();
         _productRepository = new ProductRepository(db);
         _ledgerService = ledgerService;
+        _deletionService = new EntityDeletionService(new AppDbContextFactory());
         _businessId = businessId;
         
         LoadProductsCommand = new AsyncRelayCommand(LoadProductsAsync);
         AddProductCommand = new AsyncRelayCommand(AddProductAsync);
         EditProductCommand = new AsyncRelayCommand(EditProductAsync, () => SelectedProduct != null);
-        DeleteProductCommand = new AsyncRelayCommand(DeleteProductAsync, () => SelectedProduct != null);
+        DeleteProductCommand = new AsyncRelayCommand(DeleteProductAsync);
         ClearCategoryFilterCommand = new RelayCommand(() => SelectedCategory = null);
         NextPageCommand = new AsyncRelayCommand(NextPageAsync);
         PreviousPageCommand = new AsyncRelayCommand(PreviousPageAsync);
 
         _ = LoadCategoriesAsync(db);
     }
+
+    private bool CanDeleteProducts() => SelectedProducts.Count > 0;
 
     public IAsyncRelayCommand NextPageCommand { get; }
     public IAsyncRelayCommand PreviousPageCommand { get; }
@@ -158,6 +167,7 @@ public partial class ProductsViewModel : ViewModelBase
 
     private async Task AddProductAsync()
     {
+        ClearStatusMessage();
         var vm = new ProductFormViewModel(_businessId);
         var dialog = new Views.ProductFormWindow { DataContext = vm };
         
@@ -183,6 +193,7 @@ public partial class ProductsViewModel : ViewModelBase
                     if (success)
                     {
                         await LoadProductsAsync();
+                        SetStatusMessage("Product added successfully.", "#047857");
                     }
                 }
                 finally
@@ -196,6 +207,7 @@ public partial class ProductsViewModel : ViewModelBase
     private async Task EditProductAsync()
     {
         if (SelectedProduct == null) return;
+        ClearStatusMessage();
         
         var vm = new ProductFormViewModel(_businessId, SelectedProduct);
         var dialog = new Views.ProductFormWindow { DataContext = vm };
@@ -216,6 +228,7 @@ public partial class ProductsViewModel : ViewModelBase
                     {
                         await LoadProductsAsync();
                         SelectedProduct = result;
+                        SetStatusMessage("Product updated successfully.", "#047857");
                     }
                 }
                 finally
@@ -228,21 +241,57 @@ public partial class ProductsViewModel : ViewModelBase
 
     private async Task DeleteProductAsync()
     {
-        if (SelectedProduct == null) return;
+        var selectedProducts = SelectedProducts.ToList();
+        if (selectedProducts.Count == 0 && SelectedProduct != null)
+            selectedProducts.Add(SelectedProduct);
 
-        // We will implement the actual dialog call once the Window is created
-        // For now, I'll prepare the logic flow
-        bool confirmed = await ShowConfirmDeleteDialog();
+        if (selectedProducts.Count == 0)
+        {
+            SetStatusMessage("Select one or more products to delete.", "#B45309");
+            return;
+        }
+
+        ClearStatusMessage();
+        int count = selectedProducts.Count;
+        string confirmMsg = count == 1 ? "Are you sure you want to delete this product?" : $"Are you sure you want to delete {count} products?";
+        bool confirmed = await ShowConfirmDeleteDialog(confirmMsg);
         if (!confirmed) return;
         
         IsBusy = true;
         try
         {
-            var success = await _productRepository.DeleteAsync(SelectedProduct.ProductID);
-            if (success)
+            int successCount = 0;
+            int failCount = 0;
+            string lastError = string.Empty;
+            
+            foreach (var product in selectedProducts)
             {
-                await LoadProductsAsync();
-                SelectedProduct = null;
+                var (success, message) = await _deletionService.DeleteProductAsync(product.ProductID);
+                if (success)
+                {
+                    successCount++;
+                    Products.Remove(product);
+                }
+                else
+                {
+                    failCount++;
+                    lastError = message;
+                }
+            }
+            
+            SelectedProduct = null;
+            
+            if (successCount > 0 && failCount == 0)
+            {
+                SetStatusMessage($"{successCount} product(s) deleted successfully.", "#047857");
+            }
+            else if (successCount > 0 && failCount > 0)
+            {
+                SetStatusMessage($"{successCount} deleted, {failCount} failed: {lastError}", "#FB923C");
+            }
+            else
+            {
+                SetStatusMessage($"Failed to delete: {lastError}", "#B45309");
             }
         }
         finally
@@ -251,9 +300,10 @@ public partial class ProductsViewModel : ViewModelBase
         }
     }
 
-    private async Task<bool> ShowConfirmDeleteDialog()
+
+    private async Task<bool> ShowConfirmDeleteDialog(string message = "Are you sure you want to delete the selected item?")
     {
-        var dialog = new Views.ConfirmDeleteWindow();
+        var dialog = new Views.ConfirmDeleteWindow(message);
         if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
             return await dialog.ShowDialog<bool>(desktop.MainWindow!);

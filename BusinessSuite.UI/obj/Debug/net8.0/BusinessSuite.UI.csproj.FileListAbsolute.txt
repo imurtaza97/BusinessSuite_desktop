@@ -1,3 +1,11 @@
+/Users/murtaza/Desktop/BusinessSuite_desktop/BusinessSuite.UI/obj/Debug/net8.0/BusinessSuite.UI.csproj.AssemblyReference.cache
+/Users/murtaza/Desktop/BusinessSuite_desktop/BusinessSuite.UI/obj/Debug/net8.0/Avalonia/Resources.Inputs.cache
+/Users/murtaza/Desktop/BusinessSuite_desktop/BusinessSuite.UI/obj/Debug/net8.0/Avalonia/resources
+/Users/murtaza/Desktop/BusinessSuite_desktop/BusinessSuite.UI/obj/Debug/net8.0/BusinessSuite.UI.GeneratedMSBuildEditorConfig.editorconfig
+/Users/murtaza/Desktop/BusinessSuite_desktop/BusinessSuite.UI/obj/Debug/net8.0/BusinessSuite.UI.AssemblyInfoInputs.cache
+/Users/murtaza/Desktop/BusinessSuite_desktop/BusinessSuite.UI/obj/Debug/net8.0/BusinessSuite.UI.AssemblyInfo.cs
+/Users/murtaza/Desktop/BusinessSuite_desktop/BusinessSuite.UI/obj/Debug/net8.0/BusinessSuite.UI.csproj.CoreCompileInputs.cache
+/Users/murtaza/Desktop/BusinessSuite_desktop/BusinessSuite.UI/obj/Debug/net8.0/BusinessSuite.UI.sourcelink.json
 /Users/murtaza/Desktop/BusinessSuite_desktop/BusinessSuite.UI/bin/Debug/net8.0/LatoFont/Lato-Black.ttf
 /Users/murtaza/Desktop/BusinessSuite_desktop/BusinessSuite.UI/bin/Debug/net8.0/LatoFont/Lato-BlackItalic.ttf
 /Users/murtaza/Desktop/BusinessSuite_desktop/BusinessSuite.UI/bin/Debug/net8.0/LatoFont/Lato-Bold.ttf
@@ -224,14 +232,6 @@
 /Users/murtaza/Desktop/BusinessSuite_desktop/BusinessSuite.UI/bin/Debug/net8.0/BusinessSuite.DAL.dll
 /Users/murtaza/Desktop/BusinessSuite_desktop/BusinessSuite.UI/bin/Debug/net8.0/BusinessSuite.DAL.pdb
 /Users/murtaza/Desktop/BusinessSuite_desktop/BusinessSuite.UI/bin/Debug/net8.0/BusinessSuite.BLL.pdb
-/Users/murtaza/Desktop/BusinessSuite_desktop/BusinessSuite.UI/obj/Debug/net8.0/BusinessSuite.UI.csproj.AssemblyReference.cache
-/Users/murtaza/Desktop/BusinessSuite_desktop/BusinessSuite.UI/obj/Debug/net8.0/Avalonia/Resources.Inputs.cache
-/Users/murtaza/Desktop/BusinessSuite_desktop/BusinessSuite.UI/obj/Debug/net8.0/Avalonia/resources
-/Users/murtaza/Desktop/BusinessSuite_desktop/BusinessSuite.UI/obj/Debug/net8.0/BusinessSuite.UI.GeneratedMSBuildEditorConfig.editorconfig
-/Users/murtaza/Desktop/BusinessSuite_desktop/BusinessSuite.UI/obj/Debug/net8.0/BusinessSuite.UI.AssemblyInfoInputs.cache
-/Users/murtaza/Desktop/BusinessSuite_desktop/BusinessSuite.UI/obj/Debug/net8.0/BusinessSuite.UI.AssemblyInfo.cs
-/Users/murtaza/Desktop/BusinessSuite_desktop/BusinessSuite.UI/obj/Debug/net8.0/BusinessSuite.UI.csproj.CoreCompileInputs.cache
-/Users/murtaza/Desktop/BusinessSuite_desktop/BusinessSuite.UI/obj/Debug/net8.0/BusinessSuite.UI.sourcelink.json
 /Users/murtaza/Desktop/BusinessSuite_desktop/BusinessSuite.UI/obj/Debug/net8.0/Business.57256295.Up2Date
 /Users/murtaza/Desktop/BusinessSuite_desktop/BusinessSuite.UI/obj/Debug/net8.0/BusinessSuite.dll
 /Users/murtaza/Desktop/BusinessSuite_desktop/BusinessSuite.UI/obj/Debug/net8.0/refint/BusinessSuite.dll

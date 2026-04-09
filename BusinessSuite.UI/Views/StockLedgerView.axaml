@@ -49,7 +49,7 @@
                       BorderBrush="#E5E7EB"
                       GridLinesVisibility="Horizontal">
                 <DataGrid.Columns>
-                    <DataGridTextColumn Header="Date" Binding="{Binding TransactionDate, StringFormat='\{0:dd/MM/yy HH:mm\}'}" Width="150"/>
+                    <DataGridTextColumn Header="Date" Binding="{Binding TransactionDate, StringFormat='{}{0:dd/MM/yy HH:mm}'}" Width="150"/>
                     <DataGridTextColumn Header="Product" Binding="{Binding Product.ProductName}" Width="*"/>
                     <DataGridTextColumn Header="Type" Binding="{Binding TransactionType}" Width="100"/>
                     <DataGridTextColumn Header="Warehouse" Binding="{Binding Warehouse.WarehouseName}" Width="120"/>

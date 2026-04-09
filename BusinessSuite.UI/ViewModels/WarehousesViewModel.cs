@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
@@ -17,6 +18,7 @@ public partial class WarehousesViewModel : ViewModelBase
 {
     private readonly IDbContextFactory<AppDbContext> _dbFactory;
     private readonly LedgerService _ledgerService;
+    private readonly EntityDeletionService _deletionService;
     private readonly int _businessId;
 
     [ObservableProperty] private ObservableCollection<Warehouse> _warehouses = new();
@@ -25,6 +27,10 @@ public partial class WarehousesViewModel : ViewModelBase
     [NotifyCanExecuteChangedFor(nameof(EditWarehouseCommand))]
     [NotifyCanExecuteChangedFor(nameof(DeleteWarehouseCommand))]
     private Warehouse? _selectedWarehouse;
+
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(DeleteWarehouseCommand))]
+    private ObservableCollection<Warehouse> _selectedWarehouses = new();
 
     [ObservableProperty] private ObservableCollection<Stock> _warehouseStock = new();
     [ObservableProperty] private bool _isBusy;
@@ -41,16 +47,19 @@ public partial class WarehousesViewModel : ViewModelBase
     {
         _dbFactory = dbFactory;
         _ledgerService = new LedgerService(dbFactory);
+        _deletionService = new EntityDeletionService(dbFactory);
         _businessId = businessId;
 
         LoadWarehousesCommand = new AsyncRelayCommand(LoadWarehousesAsync);
         AddWarehouseCommand = new AsyncRelayCommand(AddWarehouseAsync);
         EditWarehouseCommand = new AsyncRelayCommand(EditWarehouseAsync, () => SelectedWarehouse != null);
-        DeleteWarehouseCommand = new AsyncRelayCommand(DeleteWarehouseAsync, () => SelectedWarehouse != null);
+        DeleteWarehouseCommand = new AsyncRelayCommand(DeleteWarehouseAsync);
         AdjustStockCommand = new AsyncRelayCommand<Stock>(AdjustStockAsync);
         NextPageCommand = new AsyncRelayCommand(NextPageAsync);
         PreviousPageCommand = new AsyncRelayCommand(PreviousPageAsync);
     }
+
+    private bool CanDeleteWarehouses() => SelectedWarehouses.Count > 0;
 
     public IAsyncRelayCommand NextPageCommand { get; }
     public IAsyncRelayCommand PreviousPageCommand { get; }
@@ -176,53 +185,62 @@ public partial class WarehousesViewModel : ViewModelBase
 
     private async Task DeleteWarehouseAsync()
     {
-        if (SelectedWarehouse == null) return;
+        var selectedWarehouses = SelectedWarehouses.ToList();
+        if (selectedWarehouses.Count == 0 && SelectedWarehouse != null)
+            selectedWarehouses.Add(SelectedWarehouse);
 
-        // Prevent deleting the system-created Main Warehouse
-        if (SelectedWarehouse.IsMainWarehouse)
+        if (selectedWarehouses.Count == 0)
         {
+            SetStatusMessage("Select one or more warehouses to delete.", "#B45309");
             return;
         }
 
-        var dialog = new Views.ConfirmDeleteWindow();
-        if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+        ClearStatusMessage();
+        int count = selectedWarehouses.Count;
+        string confirmMsg = count == 1 ? "Are you sure you want to delete this warehouse?" : $"Are you sure you want to delete {count} warehouses?";
+        bool confirmed = await ShowConfirmDeleteDialog(confirmMsg);
+        if (!confirmed) return;
+        
+        IsBusy = true;
+        try
         {
-            var confirmed = await dialog.ShowDialog<bool>(desktop.MainWindow!);
-            if (confirmed)
+            int successCount = 0;
+            int failCount = 0;
+            string lastError = string.Empty;
+            
+            foreach (var warehouse in selectedWarehouses)
             {
-                IsBusy = true;
-                try
+                var (success, message) = await _deletionService.DeleteWarehouseAsync(warehouse.WarehouseID);
+                if (success)
                 {
-                    using var db = await _dbFactory.CreateDbContextAsync();
-                    
-                    // Check if ANY related data exists in Stocks or StockTransactions (even with 0 quantity)
-                    // because SQLite foreign keys will prevent deletion if records exist.
-                    var hasStockRecords = await db.Stocks.AnyAsync(s => s.WarehouseID == SelectedWarehouse.WarehouseID);
-                    var hasTxRecords = await db.StockTransactions.AnyAsync(t => t.WarehouseID == SelectedWarehouse.WarehouseID || t.ToWarehouseID == SelectedWarehouse.WarehouseID);
-
-                    if (hasStockRecords || hasTxRecords)
-                    {
-                        // Prevent crash by stopping here if dependencies exist
-                        return;
-                    }
-
-                    db.Warehouses.Remove(SelectedWarehouse);
-                    await db.SaveChangesAsync();
-                    
-                    // Refresh the entire list to update pagination counts correctly
-                    await LoadWarehousesAsync();
-                    SelectedWarehouse = null;
+                    successCount++;
+                    Warehouses.Remove(warehouse);
                 }
-                catch (Exception ex)
+                else
                 {
-                    // Log the error but don't crash the whole application
-                    System.Diagnostics.Debug.WriteLine($"Warehouse Deletion Error: {ex.Message}");
-                }
-                finally
-                {
-                    IsBusy = false;
+                    failCount++;
+                    lastError = message;
                 }
             }
+            
+            SelectedWarehouse = null;
+            
+            if (successCount > 0 && failCount == 0)
+            {
+                SetStatusMessage($"{successCount} warehouse(s) deleted successfully.", "#047857");
+            }
+            else if (successCount > 0 && failCount > 0)
+            {
+                SetStatusMessage($"{successCount} deleted, {failCount} failed: {lastError}", "#FB923C");
+            }
+            else
+            {
+                SetStatusMessage($"Failed to delete: {lastError}", "#B45309");
+            }
+        }
+        finally
+        {
+            IsBusy = false;
         }
     }
 
@@ -241,5 +259,15 @@ public partial class WarehousesViewModel : ViewModelBase
                 await LoadWarehouseStockAsync(SelectedWarehouse.WarehouseID);
             }
         }
+    }
+
+    private async Task<bool> ShowConfirmDeleteDialog(string message = "Are you sure you want to delete the selected item?")
+    {
+        var dialog = new Views.ConfirmDeleteWindow(message);
+        if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+        {
+            return await dialog.ShowDialog<bool>(desktop.MainWindow!);
+        }
+        return false;
     }
 }

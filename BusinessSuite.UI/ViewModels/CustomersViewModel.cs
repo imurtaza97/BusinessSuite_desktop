@@ -18,6 +18,7 @@ public partial class CustomersViewModel : ViewModelBase
 {
     private readonly CustomerRepository _customerRepository;
     private readonly LedgerService _ledgerService;
+    private readonly EntityDeletionService _deletionService;
     private readonly int _businessId;
 
     [ObservableProperty] private ObservableCollection<Customer> _customers = new();
@@ -29,6 +30,10 @@ public partial class CustomersViewModel : ViewModelBase
     [NotifyCanExecuteChangedFor(nameof(DeleteCustomerCommand))]
     [NotifyCanExecuteChangedFor(nameof(AddPaymentCommand))]
     private Customer? _selectedCustomer;
+
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(DeleteCustomerCommand))]
+    private ObservableCollection<Customer> _selectedCustomers = new();
 
     partial void OnSelectedCustomerChanged(Customer? value)
     {
@@ -77,16 +82,19 @@ public partial class CustomersViewModel : ViewModelBase
         var db = new AppDbContext();
         _customerRepository = new CustomerRepository(db);
         _ledgerService = ledgerService;
+        _deletionService = new EntityDeletionService(new AppDbContextFactory());
         _businessId = businessId;
         
         LoadCustomersCommand = new AsyncRelayCommand(LoadCustomersAsync);
         AddCustomerCommand = new AsyncRelayCommand(AddCustomerAsync);
         EditCustomerCommand = new AsyncRelayCommand(EditCustomerAsync, () => SelectedCustomer != null);
-        DeleteCustomerCommand = new AsyncRelayCommand(DeleteCustomerAsync, () => SelectedCustomer != null);
+        DeleteCustomerCommand = new AsyncRelayCommand(DeleteCustomerAsync);
         AddPaymentCommand = new AsyncRelayCommand(AddPaymentAsync, () => SelectedCustomer != null);
         NextPageCommand = new AsyncRelayCommand(NextPageAsync);
         PreviousPageCommand = new AsyncRelayCommand(PreviousPageAsync);
     }
+
+    private bool CanDeleteCustomers() => SelectedCustomers.Count > 0;
 
     public IAsyncRelayCommand NextPageCommand { get; }
     public IAsyncRelayCommand PreviousPageCommand { get; }
@@ -141,6 +149,7 @@ public partial class CustomersViewModel : ViewModelBase
 
     private async Task AddCustomerAsync()
     {
+        ClearStatusMessage();
         var vm = new CustomerFormViewModel(_businessId);
         var dialog = new Views.CustomerFormWindow { DataContext = vm };
         
@@ -156,6 +165,7 @@ public partial class CustomersViewModel : ViewModelBase
                     if (success)
                     {
                         await LoadCustomersAsync();
+                        SetStatusMessage("Customer added successfully.", "#047857");
                     }
                 }
                 finally
@@ -169,6 +179,7 @@ public partial class CustomersViewModel : ViewModelBase
     private async Task EditCustomerAsync()
     {
         if (SelectedCustomer == null) return;
+        ClearStatusMessage();
         
         var vm = new CustomerFormViewModel(_businessId, SelectedCustomer);
         var dialog = new Views.CustomerFormWindow { DataContext = vm };
@@ -188,6 +199,7 @@ public partial class CustomersViewModel : ViewModelBase
                     {
                         await LoadCustomersAsync();
                         SelectedCustomer = result;
+                        SetStatusMessage("Customer updated successfully.", "#047857");
                     }
                 }
                 finally
@@ -200,19 +212,57 @@ public partial class CustomersViewModel : ViewModelBase
 
     private async Task DeleteCustomerAsync()
     {
-        if (SelectedCustomer == null) return;
+        var selectedCustomers = SelectedCustomers.ToList();
+        if (selectedCustomers.Count == 0 && SelectedCustomer != null)
+            selectedCustomers.Add(SelectedCustomer);
 
-        bool confirmed = await ShowConfirmDeleteDialog();
+        if (selectedCustomers.Count == 0)
+        {
+            SetStatusMessage("Select one or more customers to delete.", "#B45309");
+            return;
+        }
+
+        ClearStatusMessage();
+        int count = selectedCustomers.Count;
+        string confirmMsg = count == 1 ? "Are you sure you want to delete this customer?" : $"Are you sure you want to delete {count} customers?";
+        bool confirmed = await ShowConfirmDeleteDialog(confirmMsg);
         if (!confirmed) return;
         
         IsBusy = true;
         try
         {
-            var success = await _customerRepository.DeleteAsync(SelectedCustomer.CustomerID);
-            if (success)
+            int successCount = 0;
+            int failCount = 0;
+            string lastError = string.Empty;
+            
+            foreach (var customer in selectedCustomers)
             {
-                await LoadCustomersAsync();
-                SelectedCustomer = null;
+                var (success, message) = await _deletionService.DeleteCustomerAsync(customer.CustomerID);
+                if (success)
+                {
+                    successCount++;
+                    Customers.Remove(customer);
+                }
+                else
+                {
+                    failCount++;
+                    lastError = message;
+                }
+            }
+            
+            SelectedCustomer = null;
+            
+            if (successCount > 0 && failCount == 0)
+            {
+                SetStatusMessage($"{successCount} customer(s) deleted successfully.", "#047857");
+            }
+            else if (successCount > 0 && failCount > 0)
+            {
+                SetStatusMessage($"{successCount} deleted, {failCount} failed: {lastError}", "#FB923C");
+            }
+            else
+            {
+                SetStatusMessage($"Failed to delete: {lastError}", "#B45309");
             }
         }
         finally
@@ -238,9 +288,9 @@ public partial class CustomersViewModel : ViewModelBase
         }
     }
 
-    private async Task<bool> ShowConfirmDeleteDialog()
+    private async Task<bool> ShowConfirmDeleteDialog(string message = "Are you sure you want to delete the selected item?")
     {
-        var dialog = new Views.ConfirmDeleteWindow();
+        var dialog = new Views.ConfirmDeleteWindow(message);
         if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
             return await dialog.ShowDialog<bool>(desktop.MainWindow!);

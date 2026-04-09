@@ -53,5 +53,6 @@ public class Customer
 
     [ForeignKey("BusinessId")]
     public Business? Business { get; set; }
+
     public override string ToString() => CustomerName;
 }

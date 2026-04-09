@@ -18,6 +18,7 @@ public partial class VendorsViewModel : ViewModelBase
 {
     private readonly VendorRepository _vendorRepository;
     private readonly LedgerService _ledgerService;
+    private readonly EntityDeletionService _deletionService;
     private readonly int _businessId;
 
     [ObservableProperty] private ObservableCollection<Vendor> _vendors = new();
@@ -29,6 +30,10 @@ public partial class VendorsViewModel : ViewModelBase
     [NotifyCanExecuteChangedFor(nameof(DeleteVendorCommand))]
     [NotifyCanExecuteChangedFor(nameof(AddPaymentCommand))]
     private Vendor? _selectedVendor;
+
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(DeleteVendorCommand))]
+    private ObservableCollection<Vendor> _selectedVendors = new();
 
     partial void OnSelectedVendorChanged(Vendor? value)
     {
@@ -77,16 +82,19 @@ public partial class VendorsViewModel : ViewModelBase
         var db = new AppDbContext();
         _vendorRepository = new VendorRepository(db);
         _ledgerService = ledgerService;
+        _deletionService = new EntityDeletionService(new AppDbContextFactory());
         _businessId = businessId;
         
         LoadVendorsCommand = new AsyncRelayCommand(LoadVendorsAsync);
         AddVendorCommand = new AsyncRelayCommand(AddVendorAsync);
         EditVendorCommand = new AsyncRelayCommand(EditVendorAsync, () => SelectedVendor != null);
-        DeleteVendorCommand = new AsyncRelayCommand(DeleteVendorAsync, () => SelectedVendor != null);
+        DeleteVendorCommand = new AsyncRelayCommand(DeleteVendorAsync);
         AddPaymentCommand = new AsyncRelayCommand(AddPaymentAsync, () => SelectedVendor != null);
         NextPageCommand = new AsyncRelayCommand(NextPageAsync);
         PreviousPageCommand = new AsyncRelayCommand(PreviousPageAsync);
     }
+
+    private bool CanDeleteVendors() => SelectedVendors.Count > 0;
 
     public IAsyncRelayCommand NextPageCommand { get; }
     public IAsyncRelayCommand PreviousPageCommand { get; }
@@ -141,6 +149,7 @@ public partial class VendorsViewModel : ViewModelBase
 
     private async Task AddVendorAsync()
     {
+        ClearStatusMessage();
         var vm = new VendorFormViewModel(_businessId);
         var dialog = new Views.VendorFormWindow { DataContext = vm };
         
@@ -157,6 +166,7 @@ public partial class VendorsViewModel : ViewModelBase
                     if (success)
                     {
                         await LoadVendorsAsync();
+                        SetStatusMessage("Vendor added successfully.", "#047857");
                     }
                 }
                 finally
@@ -170,6 +180,7 @@ public partial class VendorsViewModel : ViewModelBase
     private async Task EditVendorAsync()
     {
         if (SelectedVendor == null) return;
+        ClearStatusMessage();
         
         var vm = new VendorFormViewModel(_businessId, SelectedVendor);
         var dialog = new Views.VendorFormWindow { DataContext = vm };
@@ -190,6 +201,7 @@ public partial class VendorsViewModel : ViewModelBase
                     {
                         await LoadVendorsAsync();
                         SelectedVendor = result;
+                        SetStatusMessage("Vendor updated successfully.", "#047857");
                     }
                 }
                 finally
@@ -202,19 +214,57 @@ public partial class VendorsViewModel : ViewModelBase
 
     private async Task DeleteVendorAsync()
     {
-        if (SelectedVendor == null) return;
+        var selectedVendors = SelectedVendors.ToList();
+        if (selectedVendors.Count == 0 && SelectedVendor != null)
+            selectedVendors.Add(SelectedVendor);
 
-        bool confirmed = await ShowConfirmDeleteDialog();
+        if (selectedVendors.Count == 0)
+        {
+            SetStatusMessage("Select one or more vendors to delete.", "#B45309");
+            return;
+        }
+
+        ClearStatusMessage();
+        int count = selectedVendors.Count;
+        string confirmMsg = count == 1 ? "Are you sure you want to delete this vendor?" : $"Are you sure you want to delete {count} vendors?";
+        bool confirmed = await ShowConfirmDeleteDialog(confirmMsg);
         if (!confirmed) return;
         
         IsBusy = true;
         try
         {
-            var success = await _vendorRepository.DeleteAsync(SelectedVendor.VendorID);
-            if (success)
+            int successCount = 0;
+            int failCount = 0;
+            string lastError = string.Empty;
+            
+            foreach (var vendor in selectedVendors)
             {
-                await LoadVendorsAsync();
-                SelectedVendor = null;
+                var (success, message) = await _deletionService.DeleteVendorAsync(vendor.VendorID);
+                if (success)
+                {
+                    successCount++;
+                    Vendors.Remove(vendor);
+                }
+                else
+                {
+                    failCount++;
+                    lastError = message;
+                }
+            }
+            
+            SelectedVendor = null;
+            
+            if (successCount > 0 && failCount == 0)
+            {
+                SetStatusMessage($"{successCount} vendor(s) deleted successfully.", "#047857");
+            }
+            else if (successCount > 0 && failCount > 0)
+            {
+                SetStatusMessage($"{successCount} deleted, {failCount} failed: {lastError}", "#FB923C");
+            }
+            else
+            {
+                SetStatusMessage($"Failed to delete: {lastError}", "#B45309");
             }
         }
         finally
@@ -240,9 +290,9 @@ public partial class VendorsViewModel : ViewModelBase
         }
     }
 
-    private async Task<bool> ShowConfirmDeleteDialog()
+    private async Task<bool> ShowConfirmDeleteDialog(string message = "Are you sure you want to delete the selected item?")
     {
-        var dialog = new Views.ConfirmDeleteWindow();
+        var dialog = new Views.ConfirmDeleteWindow(message);
         if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
             return await dialog.ShowDialog<bool>(desktop.MainWindow!);

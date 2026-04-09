@@ -15,19 +15,24 @@
     <Grid RowDefinitions="Auto, *">
         <!-- Header Actions -->
         <Border Grid.Row="0" Background="White" BorderBrush="#E5E7EB" BorderThickness="0,0,0,1" Padding="20,15">
-            <Grid ColumnDefinitions="*, Auto">
-                <StackPanel Orientation="Horizontal" Spacing="15">
+            <Grid RowDefinitions="Auto, Auto" ColumnDefinitions="*, Auto">
+                <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="15">
                     <TextBox Width="300" 
                              Watermark="Search vendors by name or GSTIN..." 
                              Text="{Binding SearchQuery, UpdateSourceTrigger=PropertyChanged}"/>
                     <Button Classes="Primary" Content="Add New Vendor" Command="{Binding AddVendorCommand}"/>
                 </StackPanel>
                 
-                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10">
+                <StackPanel Grid.Row="0" Grid.Column="1" Orientation="Horizontal" Spacing="10">
                     <Button Content="Edit" Command="{Binding EditVendorCommand}" IsEnabled="{Binding !!SelectedVendor}" />
-                    <Button Classes="Danger" Content="Delete" Command="{Binding DeleteVendorCommand}" IsEnabled="{Binding !!SelectedVendor}" />
+                    <Button Classes="Danger" Content="Delete" Command="{Binding DeleteVendorCommand}" />
                     <Button Content="Refresh" Command="{Binding LoadVendorsCommand}"/>
                 </StackPanel>
+
+                <TextBlock Grid.Row="1" Grid.ColumnSpan="2" Text="{Binding StatusMessage}"
+                           Foreground="{Binding StatusMessageColor}"
+                           FontSize="12"
+                           Margin="0,12,0,0"/>
             </Grid>
         </Border>
 
@@ -37,16 +42,18 @@
             <Grid Grid.Column="0" RowDefinitions="*, Auto">
                 <DataGrid Grid.Row="0" ItemsSource="{Binding Vendors}" 
                           SelectedItem="{Binding SelectedVendor}"
-                          IsReadOnly="True" 
+                          SelectionChanged="DataGrid_SelectionChanged"
+                          SelectionMode="Extended"
+                          IsReadOnly="False" 
                           CanUserReorderColumns="True"
                           CanUserResizeColumns="True"
                           BorderThickness="1"
                           BorderBrush="#E5E7EB"
                           GridLinesVisibility="All">
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="Vendor Name" Binding="{Binding VendorName}" Width="*"/>
-                        <DataGridTextColumn Header="Contact" Binding="{Binding ContactNo}" Width="130"/>
-                        <DataGridTextColumn Header="State" Binding="{Binding State}" Width="120"/>
+                        <DataGridTextColumn Header="Vendor Name" Binding="{Binding VendorName}" Width="*" IsReadOnly="True"/>
+                        <DataGridTextColumn Header="Contact" Binding="{Binding ContactNo}" Width="130" IsReadOnly="True"/>
+                        <DataGridTextColumn Header="State" Binding="{Binding State}" Width="120" IsReadOnly="True"/>
                     </DataGrid.Columns>
                 </DataGrid>
                 
@@ -90,10 +97,10 @@
                         <TabItem Header="Transactions">
                             <DataGrid ItemsSource="{Binding SelectedVendorTransactions}" IsReadOnly="True" GridLinesVisibility="Horizontal">
                                 <DataGrid.Columns>
-                                    <DataGridTextColumn Header="Date" Binding="{Binding TransactionDate, StringFormat='\{0:dd/MM/yy\}'}" Width="80"/>
+                                    <DataGridTextColumn Header="Date" Binding="{Binding TransactionDate, StringFormat='{}{0:dd/MM/yy}'}" Width="80"/>
                                     <DataGridTextColumn Header="Ref" Binding="{Binding ReferenceID}" Width="60"/>
                                     <DataGridTextColumn Header="Type" Binding="{Binding Type}" Width="70"/>
-                                    <DataGridTextColumn Header="Amount" Binding="{Binding Amount, StringFormat='\{0:N2\}'}" Width="*"/>
+                                    <DataGridTextColumn Header="Amount" Binding="{Binding Amount, StringFormat='{}{0:N2}'}" Width="*"/>
                                 </DataGrid.Columns>
                             </DataGrid>
                         </TabItem>

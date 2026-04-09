@@ -8,17 +8,22 @@
              x:DataType="vm:WarehousesViewModel">
     <Grid RowDefinitions="Auto, *">
         <Border Grid.Row="0" Background="White" BorderBrush="#E5E7EB" BorderThickness="0,0,0,1" Padding="20,15">
-            <Grid ColumnDefinitions="*, Auto">
-                <StackPanel Orientation="Horizontal" Spacing="15">
+            <Grid RowDefinitions="Auto, Auto" ColumnDefinitions="*, Auto">
+                <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="15">
                     <TextBlock Text="Warehouses" FontSize="20" FontWeight="Bold" VerticalAlignment="Center"/>
                     <Button Content="Add Warehouse" Command="{Binding AddWarehouseCommand}" Classes="Primary" Padding="15,8"/>
                     <Button Content="Refresh" Command="{Binding LoadWarehousesCommand}" Padding="15,8"/>
                 </StackPanel>
                 
-                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10">
+                <StackPanel Grid.Row="0" Grid.Column="1" Orientation="Horizontal" Spacing="10">
                     <Button Content="Edit Details" Command="{Binding EditWarehouseCommand}" IsEnabled="{Binding !!SelectedWarehouse}"/>
-                    <Button Content="Delete" Command="{Binding DeleteWarehouseCommand}" Classes="Danger" IsEnabled="{Binding !!SelectedWarehouse}"/>
+                    <Button Content="Delete" Command="{Binding DeleteWarehouseCommand}" Classes="Danger"/>
                 </StackPanel>
+
+                <TextBlock Grid.Row="1" Grid.ColumnSpan="2" Text="{Binding StatusMessage}"
+                           Foreground="{Binding StatusMessageColor}"
+                           FontSize="12"
+                           Margin="0,12,0,0"/>
             </Grid>
         </Border>
 
@@ -26,11 +31,16 @@
             <!-- Left: Warehouse List -->
             <Border Grid.Column="0" CornerRadius="8" BorderBrush="#E5E7EB" BorderThickness="1">
                 <Grid RowDefinitions="*, Auto">
-                    <DataGrid Grid.Row="0" ItemsSource="{Binding Warehouses}" SelectedItem="{Binding SelectedWarehouse}" IsReadOnly="True" GridLinesVisibility="Horizontal">
+                    <DataGrid Grid.Row="0" ItemsSource="{Binding Warehouses}" 
+                              SelectedItem="{Binding SelectedWarehouse}"
+                              SelectionChanged="DataGrid_SelectionChanged"
+                              SelectionMode="Extended"
+                              IsReadOnly="False" 
+                              GridLinesVisibility="Horizontal">
                         <DataGrid.Columns>
-                            <DataGridTextColumn Header="Name" Binding="{Binding WarehouseName}" Width="*"/>
-                            <DataGridTextColumn Header="City" Binding="{Binding City}" Width="150"/>
-                            <DataGridCheckBoxColumn Header="Main" Binding="{Binding IsMainWarehouse}" Width="60"/>
+                            <DataGridTextColumn Header="Name" Binding="{Binding WarehouseName}" Width="*" IsReadOnly="True"/>
+                            <DataGridTextColumn Header="City" Binding="{Binding City}" Width="150" IsReadOnly="True"/>
+                            <DataGridCheckBoxColumn Header="Main" Binding="{Binding IsMainWarehouse}" Width="60" IsReadOnly="True"/>
                         </DataGrid.Columns>
                     </DataGrid>
 
