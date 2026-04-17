@@ -208,6 +208,7 @@ public class LedgerService
                 existingInvoice.TotalSGST = invoice.TotalSGST;
                 existingInvoice.TotalIGST = invoice.TotalIGST;
                 existingInvoice.ShippingCharges = invoice.ShippingCharges;
+                existingInvoice.IsDraft = invoice.IsDraft;
 
                 db.InvoiceItems.RemoveRange(existingInvoice.Items);
                 await db.SaveChangesAsync();
@@ -222,7 +223,11 @@ public class LedgerService
             }
 
             // 2. Handle Status-Triggered Side Effects
-            if (invoice.DeliveryStatus == "Cancelled")
+            if (invoice.IsDraft)
+            {
+                await RevertInvoiceEffectsInternalAsync(db, invoice.InvoiceID);
+            }
+            else if (invoice.DeliveryStatus == "Cancelled")
             {
                 await RevertInvoiceEffectsInternalAsync(db, invoice.InvoiceID);
             }
@@ -445,6 +450,7 @@ public class LedgerService
                 existingPO.TotalIGST = po.TotalIGST;
                 existingPO.ShippingCharges = po.ShippingCharges;
                 existingPO.VendorBillPath = po.VendorBillPath;
+                existingPO.IsDraft = po.IsDraft;
 
                 db.PurchaseOrderItems.RemoveRange(existingPO.Items);
                 await db.SaveChangesAsync();
@@ -459,7 +465,11 @@ public class LedgerService
             }
 
             // 2. Handle Status-Triggered Side Effects
-            if (po.DeliveryStatus == "Cancelled")
+            if (po.IsDraft)
+            {
+                await RevertPOEffectsInternalAsync(db, po.PurchaseOrderID);
+            }
+            else if (po.DeliveryStatus == "Cancelled")
             {
                 await RevertPOEffectsInternalAsync(db, po.PurchaseOrderID);
             }
@@ -812,69 +822,135 @@ public class LedgerService
 
     private async Task RevertInvoiceEffectsInternalAsync(AppDbContext db, int invoiceId)
     {
-        // 1. Revert Stock
-        var stockTxs = await db.StockTransactions.Where(t => t.ReferenceType == "Invoice" && t.ReferenceID == invoiceId).ToListAsync();
+        var invoice = await db.Invoices.FirstOrDefaultAsync(i => i.InvoiceID == invoiceId);
+        var invoiceNumber = invoice?.InvoiceNumber ?? invoiceId.ToString();
+
+        // 1. Create offsetting stock reversals for invoice and return transactions
+        var stockTxs = await db.StockTransactions.Where(t => t.ReferenceID == invoiceId &&
+            (t.ReferenceType == "Invoice" || t.ReferenceType == "Sales Return") &&
+            !t.ReferenceType.EndsWith(" Reversal", StringComparison.OrdinalIgnoreCase)).ToListAsync();
+
         foreach (var tx in stockTxs)
         {
-            var stock = await db.Stocks.FirstOrDefaultAsync(s => s.ProductID == tx.ProductID && s.WarehouseID == tx.WarehouseID);
-            if (stock != null)
+            var reverseQuantity = -tx.Quantity;
+            var warehouseId = tx.WarehouseID ?? 0;
+            var previousQuantity = (await db.Stocks.FirstOrDefaultAsync(s => s.ProductID == tx.ProductID && s.WarehouseID == warehouseId))?.Quantity ?? 0;
+            var stock = await db.Stocks.FirstOrDefaultAsync(s => s.ProductID == tx.ProductID && s.WarehouseID == warehouseId);
+
+            if (stock == null)
             {
-                stock.Quantity -= tx.Quantity; // Reverse the movement (if tx.Quantity was negative, this adds it back)
+                stock = new Stock { ProductID = tx.ProductID, WarehouseID = warehouseId, Quantity = reverseQuantity };
+                db.Stocks.Add(stock);
             }
-            db.StockTransactions.Remove(tx);
+            else
+            {
+                stock.Quantity += reverseQuantity;
+            }
+
+            db.StockTransactions.Add(new StockTransaction
+            {
+                BusinessId = tx.BusinessId,
+                ProductID = tx.ProductID,
+                WarehouseID = warehouseId,
+                Quantity = reverseQuantity,
+                TransactionType = tx.TransactionType == "In" ? "Out" : tx.TransactionType == "Out" ? "In" : tx.TransactionType,
+                ReferenceType = tx.ReferenceType + " Reversal",
+                ReferenceID = invoiceId,
+                TransactionNumber = invoiceNumber,
+                TransactionDate = DateTime.Now,
+                PreviousQuantity = previousQuantity,
+                NewQuantity = previousQuantity + reverseQuantity,
+                Description = $"Offset/Reversal for Invoice {invoiceNumber}"
+            });
         }
 
-        // 2. Revert Returns (if any)
-        var returnTxs = await db.StockTransactions.Where(t => t.ReferenceType == "Sales Return" && t.ReferenceID == invoiceId).ToListAsync();
-        foreach (var tx in returnTxs)
+        // 2. Create offsetting finance ledger reversals
+        var financeEntries = await db.FinanceLedgers.Where(l =>
+            l.ReferenceID == invoiceId &&
+            (l.ReferenceType == "Invoice" || l.ReferenceType == "InvoicePayment" || l.ReferenceType == "Sales Return") &&
+            !l.ReferenceType.EndsWith(" Reversal", StringComparison.OrdinalIgnoreCase)).ToListAsync();
+
+        foreach (var entry in financeEntries)
         {
-            var stock = await db.Stocks.FirstOrDefaultAsync(s => s.ProductID == tx.ProductID && s.WarehouseID == tx.WarehouseID);
-            if (stock != null)
+            db.FinanceLedgers.Add(new FinanceLedger
             {
-                stock.Quantity -= tx.Quantity;
-            }
-            db.StockTransactions.Remove(tx);
+                BusinessId = entry.BusinessId,
+                TransactionDate = DateTime.Now,
+                Type = entry.Type == "Debit" ? "Credit" : "Debit",
+                Amount = entry.Amount,
+                RelatedEntity = entry.RelatedEntity,
+                RelatedEntityID = entry.RelatedEntityID,
+                ReferenceType = entry.ReferenceType + " Reversal",
+                ReferenceID = invoiceId,
+                Description = $"Offset/Reversal for Invoice {invoiceNumber}"
+            });
         }
-
-        // 3. Revert Finance Ledger Entries
-        var financeEntries = await db.FinanceLedgers.Where(l => 
-            (l.ReferenceType == "Invoice" || l.ReferenceType == "InvoicePayment" || l.ReferenceType == "Sales Return") && 
-            l.ReferenceID == invoiceId).ToListAsync();
-        
-        db.FinanceLedgers.RemoveRange(financeEntries);
     }
 
     private async Task RevertPOEffectsInternalAsync(AppDbContext db, int poId)
     {
-        // 1. Revert Stock
-        var stockTxs = await db.StockTransactions.Where(t => t.ReferenceType == "PurchaseOrder" && t.ReferenceID == poId).ToListAsync();
+        var po = await db.PurchaseOrders.FirstOrDefaultAsync(p => p.PurchaseOrderID == poId);
+        var poNumber = po?.PONumber ?? poId.ToString();
+
+        // 1. Create offsetting stock reversals for PO and return transactions
+        var stockTxs = await db.StockTransactions.Where(t => t.ReferenceID == poId &&
+            (t.ReferenceType == "PurchaseOrder" || t.ReferenceType == "Purchase Return") &&
+            !t.ReferenceType.EndsWith(" Reversal", StringComparison.OrdinalIgnoreCase)).ToListAsync();
+
         foreach (var tx in stockTxs)
         {
-            var stock = await db.Stocks.FirstOrDefaultAsync(s => s.ProductID == tx.ProductID && s.WarehouseID == tx.WarehouseID);
-            if (stock != null)
+            var reverseQuantity = -tx.Quantity;
+            var warehouseId = tx.WarehouseID ?? 0;
+            var previousQuantity = (await db.Stocks.FirstOrDefaultAsync(s => s.ProductID == tx.ProductID && s.WarehouseID == warehouseId))?.Quantity ?? 0;
+            var stock = await db.Stocks.FirstOrDefaultAsync(s => s.ProductID == tx.ProductID && s.WarehouseID == warehouseId);
+
+            if (stock == null)
             {
-                stock.Quantity -= tx.Quantity;
+                stock = new Stock { ProductID = tx.ProductID, WarehouseID = warehouseId, Quantity = reverseQuantity };
+                db.Stocks.Add(stock);
             }
-            db.StockTransactions.Remove(tx);
+            else
+            {
+                stock.Quantity += reverseQuantity;
+            }
+
+            db.StockTransactions.Add(new StockTransaction
+            {
+                BusinessId = tx.BusinessId,
+                ProductID = tx.ProductID,
+                WarehouseID = warehouseId,
+                Quantity = reverseQuantity,
+                TransactionType = tx.TransactionType == "In" ? "Out" : tx.TransactionType == "Out" ? "In" : tx.TransactionType,
+                ReferenceType = tx.ReferenceType + " Reversal",
+                ReferenceID = poId,
+                TransactionNumber = poNumber,
+                TransactionDate = DateTime.Now,
+                PreviousQuantity = previousQuantity,
+                NewQuantity = previousQuantity + reverseQuantity,
+                Description = $"Offset/Reversal for PO {poNumber}"
+            });
         }
 
-        // 2. Revert Returns (if any)
-        var returnTxs = await db.StockTransactions.Where(t => t.ReferenceType == "Purchase Return" && t.ReferenceID == poId).ToListAsync();
-        foreach (var tx in returnTxs)
+        // 2. Create offsetting finance ledger reversals
+        var financeEntries = await db.FinanceLedgers.Where(l =>
+            l.ReferenceID == poId &&
+            (l.ReferenceType == "PurchaseOrder" || l.ReferenceType == "POPayment" || l.ReferenceType == "Purchase Return") &&
+            !l.ReferenceType.EndsWith(" Reversal", StringComparison.OrdinalIgnoreCase)).ToListAsync();
+
+        foreach (var entry in financeEntries)
         {
-            var stock = await db.Stocks.FirstOrDefaultAsync(s => s.ProductID == tx.ProductID && s.WarehouseID == tx.WarehouseID);
-            if (stock != null)
+            db.FinanceLedgers.Add(new FinanceLedger
             {
-                stock.Quantity -= tx.Quantity;
-            }
-            db.StockTransactions.Remove(tx);
+                BusinessId = entry.BusinessId,
+                TransactionDate = DateTime.Now,
+                Type = entry.Type == "Debit" ? "Credit" : "Debit",
+                Amount = entry.Amount,
+                RelatedEntity = entry.RelatedEntity,
+                RelatedEntityID = entry.RelatedEntityID,
+                ReferenceType = entry.ReferenceType + " Reversal",
+                ReferenceID = poId,
+                Description = $"Offset/Reversal for PO {poNumber}"
+            });
         }
-
-        // 3. Revert Finance Ledger Entries
-        var financeEntries = await db.FinanceLedgers.Where(l => 
-            (l.ReferenceType == "PurchaseOrder" || l.ReferenceType == "POPayment" || l.ReferenceType == "Purchase Return") && 
-            l.ReferenceID == poId).ToListAsync();
-
-        db.FinanceLedgers.RemoveRange(financeEntries);
     }
 }

@@ -34,6 +34,7 @@ public partial class SettingsViewModel : ViewModelBase
     [ObservableProperty] private string _gstType = "Regular";
     
     [ObservableProperty] private string _bankName = string.Empty;
+    [ObservableProperty] private string _accountName = string.Empty;
     [ObservableProperty] private string _accountNumber = string.Empty;
     [ObservableProperty] private string _ifsc = string.Empty;
     
@@ -66,6 +67,7 @@ public partial class SettingsViewModel : ViewModelBase
             Gstin = business.GSTIN ?? "";
             GstType = business.GstType?.ToString() ?? "Regular";
             BankName = business.BankName ?? "";
+            AccountName = business.AccountName ?? "";
             AccountNumber = business.AccountNumber ?? "";
             Ifsc = business.IFSC ?? "";
         }
@@ -92,6 +94,7 @@ public partial class SettingsViewModel : ViewModelBase
                 business.GSTIN = IsGstRegistered ? Gstin : null;
                 business.GstType = IsGstRegistered ? (BusinessGstType)Enum.Parse(typeof(BusinessGstType), GstType) : null;
                 business.BankName = BankName;
+                business.AccountName = AccountName;
                 business.AccountNumber = AccountNumber;
                 business.IFSC = Ifsc;
 

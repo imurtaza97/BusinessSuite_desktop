@@ -213,6 +213,7 @@ public partial class CustomerFormViewModel : ViewModelBase, INotifyDataErrorInfo
     public bool IsGstRegistered => GstTreatment == "Regular" || GstTreatment == "Composition";
     public bool IsNotGstRegistered => !IsGstRegistered;
     [ObservableProperty] private string? _bankName;
+    [ObservableProperty] private string? _accountName;
     [ObservableProperty] private string? _accountNumber;
     [ObservableProperty] private string? _ifsc;
 
@@ -236,6 +237,7 @@ public partial class CustomerFormViewModel : ViewModelBase, INotifyDataErrorInfo
         State = customer.State;
         GstTreatment = customer.GstTreatment ?? "Regular";
         BankName = customer.BankName;
+        AccountName = customer.AccountName;
         AccountNumber = customer.AccountNumber;
         Ifsc = customer.IFSC;
     }
@@ -275,6 +277,7 @@ public partial class CustomerFormViewModel : ViewModelBase, INotifyDataErrorInfo
             State = State,
             GstTreatment = GstTreatment,
             BankName = BankName,
+            AccountName = AccountName,
             AccountNumber = AccountNumber,
             IFSC = Ifsc
         };

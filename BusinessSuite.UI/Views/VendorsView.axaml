@@ -52,6 +52,7 @@
                           GridLinesVisibility="All">
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="Vendor Name" Binding="{Binding VendorName}" Width="*" IsReadOnly="True"/>
+                        <DataGridTextColumn Header="Type" Binding="{Binding Type}" Width="150" IsReadOnly="True"/>
                         <DataGridTextColumn Header="Contact" Binding="{Binding ContactNo}" Width="130" IsReadOnly="True"/>
                         <DataGridTextColumn Header="State" Binding="{Binding State}" Width="120" IsReadOnly="True"/>
                     </DataGrid.Columns>

@@ -23,6 +23,10 @@ namespace BusinessSuite.DAL.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
+                    b.Property<string>("AccountName")
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("AccountNumber")
                         .HasMaxLength(30)
                         .HasColumnType("TEXT");
@@ -116,6 +120,10 @@ namespace BusinessSuite.DAL.Migrations
                     b.Property<int>("CustomerID")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
+
+                    b.Property<string>("AccountName")
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("AccountNumber")
                         .HasMaxLength(50)
@@ -314,6 +322,9 @@ namespace BusinessSuite.DAL.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<bool>("IsAutoRoundOff")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("IsDraft")
                         .HasColumnType("INTEGER");
 
                     b.Property<bool>("IsItemLevelDiscount")
@@ -543,6 +554,12 @@ namespace BusinessSuite.DAL.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("TEXT");
 
+                    b.Property<bool>("IsDraft")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("IsService")
+                        .HasColumnType("INTEGER");
+
                     b.Property<int?>("PreferredVendorID")
                         .HasColumnType("INTEGER");
 
@@ -610,6 +627,9 @@ namespace BusinessSuite.DAL.Migrations
                         .HasColumnType("decimal(18, 2)");
 
                     b.Property<bool>("IsAutoRoundOff")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("IsDraft")
                         .HasColumnType("INTEGER");
 
                     b.Property<bool>("IsItemLevelDiscount")
@@ -1120,6 +1140,10 @@ namespace BusinessSuite.DAL.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
+                    b.Property<string>("AccountName")
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("AccountNumber")
                         .HasMaxLength(50)
                         .HasColumnType("TEXT");
@@ -1162,6 +1186,9 @@ namespace BusinessSuite.DAL.Migrations
                     b.Property<string>("IFSC")
                         .HasMaxLength(20)
                         .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsServiceProvider")
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("State")
                         .HasMaxLength(50)

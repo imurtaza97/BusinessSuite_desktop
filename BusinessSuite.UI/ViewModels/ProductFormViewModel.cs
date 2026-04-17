@@ -75,8 +75,14 @@ public partial class ProductFormViewModel : ViewModelBase, INotifyDataErrorInfo
         if (SalePrice <= 0)
             AddError(nameof(SalePrice), "Sale Price must be greater than zero");
 
-        if (StockQty < 0)
-            AddError(nameof(StockQty), "Stock Quantity cannot be negative");
+        if (!IsService)
+        {
+            if (StockQty < 0)
+                AddError(nameof(StockQty), "Stock Quantity cannot be negative");
+
+            if (StockQty > 0 && SelectedWarehouse == null)
+                AddError(nameof(SelectedWarehouse), "Warehouse is required for initial stock");
+        }
 
         if (TaxRate < 0)
             AddError(nameof(TaxRate), "Tax Rate is required");
@@ -100,6 +106,43 @@ public partial class ProductFormViewModel : ViewModelBase, INotifyDataErrorInfo
 
     [ObservableProperty]
     private string _title = "Add Product";
+
+    [ObservableProperty]
+    private bool _isService;
+
+    public bool IsProduct => !IsService;
+
+    public string SaveButtonText => IsService ? "Save Service" : "Save Product";
+
+    public string CodeLabel => IsService ? "SAC Code" : "HSN Code";
+    public string CodeWatermark => IsService ? "Enter SAC code" : "Enter HSN code";
+    public string SkuLabel => IsService ? "Service Code" : "SKU";
+    public string SkuWatermark => IsService ? "Enter service code" : "SKU code";
+    public string CategoryLabel => IsService ? "Service Category" : "Category";
+    public string PreferredVendorLabel => IsService ? "Service Provider" : "Preferred Vendor";
+    public string PurchasePriceLabel => IsService ? "Service Cost *" : "Purchase Price *";
+    public string SalePriceLabel => IsService ? "Service Fee *" : "Sale Price *";
+
+    partial void OnIsServiceChanged(bool value)
+    {
+        Title = value ? (ProductId == 0 ? "Add Service" : "Edit Service") : (ProductId == 0 ? "Add Product" : "Edit Product");
+        OnPropertyChanged(nameof(IsProduct));
+        OnPropertyChanged(nameof(SaveButtonText));
+        OnPropertyChanged(nameof(CodeLabel));
+        OnPropertyChanged(nameof(CodeWatermark));
+        OnPropertyChanged(nameof(SkuLabel));
+        OnPropertyChanged(nameof(SkuWatermark));
+        OnPropertyChanged(nameof(CategoryLabel));
+        OnPropertyChanged(nameof(PreferredVendorLabel));
+        OnPropertyChanged(nameof(PurchasePriceLabel));
+        OnPropertyChanged(nameof(SalePriceLabel));
+        if (value)
+        {
+            StockQty = 0;
+            SelectedWarehouse = null;
+        }
+        if (ValidationVisible) ValidateAll();
+    }
 
     [ObservableProperty]
     private bool _isGstRegistered;
@@ -230,6 +273,7 @@ public partial class ProductFormViewModel : ViewModelBase, INotifyDataErrorInfo
         _warehouseRepository = new WarehouseRepository(db);
 
         SaveCommand = new RelayCommand(Save);
+        SaveDraftCommand = new AsyncRelayCommand(SaveDraftAsync);
         CancelCommand = new RelayCommand(Cancel);
         AddCategoryCommand = new RelayCommand(AddCategory);
         LoadUnits(db);
@@ -319,6 +363,7 @@ public partial class ProductFormViewModel : ViewModelBase, INotifyDataErrorInfo
         StockQty = product.StockQty;
         TaxRate = product.TaxRate;
         Unit = product.Unit;
+        IsService = product.IsService;
     }
 
     private async Task LoadRatesAsync()
@@ -368,10 +413,48 @@ public partial class ProductFormViewModel : ViewModelBase, INotifyDataErrorInfo
         }
     }
 
+    public IAsyncRelayCommand SaveDraftCommand { get; }
     public IRelayCommand SaveCommand { get; }
     public IRelayCommand CancelCommand { get; }
 
     public event Action<Product?>? RequestClose;
+
+    private Task SaveDraftAsync()
+    {
+        ValidationVisible = true;
+        ClearAllErrors();
+
+        if (string.IsNullOrWhiteSpace(ProductName))
+            AddError(nameof(ProductName), "Product Name is required");
+
+        if (HasErrors)
+        {
+            GeneralErrorMessage = _errors.Values.SelectMany(e => e).Distinct().FirstOrDefault() ?? string.Empty;
+            OnPropertyChanged(nameof(HasErrors));
+            return Task.CompletedTask;
+        }
+
+        var product = new Product
+        {
+            ProductID = ProductId,
+            BusinessID = _businessId,
+            ProductName = ProductName,
+            SKU = ProductSku,
+            HSNCode = ProductHsnCode,
+            CategoryID = SelectedCategory?.CategoryID,
+            PreferredVendorID = SelectedPreferredVendor?.VendorID,
+            PurchasePrice = PurchasePrice,
+            SalePrice = SalePrice,
+            StockQty = 0,
+            TaxRate = TaxRate,
+            Unit = Unit,
+            IsDraft = true,
+            IsService = IsService
+        };
+
+        RequestClose?.Invoke(product);
+        return Task.CompletedTask;
+    }
 
     private void Save()
     {
@@ -401,9 +484,11 @@ public partial class ProductFormViewModel : ViewModelBase, INotifyDataErrorInfo
             PreferredVendorID = SelectedPreferredVendor?.VendorID,
             PurchasePrice = PurchasePrice,
             SalePrice = SalePrice,
-            StockQty = StockQty,
+            StockQty = IsService ? 0 : StockQty,
             TaxRate = TaxRate,
-            Unit = Unit
+            Unit = Unit,
+            IsDraft = false,
+            IsService = IsService
         };
 
         RequestClose?.Invoke(product);

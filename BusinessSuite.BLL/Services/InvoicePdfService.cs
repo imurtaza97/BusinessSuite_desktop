@@ -208,7 +208,8 @@ public class InvoicePdfService
                             });
 
                             c.Item().PaddingTop(8).Text("BANK DETAILS").SemiBold().FontSize(7).Underline();
-                            c.Item().Text(x => { x.Span("Name: ").SemiBold(); x.Span(invoice.Business?.BankName ?? ""); });
+                            c.Item().Text(x => { x.Span("Bank: ").SemiBold(); x.Span(invoice.Business?.BankName ?? ""); });
+                            c.Item().Text(x => { x.Span("Name: ").SemiBold(); x.Span(invoice.Business?.AccountName ?? ""); });
                             c.Item().Text(x => { x.Span("A/c No: ").SemiBold(); x.Span(invoice.Business?.AccountNumber ?? ""); });
                             c.Item().Text(x => { x.Span("IFSC: ").SemiBold(); x.Span(invoice.Business?.IFSC ?? ""); });
                         });

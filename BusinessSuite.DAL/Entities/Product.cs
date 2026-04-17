@@ -46,6 +46,13 @@ public class Product
 
     public decimal StockQty { get; set; } = 0;
 
+    public bool IsDraft { get; set; } = false;
+
+    public bool IsService { get; set; } = false;
+
+    [NotMapped]
+    public string Type => IsService ? "Service" : "Product";
+
     [Required]
     public decimal TaxRate { get; set; }
 

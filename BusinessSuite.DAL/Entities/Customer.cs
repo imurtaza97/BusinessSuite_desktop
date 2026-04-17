@@ -43,6 +43,9 @@ public class Customer
     [MaxLength(100)]
     public string? BankName { get; set; }
 
+    [MaxLength(100)]
+    public string? AccountName { get; set; }
+
     [MaxLength(50)]
     public string? AccountNumber { get; set; }
 

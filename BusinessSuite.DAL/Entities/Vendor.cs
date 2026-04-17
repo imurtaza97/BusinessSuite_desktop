@@ -37,8 +37,13 @@ public class Vendor
     [MaxLength(50)]
     public string? GstTreatment { get; set; } = "Unregistered";
 
+    public bool IsServiceProvider { get; set; } = false;
+
     [MaxLength(100)]
     public string? BankName { get; set; }
+
+    [MaxLength(100)]
+    public string? AccountName { get; set; }
 
     [MaxLength(50)]
     public string? AccountNumber { get; set; }
@@ -50,6 +55,9 @@ public class Vendor
 
     [ForeignKey("BusinessId")]
     public Business? Business { get; set; }
+
+    [NotMapped]
+    public string Type => IsServiceProvider ? "Service Provider" : "Vendor";
 
     public override string ToString() => VendorName;
 }

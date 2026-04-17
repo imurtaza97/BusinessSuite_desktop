@@ -38,10 +38,18 @@
         <!-- Form Fields -->
         <ScrollViewer Grid.Row="1">
             <StackPanel Spacing="15">
-                <StackPanel>
-                    <TextBlock Text="Vendor Name *" Margin="0,0,0,5" FontWeight="Medium" Foreground="#374151"/>
-                    <TextBox Text="{Binding VendorName}" Watermark="Enter vendor or company name"/>
-                </StackPanel>
+                <Grid ColumnDefinitions="*, *">
+                    <StackPanel Grid.Column="0" Margin="0,0,7,0">
+                        <TextBlock Text="Vendor Type" Margin="0,0,0,5" FontWeight="Medium" Foreground="#374151"/>
+                        <ComboBox ItemsSource="{Binding VendorTypes}"
+                                  SelectedItem="{Binding VendorType}"
+                                  HorizontalAlignment="Stretch"/>
+                    </StackPanel>
+                    <StackPanel Grid.Column="1" Margin="7,0,0,0">
+                        <TextBlock Text="{Binding VendorNameLabel}" Margin="0,0,0,5" FontWeight="Medium" Foreground="#374151"/>
+                        <TextBox Text="{Binding VendorName}" Watermark="{Binding VendorNameWatermark}"/>
+                    </StackPanel>
+                </Grid>
 
                 <Grid ColumnDefinitions="*, *">
                     <StackPanel Grid.Column="0" Margin="0,0,7,0">
@@ -87,6 +95,10 @@
                         <StackPanel>
                             <TextBlock Text="Bank Name" Margin="0,0,0,5" FontSize="12" Foreground="#374151"/>
                             <TextBox Text="{Binding BankName}" Watermark="e.g. HDFC Bank"/>
+                        </StackPanel>
+                        <StackPanel>
+                            <TextBlock Text="Account Name" Margin="0,0,0,5" FontSize="12" Foreground="#374151"/>
+                            <TextBox Text="{Binding AccountName}" Watermark="Enter account name"/>
                         </StackPanel>
                         <Grid ColumnDefinitions="*, *">
                             <StackPanel Grid.Column="0" Margin="0,0,5,0">

@@ -160,8 +160,22 @@ public partial class PurchaseOrderFormViewModel : ViewModelBase, INotifyDataErro
     [ObservableProperty] private decimal _grandTotal;
     [ObservableProperty] private string? _placeOfSupply;
     [ObservableProperty] private bool _isItemLevelDiscount;
+    [ObservableProperty] private bool _isDiscountPercentage;
+    [ObservableProperty] private decimal _discountPercentage;
+
+    private readonly bool _isFinalized;
+    private readonly string? _originalDeliveryStatus;
+    private readonly string? _originalPaymentStatus;
 
     public bool IsGstRegistered => _business?.IsGSTRegistered ?? false;
+    public bool IsDiscountAmountMode => !IsDiscountPercentage;
+    public bool IsFinalized => _isFinalized;
+    public bool CanEditCoreFields => !_isFinalized;
+    public bool CanEditItems => !_isFinalized;
+    public bool CanEditPaymentStatus => !_isFinalized;
+    public bool CanEditDeliveryStatus => !_isFinalized || (DeliveryStatus != "Returned-to-Vendor" && DeliveryStatus != "Cancelled");
+    public bool CanEditDiscountAmount => CanEditCoreFields && !IsItemLevelDiscount && !IsDiscountPercentage;
+    public bool CanEditDiscountPercentage => CanEditCoreFields && !IsItemLevelDiscount;
 
     public bool ShowGstFields => SelectedVendor?.GstTreatment?.Equals("Regular", StringComparison.OrdinalIgnoreCase) ?? false;
 
@@ -180,6 +194,7 @@ public partial class PurchaseOrderFormViewModel : ViewModelBase, INotifyDataErro
         _business = db.Businesses.FirstOrDefault(b => b.BusinessID == businessId) ?? new Business();
 
         SaveCommand = new AsyncRelayCommand(SaveAsync);
+        SaveDraftCommand = new AsyncRelayCommand(SaveDraftAsync);
         CancelCommand = new RelayCommand(Cancel);
         AddItemCommand = new RelayCommand(AddItem);
         RemoveItemCommand = new RelayCommand<PurchaseOrderItemViewModel>(RemoveItem);
@@ -189,6 +204,10 @@ public partial class PurchaseOrderFormViewModel : ViewModelBase, INotifyDataErro
         if (existingPO != null)
         {
             _existingPOId = existingPO.PurchaseOrderID;
+            _isFinalized = !existingPO.IsDraft;
+            _originalDeliveryStatus = existingPO.DeliveryStatus;
+            _originalPaymentStatus = existingPO.PaymentStatus;
+
             Title = $"Edit Purchase Order - {existingPO.PONumber}";
             PoNumber = existingPO.PONumber;
             PoDate = existingPO.PODate;
@@ -452,8 +471,21 @@ public partial class PurchaseOrderFormViewModel : ViewModelBase, INotifyDataErro
 
     partial void OnPlaceOfSupplyChanged(string? value) => CalculateTotals();
     partial void OnRoundOffChanged(decimal value) => CalculateTotals();
-    partial void OnDiscountChanged(decimal value) { if (!IsItemLevelDiscount) CalculateTotals(); }
-    partial void OnIsItemLevelDiscountChanged(bool value) => CalculateTotals();
+    partial void OnDiscountChanged(decimal value) { if (!IsItemLevelDiscount && !IsDiscountPercentage) CalculateTotals(); }
+    partial void OnIsDiscountPercentageChanged(bool value)
+    {
+        OnPropertyChanged(nameof(IsDiscountAmountMode));
+        OnPropertyChanged(nameof(CanEditDiscountAmount));
+        OnPropertyChanged(nameof(CanEditDiscountPercentage));
+        CalculateTotals();
+    }
+    partial void OnDiscountPercentageChanged(decimal value) { if (!IsItemLevelDiscount) CalculateTotals(); }
+    partial void OnIsItemLevelDiscountChanged(bool value)
+    {
+        OnPropertyChanged(nameof(CanEditDiscountAmount));
+        OnPropertyChanged(nameof(CanEditDiscountPercentage));
+        CalculateTotals();
+    }
     partial void OnShippingChargesChanged(decimal value) => CalculateTotals();
     partial void OnIsAutoRoundOffChanged(bool value) => CalculateTotals();
 
@@ -511,6 +543,17 @@ public partial class PurchaseOrderFormViewModel : ViewModelBase, INotifyDataErro
         TotalSGST = sgstTotal;
         TotalIGST = igstTotal;
 
+        decimal discountAmount = Discount;
+        if (IsItemLevelDiscount)
+        {
+            discountAmount = itemDiscountTotal;
+        }
+        else if (IsDiscountPercentage)
+        {
+            discountAmount = Math.Round(subTotal * DiscountPercentage / 100m, 2);
+            Discount = discountAmount;
+        }
+
         decimal tempGrandTotal;
         if (IsItemLevelDiscount)
         {
@@ -519,7 +562,7 @@ public partial class PurchaseOrderFormViewModel : ViewModelBase, INotifyDataErro
         }
         else
         {
-            tempGrandTotal = subTotal + taxTotal - Discount + ShippingCharges;
+            tempGrandTotal = subTotal + taxTotal - discountAmount + ShippingCharges;
         }
 
         if (IsAutoRoundOff)
@@ -535,12 +578,125 @@ public partial class PurchaseOrderFormViewModel : ViewModelBase, INotifyDataErro
         }
     }
 
+    public IAsyncRelayCommand SaveDraftCommand { get; }
     public IAsyncRelayCommand SaveCommand { get; }
     public IRelayCommand CancelCommand { get; }
     public IRelayCommand AddItemCommand { get; }
     public IRelayCommand<PurchaseOrderItemViewModel> RemoveItemCommand { get; }
 
     public event Action<PurchaseOrder?>? RequestClose;
+
+    private async Task SaveDraftAsync()
+    {
+        ValidationVisible = true;
+        ClearAllErrors();
+
+        if (SelectedVendor == null)
+            AddError(nameof(SelectedVendor), "Vendor is required");
+        if (string.IsNullOrWhiteSpace(PoNumber))
+            AddError(nameof(PoNumber), "PO number is required");
+
+        if (HasErrors)
+        {
+            GeneralErrorMessage = _errors.Values.SelectMany(e => e).Distinct().FirstOrDefault() ?? string.Empty;
+            return;
+        }
+
+        var emptyItems = Items.Where(i => i.SelectedProduct == null).ToList();
+        foreach (var empty in emptyItems) Items.Remove(empty);
+
+        var po = new PurchaseOrder
+        {
+            PurchaseOrderID = _existingPOId ?? 0,
+            BusinessId = _businessId,
+            VendorId = SelectedVendor!.VendorID,
+            PONumber = PoNumber,
+            PODate = PoDate ?? DateTime.Now,
+            TotalAmount = TotalAmount,
+            TotalTax = TotalTax,
+            Discount = Discount,
+            GrandTotal = GrandTotal,
+            ShippingCharges = ShippingCharges,
+            PlaceOfSupply = PlaceOfSupply,
+            RoundOff = RoundOff,
+            TotalCGST = TotalCGST,
+            TotalSGST = TotalSGST,
+            TotalIGST = TotalIGST,
+            PaymentMethod = PaymentMethod,
+            PaymentTerms = PaymentTerms,
+            TermsAndConditions = TermsAndConditions,
+            Notes = Notes,
+            DeliveryStatus = "Pending",
+            PaymentStatus = "Unpaid",
+            TotalPaid = 0,
+            IsItemLevelDiscount = IsItemLevelDiscount,
+            ExpectedDeliveryDate = ExpectedDeliveryDate,
+            IsAutoRoundOff = IsAutoRoundOff,
+            VendorBillPath = VendorBillPath,
+            IsDraft = true,
+            Items = Items.Select(i => new PurchaseOrderItem
+            {
+                PurchaseOrderItemID = i.PurchaseOrderItemId,
+                ProductID = i.SelectedProduct!.ProductID,
+                Quantity = i.Quantity,
+                UnitPrice = i.UnitPrice,
+                TaxRate = i.TaxRate,
+                TaxAmount = i.TaxAmount,
+                CGST_Rate = i.TaxRate / 2,
+                CGST_Amount = i.CgstAmount,
+                SGST_Rate = i.TaxRate / 2,
+                SGST_Amount = i.SgstAmount,
+                IGST_Rate = i.TaxRate,
+                IGST_Amount = i.IgstAmount,
+                HSNCode = i.HsnCode,
+                Unit = i.Unit,
+                Discount = i.Discount,
+                TotalAmount = i.TotalAmount
+            }).ToList()
+        };
+
+        try
+        {
+            if (_existingPOId.HasValue)
+            {
+                var updated = await _poRepository.UpdateAsync(po);
+                if (!updated)
+                    throw new InvalidOperationException("Unable to update draft purchase order.");
+            }
+            else
+            {
+                var added = await _poRepository.AddAsync(po);
+                if (!added)
+                    throw new InvalidOperationException("Unable to save draft purchase order.");
+            }
+
+            RequestClose?.Invoke(po);
+        }
+        catch (Exception ex)
+        {
+            GeneralErrorMessage = "Failed to save draft PO: " + ex.Message;
+        }
+    }
+
+    private bool IsValidFinalDeliveryTransition(string original, string current)
+    {
+        if (original == current) return true;
+        if (original == "Pending")
+            return current == "Received" || current == "Returned-to-Vendor" || current == "Cancelled";
+        if (original == "Received")
+            return current == "Returned-to-Vendor";
+        return false;
+    }
+
+    private bool IsValidFinalPaymentTransition(string original, string current)
+    {
+        if (original == current) return true;
+        if (original == "Unpaid")
+            return current == "Partially Paid" || current == "Paid";
+        if (original == "Partially Paid")
+            return current == "Paid";
+        return false;
+    }
 
     private async Task SaveAsync()
     {
@@ -555,6 +711,21 @@ public partial class PurchaseOrderFormViewModel : ViewModelBase, INotifyDataErro
             var allErrors = _errors.Values.SelectMany(e => e).Distinct().ToList();
             GeneralErrorMessage = string.Join(", ", allErrors);
             return;
+        }
+
+        if (_existingPOId.HasValue && _isFinalized)
+        {
+            if (!IsValidFinalDeliveryTransition(_originalDeliveryStatus ?? string.Empty, DeliveryStatus))
+            {
+                GeneralErrorMessage = "Delivery status cannot be reverted once finalized.";
+                return;
+            }
+
+            if (!IsValidFinalPaymentTransition(_originalPaymentStatus ?? string.Empty, PaymentStatus))
+            {
+                GeneralErrorMessage = "Payment status cannot be reverted once finalized.";
+                return;
+            }
         }
 
         var po = new PurchaseOrder
@@ -585,6 +756,7 @@ public partial class PurchaseOrderFormViewModel : ViewModelBase, INotifyDataErro
             ExpectedDeliveryDate = ExpectedDeliveryDate,
             IsAutoRoundOff = IsAutoRoundOff,
             VendorBillPath = VendorBillPath,
+            IsDraft = false,
             Items = Items.Select(i => new PurchaseOrderItem
             {
                 PurchaseOrderItemID = i.PurchaseOrderItemId,
@@ -672,6 +844,7 @@ public partial class PurchaseOrderItemViewModel : ObservableObject
 
     [ObservableProperty] private int _purchaseOrderItemId;
     [ObservableProperty] private Product? _selectedProduct;
+    public string ProductType => SelectedProduct?.Type ?? string.Empty;
     [ObservableProperty] private int _quantity = 1;
     [ObservableProperty] private decimal _unitPrice;
     [ObservableProperty] private decimal _taxRate;
@@ -712,7 +885,8 @@ public partial class PurchaseOrderItemViewModel : ObservableObject
             ? _allProducts.ToList()
             : _allProducts.Where(p =>
                 p.ProductName.ToLower().Contains(query) ||
-                (p.SKU?.ToLower().Contains(query) ?? false)).ToList();
+                (p.SKU?.ToLower().Contains(query) ?? false) ||
+                p.Type.ToLower().Contains(query)).ToList();
 
         // CRITICAL: Always keep SelectedProduct in the list to prevent Avalonia from nullifying the selection
         if (SelectedProduct != null && !filteredList.Contains(SelectedProduct))
@@ -756,7 +930,8 @@ public partial class PurchaseOrderItemViewModel : ObservableObject
                 ? _allProducts.ToList()
                 : _allProducts.Where(p =>
                     p.ProductName.ToLower().Contains(query) ||
-                    (p.SKU?.ToLower().Contains(query) ?? false)).ToList();
+                    (p.SKU?.ToLower().Contains(query) ?? false) ||
+                    p.Type.ToLower().Contains(query)).ToList();
 
             if (SelectedProduct != null && !filteredList.Contains(SelectedProduct))
                 filteredList.Insert(0, SelectedProduct);
@@ -794,6 +969,7 @@ public partial class PurchaseOrderItemViewModel : ObservableObject
 
             EnsureSelectedProductInFiltered();
             IsDropDownOpen = false;
+            OnPropertyChanged(nameof(ProductType));
 
             // Check parent VM's selected vendor status
             // Note: This requires accessing the parent VM or a flag. 

@@ -16,6 +16,10 @@
                              Watermark="Search products..." 
                              Text="{Binding SearchQuery}"/>
                     <ComboBox Width="150"
+                              ItemsSource="{Binding ProductTypes}"
+                              SelectedItem="{Binding SelectedProductType}"
+                              PlaceholderText="All Types"/>
+                    <ComboBox Width="150"
                               ItemsSource="{Binding Categories}"
                               SelectedItem="{Binding SelectedCategory}"
                               PlaceholderText="All Categories"/>
@@ -25,7 +29,7 @@
                             ToolTip.Tip="Clear Category Filter"
                             Padding="8,4"
                             VerticalAlignment="Center"/>
-                    <Button Classes="Primary" Content="Add New Product" Command="{Binding AddProductCommand}"/>
+                    <Button Classes="Primary" Content="Add Item" Command="{Binding AddProductCommand}"/>
                 </StackPanel>
                 
                 <StackPanel Grid.Row="0" Grid.Column="1" Orientation="Horizontal" Spacing="10">
@@ -56,7 +60,8 @@
                           BorderBrush="#E5E7EB"
                           GridLinesVisibility="All">
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="Product Name" Binding="{Binding ProductName}" Width="*" IsReadOnly="True"/>
+                        <DataGridTextColumn Header="Name" Binding="{Binding ProductName}" Width="*" IsReadOnly="True"/>
+                        <DataGridTextColumn Header="Type" Binding="{Binding Type}" Width="90" IsReadOnly="True"/>
                         <DataGridTextColumn Header="Category" Binding="{Binding Category.Name}" Width="150" IsReadOnly="True"/>
                         <DataGridTextColumn Header="SKU" Binding="{Binding SKU}" Width="100" IsReadOnly="True"/>
                         <DataGridTextColumn Header="Stock" Binding="{Binding StockQty}" Width="80" IsReadOnly="True"/>

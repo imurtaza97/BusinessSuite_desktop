@@ -37,7 +37,7 @@ public class ProductRepository
         return products;
     }
 
-    public async Task<List<Product>> GetPaginatedAsync(int businessId, int page, int pageSize, string? searchTerm = null, int? categoryId = null)
+    public async Task<List<Product>> GetPaginatedAsync(int businessId, int page, int pageSize, string? searchTerm = null, int? categoryId = null, bool? isService = null)
     {
         var query = _context.Products
             .Include(p => p.Category)
@@ -46,6 +46,11 @@ public class ProductRepository
         if (categoryId.HasValue)
         {
             query = query.Where(p => p.CategoryID == categoryId.Value);
+        }
+
+        if (isService.HasValue)
+        {
+            query = query.Where(p => p.IsService == isService.Value);
         }
 
         if (!string.IsNullOrWhiteSpace(searchTerm))
@@ -73,13 +78,18 @@ public class ProductRepository
         return products;
     }
 
-    public async Task<int> GetCountAsync(int businessId, string? searchTerm = null, int? categoryId = null)
+    public async Task<int> GetCountAsync(int businessId, string? searchTerm = null, int? categoryId = null, bool? isService = null)
     {
         var query = _context.Products.Where(p => p.BusinessID == businessId);
 
         if (categoryId.HasValue)
         {
             query = query.Where(p => p.CategoryID == categoryId.Value);
+        }
+
+        if (isService.HasValue)
+        {
+            query = query.Where(p => p.IsService == isService.Value);
         }
 
         if (!string.IsNullOrWhiteSpace(searchTerm))

@@ -29,6 +29,8 @@ public partial class InvoicesViewModel : ViewModelBase
     private ObservableCollection<Invoice> _invoices = new();
 
     [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(EditInvoiceCommand))]
+    [NotifyCanExecuteChangedFor(nameof(DeleteInvoiceCommand))]
     [NotifyCanExecuteChangedFor(nameof(PrintInvoiceCommand))]
     private Invoice? _selectedInvoice;
 
@@ -62,9 +64,9 @@ public partial class InvoicesViewModel : ViewModelBase
         
         LoadInvoicesCommand = new AsyncRelayCommand(LoadInvoicesAsync);
         AddInvoiceCommand = new AsyncRelayCommand(AddInvoiceAsync);
-        EditInvoiceCommand = new AsyncRelayCommand(EditInvoiceAsync);
-        DeleteInvoiceCommand = new AsyncRelayCommand(DeleteInvoiceAsync);
-        PrintInvoiceCommand = new AsyncRelayCommand(PrintInvoiceAsync);
+        EditInvoiceCommand = new AsyncRelayCommand(EditInvoiceAsync, CanModifySelectedInvoice);
+        DeleteInvoiceCommand = new AsyncRelayCommand(DeleteInvoiceAsync, CanDeleteSelectedInvoice);
+        PrintInvoiceCommand = new AsyncRelayCommand(PrintInvoiceAsync, CanModifySelectedInvoice);
         RefreshCommand = new AsyncRelayCommand(() => { CurrentPage = 1; return LoadInvoicesAsync(); });
         NextPageCommand = new AsyncRelayCommand(NextPageAsync);
         PreviousPageCommand = new AsyncRelayCommand(PreviousPageAsync);
@@ -151,21 +153,42 @@ public partial class InvoicesViewModel : ViewModelBase
     private async Task DeleteInvoiceAsync()
     {
         if (SelectedInvoice == null) return;
-        
+
+        if (!SelectedInvoice.IsDraft)
+        {
+            SetStatusMessage("Cannot delete a finalized invoice. Please cancel or return the invoice instead.", "#B45309");
+            return;
+        }
+
+        ClearStatusMessage();
         IsBusy = true;
         try
         {
-            var success = await _ledgerService.DeleteInvoiceWithReversalAsync(SelectedInvoice.InvoiceID);
+            var success = await _invoiceRepository.DeleteAsync(SelectedInvoice.InvoiceID);
+
             if (success)
             {
+                SetStatusMessage("Draft invoice deleted successfully.", "#047857");
                 await LoadInvoicesAsync();
             }
+            else
+            {
+                SetStatusMessage("Failed to delete draft invoice. Please try again.", "#B45309");
+            }
+        }
+        catch (Exception ex)
+        {
+            SetStatusMessage($"Invoice delete failed: {ex.Message}", "#B45309");
         }
         finally
         {
             IsBusy = false;
         }
     }
+
+    private bool CanDeleteSelectedInvoice() => SelectedInvoice != null && SelectedInvoice.IsDraft;
+
+    private bool CanModifySelectedInvoice() => SelectedInvoice != null;
 
     private async Task PrintInvoiceAsync()
     {
@@ -196,7 +219,7 @@ public partial class InvoicesViewModel : ViewModelBase
                     var file = await topLevel.StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
                     {
                         Title = "Save Invoice PDF",
-                        SuggestedFileName = $"{fullInvoice.InvoiceNumber}.pdf",
+                        SuggestedFileName = $"{GetSafeFileName(fullInvoice.InvoiceNumber)}.pdf",
                         FileTypeChoices = new[] { new FilePickerFileType("PDF Files") { Patterns = new[] { "*.pdf" } } }
                     });
 
@@ -206,7 +229,7 @@ public partial class InvoicesViewModel : ViewModelBase
             }
             else
             {
-                finalPath = Path.Combine(Path.GetTempPath(), $"{fullInvoice.InvoiceNumber}_{DateTime.Now:yyyyMMddHHmmss}.pdf");
+                finalPath = Path.Combine(Path.GetTempPath(), $"{GetSafeFileName(fullInvoice.InvoiceNumber)}_{DateTime.Now:yyyyMMddHHmmss}.pdf");
             }
 
             if (string.IsNullOrEmpty(finalPath)) return;
@@ -222,5 +245,15 @@ public partial class InvoicesViewModel : ViewModelBase
         {
             IsBusy = false;
         }
+    }
+
+    private static string GetSafeFileName(string input)
+    {
+        if (string.IsNullOrWhiteSpace(input))
+            return "document";
+
+        var invalidChars = Path.GetInvalidFileNameChars().Concat(new[] { Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar }).Distinct().ToArray();
+        var safeName = string.Concat(input.Select(c => invalidChars.Contains(c) ? '_' : c));
+        return string.IsNullOrWhiteSpace(safeName) ? "document" : safeName;
     }
 }

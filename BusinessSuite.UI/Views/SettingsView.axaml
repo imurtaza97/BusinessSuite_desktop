@@ -123,6 +123,10 @@
                                     <TextBox Text="{Binding BankName}" Watermark="e.g. HDFC Bank"/>
                                 </StackPanel>
                                 <StackPanel Spacing="5">
+                                    <TextBlock Text="Account Name" FontWeight="Medium"/>
+                                    <TextBox Text="{Binding AccountName}" Watermark="Enter account name"/>
+                                </StackPanel>
+                                <StackPanel Spacing="5">
                                     <TextBlock Text="Account Number" FontWeight="Medium"/>
                                     <TextBox Text="{Binding AccountNumber}" Watermark="Enter account number"/>
                                 </StackPanel>

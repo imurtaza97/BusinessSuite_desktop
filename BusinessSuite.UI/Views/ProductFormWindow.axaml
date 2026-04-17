@@ -3,17 +3,16 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:vm="clr-namespace:BusinessSuite.UI.ViewModels"
-        mc:Ignorable="d" d:DesignWidth="450" d:DesignHeight="600"
+        mc:Ignorable="d" d:DesignWidth="450" d:DesignHeight="700"
         x:Class="BusinessSuite.UI.Views.ProductFormWindow"
         x:DataType="vm:ProductFormViewModel"
         Title="{Binding Title}"
-        Width="450" Height="600"
+        Width="450" Height="700"
         WindowStartupLocation="CenterOwner"
         CanResize="False"
         Background="#F9FAFB">
 
     <Grid RowDefinitions="Auto, *, Auto" Margin="25">
-        <!-- Header -->
         <StackPanel Grid.Row="0" Margin="0,0,0,10">
             <TextBlock Text="{Binding Title}" 
                        FontSize="24" 
@@ -34,91 +33,97 @@
             </Border>
         </StackPanel>
 
-        <!-- Form Fields -->
         <ScrollViewer Grid.Row="1">
             <StackPanel Spacing="15">
-                <StackPanel>
-                    <TextBlock Text="Product Name *" Margin="0,0,0,5" FontWeight="Medium" Foreground="#374151"/>
-                    <TextBox Text="{Binding ProductName}" Watermark="Enter product name"/>
+                <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                    <ToggleSwitch IsChecked="{Binding IsService}" OnContent="Service" OffContent="Product" Width="140"/>
+                    <TextBlock Text="Item Type" VerticalAlignment="Center" FontWeight="Medium" Foreground="#374151"/>
                 </StackPanel>
 
-                <Grid ColumnDefinitions="*, *, *">
-                    <StackPanel Grid.Column="0" Margin="0,0,5,0">
-                        <TextBlock Text="SKU" Margin="0,0,0,5" FontWeight="Medium" Foreground="#374151"/>
-                        <TextBox Text="{Binding ProductSku}" Watermark="SKU code"/>
+                <TextBlock Text="Choose Product for stock-managed items; select Service for billable services." 
+                           Foreground="#4B5563" FontSize="11" Margin="0,0,0,5" TextWrapping="Wrap"/>
+
+                <Border Background="#EFF6FF" CornerRadius="6" Padding="10" IsVisible="{Binding IsService}">
+                    <TextBlock Text="Services do not use stock data. Only cost and fee are required." 
+                               Foreground="#1D4ED8" FontSize="12" TextWrapping="Wrap" />
+                </Border>
+
+                <StackPanel>
+                    <TextBlock Text="Name *" Margin="0,0,0,5" FontWeight="Medium" Foreground="#374151"/>
+                    <TextBox Text="{Binding ProductName}" Watermark="Enter item name"/>
+                </StackPanel>
+
+                <Grid ColumnDefinitions="*, *" RowDefinitions="Auto, Auto, Auto, Auto, Auto, Auto">
+                    <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,10,10">
+                        <TextBlock Text="{Binding SkuLabel}" Margin="0,0,0,5" FontWeight="Medium" Foreground="#374151"/>
+                        <TextBox Text="{Binding ProductSku}" Watermark="{Binding SkuWatermark}"/>
                     </StackPanel>
-                    <StackPanel Grid.Column="1" Margin="5,0,5,0">
-                        <TextBlock Text="HSN Code" Margin="0,0,0,5" FontWeight="Medium" Foreground="#374151"/>
-                        <TextBox Text="{Binding ProductHsnCode}" Watermark="HSN code"/>
+                    <StackPanel Grid.Row="0" Grid.Column="1" Margin="0,0,0,10">
+                        <TextBlock Text="{Binding CodeLabel}" Margin="0,0,0,5" FontWeight="Medium" Foreground="#374151"/>
+                        <TextBox Text="{Binding ProductHsnCode}" Watermark="{Binding CodeWatermark}"/>
                     </StackPanel>
-                    <StackPanel Grid.Column="2" Margin="5,0,0,0">
+
+                    <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,0,10,10">
                         <TextBlock Text="Unit *" Margin="0,0,0,5" FontWeight="Medium" Foreground="#374151"/>
                         <ComboBox ItemsSource="{Binding UnitNames}" 
                                   SelectedItem="{Binding Unit}"
                                   HorizontalAlignment="Stretch"/>
                     </StackPanel>
-                </Grid>
-
-                <StackPanel Spacing="5">
-                    <TextBlock Text="Category *" FontWeight="Medium" Foreground="#374151"/>
-                    <Grid ColumnDefinitions="*, Auto">
-                        <ComboBox ItemsSource="{Binding Categories}" 
-                                  SelectedItem="{Binding SelectedCategory}"
-                                  PlaceholderText="Select category"
-                                  HorizontalAlignment="Stretch"/>
-                        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="5" Margin="5,0,0,0">
-                            <TextBox Width="120" Text="{Binding NewCategoryName}" Watermark="New category..."/>
-                            <Button Content="+" Command="{Binding AddCategoryCommand}" VerticalAlignment="Stretch"/>
-                        </StackPanel>
-                    </Grid>
-                </StackPanel>
-
-                <StackPanel>
-                    <TextBlock Text="Preferred Vendor" Margin="0,0,0,5" FontWeight="Medium" Foreground="#374151"/>
-                    <ComboBox ItemsSource="{Binding Vendors}" 
-                              SelectedItem="{Binding SelectedPreferredVendor}"
-                              PlaceholderText="Select vendor (optional)"
-                              HorizontalAlignment="Stretch">
-                        <ComboBox.ItemTemplate>
-                            <DataTemplate>
-                                <TextBlock Text="{Binding VendorName}"/>
-                            </DataTemplate>
-                        </ComboBox.ItemTemplate>
-                    </ComboBox>
-                </StackPanel>
-
-                <Grid ColumnDefinitions="*, *">
-                    <StackPanel Grid.Column="0" Margin="0,0,7,0">
-                        <TextBlock Text="Purchase Price *" Margin="0,0,0,5" FontWeight="Medium" Foreground="#374151"/>
-                        <NumericUpDown Value="{Binding PurchasePrice}" Minimum="0" FormatString="0.00"/>
+                    
+                    <StackPanel Grid.Row="1" Grid.Column="1" Margin="0,0,0,10">
+                        <TextBlock Text="{Binding CategoryLabel}" Margin="0,0,0,5" FontWeight="Medium" Foreground="#374151"/>
+                        <Grid ColumnDefinitions="*, Auto">
+                            <ComboBox ItemsSource="{Binding Categories}" 
+                                      SelectedItem="{Binding SelectedCategory}"
+                                      PlaceholderText="Select"
+                                      HorizontalAlignment="Stretch"/>
+                            <Button Grid.Column="1" Content="+" Command="{Binding AddCategoryCommand}" Margin="5,0,0,0"/>
+                        </Grid>
                     </StackPanel>
-                    <StackPanel Grid.Column="1" Margin="7,0,0,0">
-                        <TextBlock Text="Sale Price *" Margin="0,0,0,5" FontWeight="Medium" Foreground="#374151"/>
-                        <NumericUpDown Value="{Binding SalePrice}" Minimum="0" FormatString="0.00"/>
-                    </StackPanel>
-                </Grid>
 
-                <Grid ColumnDefinitions="*, *">
-                    <StackPanel Grid.Column="0" Margin="0,0,7,0">
+                    <StackPanel Grid.Row="2" Grid.ColumnSpan="2" Margin="0,0,0,10">
+                         <TextBox Text="{Binding NewCategoryName}" Watermark="Enter new category name if adding..." IsVisible="True"/> 
+                    </StackPanel>
+
+                    <StackPanel Grid.Row="3" Grid.Column="0" Margin="0,0,10,10">
+                        <TextBlock Text="{Binding PreferredVendorLabel}" Margin="0,0,0,5" FontWeight="Medium" Foreground="#374151"/>
+                        <ComboBox ItemsSource="{Binding Vendors}" 
+                                  SelectedItem="{Binding SelectedPreferredVendor}"
+                                  PlaceholderText="Select vendor"
+                                  HorizontalAlignment="Stretch">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding VendorName}"/>
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+                    </StackPanel>
+                    
+                    <StackPanel Grid.Row="3" Grid.Column="1" Margin="0,0,0,10">
                         <TextBlock Text="Tax Rate (GST %) *" Margin="0,0,0,5" FontWeight="Medium" Foreground="#374151"/>
                         <ComboBox ItemsSource="{Binding AvailableTaxRates}" 
                                   SelectedItem="{Binding TaxRate}"
                                   HorizontalAlignment="Stretch"/>
                     </StackPanel>
-                    <StackPanel Grid.Column="1" Margin="7,0,0,0">
-                    </StackPanel>
-                </Grid>
 
-                <Grid ColumnDefinitions="*, *">
-                    <StackPanel Grid.Column="0" Margin="0,0,7,0">
+                    <StackPanel Grid.Row="4" Grid.Column="0" Margin="0,0,10,10">
+                        <TextBlock Text="{Binding PurchasePriceLabel}" Margin="0,0,0,5" FontWeight="Medium" Foreground="#374151"/>
+                        <NumericUpDown Value="{Binding PurchasePrice}" Minimum="0" FormatString="0.00"/>
+                    </StackPanel>
+                    <StackPanel Grid.Row="4" Grid.Column="1" Margin="0,0,0,10">
+                        <TextBlock Text="{Binding SalePriceLabel}" Margin="0,0,0,5" FontWeight="Medium" Foreground="#374151"/>
+                        <NumericUpDown Value="{Binding SalePrice}" Minimum="0" FormatString="0.00"/>
+                    </StackPanel>
+
+                    <StackPanel Grid.Row="5" Grid.Column="0" Margin="0,0,10,0" IsVisible="{Binding IsProduct}">
                         <TextBlock Text="Initial Stock" Margin="0,0,0,5" FontWeight="Medium" Foreground="#374151"/>
                         <NumericUpDown Value="{Binding StockQty}" Minimum="0"/>
                     </StackPanel>
-                    <StackPanel Grid.Column="1" Margin="7,0,0,0">
-                        <TextBlock Text="Warehouse (for stock)" Margin="0,0,0,5" FontWeight="Medium" Foreground="#374151"/>
+                    <StackPanel Grid.Row="5" Grid.Column="1" Margin="0,0,0,0" IsVisible="{Binding IsProduct}">
+                        <TextBlock Text="Warehouse" Margin="0,0,0,5" FontWeight="Medium" Foreground="#374151"/>
                         <ComboBox ItemsSource="{Binding Warehouses}" 
                                   SelectedItem="{Binding SelectedWarehouse}"
-                                  PlaceholderText="Select warehouse"
+                                  PlaceholderText="Select"
                                   HorizontalAlignment="Stretch">
                             <ComboBox.ItemTemplate>
                                 <DataTemplate>
@@ -131,16 +136,28 @@
             </StackPanel>
         </ScrollViewer>
 
-        <!-- Footer Actions -->
         <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10" Margin="0,20,0,0">
-            <Button Content="Cancel" Command="{Binding CancelCommand}" Width="100" HorizontalContentAlignment="Center"/>
-            <Button Content="Save Product" 
+            <Button Content="Cancel" Command="{Binding CancelCommand}" MinWidth="80"/>
+            <Button Content="Save as Draft" Command="{Binding SaveDraftCommand}" Classes="Secondary"/>
+            <Button Content="{Binding SaveButtonText}" 
                     Command="{Binding SaveCommand}" 
-                    Width="140" 
-                    HorizontalContentAlignment="Center" 
+                    MinWidth="110" 
                     Background="#2563EB" 
                     Foreground="White" 
                     FontWeight="SemiBold"/>
         </StackPanel>
     </Grid>
+
+    <Window.Styles>
+        <Style Selector="Button">
+            <Setter Property="Height" Value="36"/>
+            <Setter Property="Padding" Value="12,0"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+        </Style>
+        <Style Selector="Button.Secondary">
+            <Setter Property="Background" Value="#DBEAFE"/>
+            <Setter Property="Foreground" Value="#1D4ED8"/>
+        </Style>
+    </Window.Styles>
 </Window>

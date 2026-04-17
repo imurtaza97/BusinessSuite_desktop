@@ -83,6 +83,8 @@ public class Invoice
 
     public DateTime CreatedAt { get; set; } = DateTime.Now;
 
+    public bool IsDraft { get; set; } = false;
+
     [ForeignKey("BusinessID")]
     public Business? Business { get; set; }
 

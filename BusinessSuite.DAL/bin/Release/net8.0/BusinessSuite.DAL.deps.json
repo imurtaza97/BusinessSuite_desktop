@@ -11,8 +11,7 @@
           "BCrypt.Net-Next": "4.0.3",
           "Microsoft.EntityFrameworkCore": "8.0.4",
           "Microsoft.EntityFrameworkCore.Design": "8.0.4",
-          "Microsoft.EntityFrameworkCore.Sqlite": "8.0.4",
-          "Microsoft.NET.ILLink.Tasks": "8.0.11"
+          "Microsoft.EntityFrameworkCore.Sqlite": "8.0.4"
         },
         "runtime": {
           "BusinessSuite.DAL.dll": {}
@@ -455,7 +454,6 @@
           }
         }
       },
-      "Microsoft.NET.ILLink.Tasks/8.0.11": {},
       "Mono.TextTemplating/2.2.1": {
         "dependencies": {
           "System.CodeDom": "4.4.0"
@@ -894,13 +892,6 @@
       "sha512": "sha512-bXJEZrW9ny8vjMF1JV253WeLhpEVzFo1lyaZu1vQ4ZxWUlVvknZ/+ftFgVheLubb4eZPSwwxBeqS1JkCOjxd8g==",
       "path": "microsoft.extensions.primitives/8.0.0",
       "hashPath": "microsoft.extensions.primitives.8.0.0.nupkg.sha512"
-    },
-    "Microsoft.NET.ILLink.Tasks/8.0.11": {
-      "type": "package",
-      "serviceable": true,
-      "sha512": "sha512-zk5lnZrYJgtuJG8L4v17Ej8rZ3PUcR2iweNV08BaO5LbYHIi2wNaVNcJoLxvqgQdnjLlKnCCfVGLDr6QHeAarQ==",
-      "path": "microsoft.net.illink.tasks/8.0.11",
-      "hashPath": "microsoft.net.illink.tasks.8.0.11.nupkg.sha512"
     },
     "Mono.TextTemplating/2.2.1": {
       "type": "package",

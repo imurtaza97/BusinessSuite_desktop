@@ -35,6 +35,11 @@ public partial class ProductsViewModel : ViewModelBase
     [NotifyCanExecuteChangedFor(nameof(DeleteProductCommand))]
     private ObservableCollection<Product> _selectedProducts = new();
 
+    [ObservableProperty]
+    private string _selectedProductType = "All";
+
+    public List<string> ProductTypes { get; } = new() { "All", "Products", "Services" };
+
 
     partial void OnSelectedProductChanged(Product? value)
     {
@@ -74,6 +79,12 @@ public partial class ProductsViewModel : ViewModelBase
     }
 
     partial void OnSelectedCategoryChanged(Category? value)
+    {
+        CurrentPage = 1;
+        _ = LoadProductsAsync();
+    }
+
+    partial void OnSelectedProductTypeChanged(string value)
     {
         CurrentPage = 1;
         _ = LoadProductsAsync();
@@ -129,13 +140,14 @@ public partial class ProductsViewModel : ViewModelBase
         IsBusy = true;
         try
         {
-            TotalCount = await _productRepository.GetCountAsync(_businessId, SearchQuery, SelectedCategory?.CategoryID);
+            bool? serviceFilter = SelectedProductType == "Products" ? false : SelectedProductType == "Services" ? true : null;
+            TotalCount = await _productRepository.GetCountAsync(_businessId, SearchQuery, SelectedCategory?.CategoryID, serviceFilter);
             TotalPages = (int)Math.Ceiling((double)TotalCount / PageSize);
 
             if (CurrentPage > TotalPages && TotalPages > 0) CurrentPage = TotalPages;
             if (CurrentPage < 1) CurrentPage = 1;
 
-            var products = await _productRepository.GetPaginatedAsync(_businessId, CurrentPage, PageSize, SearchQuery, SelectedCategory?.CategoryID);
+            var products = await _productRepository.GetPaginatedAsync(_businessId, CurrentPage, PageSize, SearchQuery, SelectedCategory?.CategoryID, serviceFilter);
             Products = new ObservableCollection<Product>(products);
 
             OnPropertyChanged(nameof(HasPreviousPage));
@@ -181,7 +193,11 @@ public partial class ProductsViewModel : ViewModelBase
                 try
                 {
                     bool success;
-                    if (vm.StockQty > 0 && vm.SelectedWarehouse != null)
+                    if (result.IsDraft)
+                    {
+                        success = await _productRepository.AddAsync(result);
+                    }
+                    else if (vm.StockQty > 0 && vm.SelectedWarehouse != null)
                     {
                         success = await _ledgerService.AddProductWithStockAsync(result, vm.SelectedWarehouse.WarehouseID, vm.StockQty);
                     }

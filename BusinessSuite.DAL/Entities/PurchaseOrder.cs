@@ -86,6 +86,8 @@ public class PurchaseOrder
 
     public DateTime CreatedAt { get; set; } = DateTime.Now;
 
+    public bool IsDraft { get; set; } = false;
+
     [ForeignKey("BusinessId")]
     public Business? Business { get; set; }
 

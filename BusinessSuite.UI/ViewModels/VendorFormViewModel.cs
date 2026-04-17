@@ -95,6 +95,35 @@ public partial class VendorFormViewModel : ViewModelBase, INotifyDataErrorInfo
     [ObservableProperty]
     private string _title = "Add Vendor";
 
+    [ObservableProperty]
+    private bool _isServiceProvider;
+
+    public List<string> VendorTypes { get; } = new() { "Vendor", "Service Provider" };
+
+    public string VendorType
+    {
+        get => IsServiceProvider ? "Service Provider" : "Vendor";
+        set => IsServiceProvider = value == "Service Provider";
+    }
+
+    public string VendorNameLabel => IsServiceProvider ? "Service Provider Name *" : "Vendor Name *";
+    public string VendorNameWatermark => IsServiceProvider ? "Enter service provider or company name" : "Enter vendor or company name";
+
+    partial void OnIsServiceProviderChanged(bool value)
+    {
+        UpdateTitle();
+        OnPropertyChanged(nameof(VendorType));
+        OnPropertyChanged(nameof(VendorNameLabel));
+        OnPropertyChanged(nameof(VendorNameWatermark));
+    }
+
+    private void UpdateTitle()
+    {
+        Title = IsServiceProvider
+            ? (VendorId == 0 ? "Add Service Provider" : "Edit Service Provider")
+            : (VendorId == 0 ? "Add Vendor" : "Edit Vendor");
+    }
+
     private string _vendorName = string.Empty;
     public string VendorName
     {
@@ -191,6 +220,7 @@ public partial class VendorFormViewModel : ViewModelBase, INotifyDataErrorInfo
     public bool IsNotGstRegistered => !IsGstRegistered;
 
     [ObservableProperty] private string? _bankName;
+    [ObservableProperty] private string? _accountName;
     [ObservableProperty] private string? _accountNumber;
     [ObservableProperty] private string? _ifsc;
 
@@ -207,6 +237,7 @@ public partial class VendorFormViewModel : ViewModelBase, INotifyDataErrorInfo
     {
         Title = "Edit Vendor";
         VendorId = vendor.VendorID;
+        IsServiceProvider = vendor.IsServiceProvider;
         VendorName = vendor.VendorName;
         GSTIN = vendor.GSTIN;
         ContactNo = vendor.ContactNo;
@@ -215,6 +246,7 @@ public partial class VendorFormViewModel : ViewModelBase, INotifyDataErrorInfo
         State = vendor.State;
         GstTreatment = vendor.GstTreatment ?? "Unregistered";
         BankName = vendor.BankName;
+        AccountName = vendor.AccountName;
         AccountNumber = vendor.AccountNumber;
         Ifsc = vendor.IFSC;
     }
@@ -250,7 +282,9 @@ public partial class VendorFormViewModel : ViewModelBase, INotifyDataErrorInfo
             Address = Address,
             State = State,
             GstTreatment = GstTreatment,
+            IsServiceProvider = IsServiceProvider,
             BankName = BankName,
+            AccountName = AccountName,
             AccountNumber = AccountNumber,
             IFSC = Ifsc,
             BusinessId = _businessId

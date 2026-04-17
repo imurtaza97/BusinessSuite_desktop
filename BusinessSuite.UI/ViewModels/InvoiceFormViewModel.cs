@@ -157,10 +157,24 @@ public partial class InvoiceFormViewModel : ViewModelBase, INotifyDataErrorInfo
     [ObservableProperty] private decimal _grandTotal;
     [ObservableProperty] private string? _placeOfSupply;
     [ObservableProperty] private bool _isItemLevelDiscount;
+    [ObservableProperty] private bool _isDiscountPercentage;
+    [ObservableProperty] private decimal _discountPercentage;
+
+    private readonly bool _isFinalized;
+    private readonly string? _originalDeliveryStatus;
+    private readonly string? _originalPaymentStatus;
 
     public bool IsGstRegistered => _business?.IsGSTRegistered ?? false;
     public bool IsComposition => _business?.GstType == BusinessGstType.Composition;
     public bool IsRegularScheme => IsGstRegistered && !IsComposition;
+    public bool IsDiscountAmountMode => !IsDiscountPercentage;
+    public bool IsFinalized => _isFinalized;
+    public bool CanEditCoreFields => !_isFinalized;
+    public bool CanEditItems => !_isFinalized;
+    public bool CanEditPaymentStatus => !_isFinalized;
+    public bool CanEditDeliveryStatus => !_isFinalized || (DeliveryStatus != "Returned" && DeliveryStatus != "Cancelled");
+    public bool CanEditDiscountAmount => CanEditCoreFields && !IsItemLevelDiscount && !IsDiscountPercentage;
+    public bool CanEditDiscountPercentage => CanEditCoreFields && !IsItemLevelDiscount;
     public string TotalInWords => BLL.Services.NumberToWordsConverter.ConvertToWords(GrandTotal).ToUpper();
 
     private static string GetFinancialYear(DateTime date)
@@ -187,6 +201,7 @@ public partial class InvoiceFormViewModel : ViewModelBase, INotifyDataErrorInfo
         _business = db.Businesses.FirstOrDefault(b => b.BusinessID == businessId) ?? new Business();
 
         SaveCommand = new AsyncRelayCommand(SaveAsync);
+        SaveDraftCommand = new AsyncRelayCommand(SaveDraftAsync);
         CancelCommand = new RelayCommand(Cancel);
         AddItemCommand = new RelayCommand(AddItem);
         RemoveItemCommand = new RelayCommand<InvoiceItemViewModel>(RemoveItem);
@@ -196,6 +211,10 @@ public partial class InvoiceFormViewModel : ViewModelBase, INotifyDataErrorInfo
         if (existingInvoice != null)
         {
             _existingInvoiceId = existingInvoice.InvoiceID;
+            _isFinalized = !existingInvoice.IsDraft;
+            _originalDeliveryStatus = existingInvoice.DeliveryStatus;
+            _originalPaymentStatus = existingInvoice.PaymentStatus;
+
             Title = $"Edit Invoice - {existingInvoice.InvoiceNumber}";
             InvoiceNumber = existingInvoice.InvoiceNumber;
             InvoiceDate = existingInvoice.InvoiceDate;
@@ -458,13 +477,34 @@ public partial class InvoiceFormViewModel : ViewModelBase, INotifyDataErrorInfo
 
     partial void OnDiscountChanged(decimal value)
     {
+        if (!IsItemLevelDiscount && !IsDiscountPercentage)
+            CalculateTotals();
+    }
+
+    partial void OnIsDiscountPercentageChanged(bool value)
+    {
+        OnPropertyChanged(nameof(IsDiscountAmountMode));
+        OnPropertyChanged(nameof(CanEditDiscountAmount));
+        OnPropertyChanged(nameof(CanEditDiscountPercentage));
+        CalculateTotals();
+    }
+
+    partial void OnDiscountPercentageChanged(decimal value)
+    {
         if (!IsItemLevelDiscount)
             CalculateTotals();
     }
 
     partial void OnIsItemLevelDiscountChanged(bool value)
     {
+        OnPropertyChanged(nameof(CanEditDiscountAmount));
+        OnPropertyChanged(nameof(CanEditDiscountPercentage));
         CalculateTotals();
+    }
+
+    partial void OnDeliveryStatusChanged(string value)
+    {
+        OnPropertyChanged(nameof(CanEditDeliveryStatus));
     }
 
     partial void OnShippingChargesChanged(decimal value)
@@ -531,6 +571,17 @@ public partial class InvoiceFormViewModel : ViewModelBase, INotifyDataErrorInfo
         TotalSGST = sgstTotal;
         TotalIGST = igstTotal;
 
+        decimal discountAmount = Discount;
+        if (IsItemLevelDiscount)
+        {
+            discountAmount = itemDiscountTotal;
+        }
+        else if (IsDiscountPercentage)
+        {
+            discountAmount = Math.Round(subTotal * DiscountPercentage / 100m, 2);
+            Discount = discountAmount;
+        }
+
         decimal tempGrandTotal;
         if (IsItemLevelDiscount)
         {
@@ -539,7 +590,7 @@ public partial class InvoiceFormViewModel : ViewModelBase, INotifyDataErrorInfo
         }
         else
         {
-            tempGrandTotal = subTotal + taxTotal - Discount + ShippingCharges;
+            tempGrandTotal = subTotal + taxTotal - discountAmount + ShippingCharges;
         }
 
         if (IsAutoRoundOff)
@@ -557,12 +608,124 @@ public partial class InvoiceFormViewModel : ViewModelBase, INotifyDataErrorInfo
         OnPropertyChanged(nameof(TotalInWords));
     }
 
+    public IAsyncRelayCommand SaveDraftCommand { get; }
     public IAsyncRelayCommand SaveCommand { get; }
     public IRelayCommand CancelCommand { get; }
     public IRelayCommand AddItemCommand { get; }
     public IRelayCommand<InvoiceItemViewModel> RemoveItemCommand { get; }
 
     public event Action<Invoice?>? RequestClose;
+
+    private async Task SaveDraftAsync()
+    {
+        ValidationVisible = true;
+        ClearAllErrors();
+
+        if (SelectedCustomer == null)
+            AddError(nameof(SelectedCustomer), "Customer is required");
+        if (string.IsNullOrWhiteSpace(InvoiceNumber))
+            AddError(nameof(InvoiceNumber), "Invoice number is required");
+
+        if (HasErrors)
+        {
+            GeneralErrorMessage = _errors.Values.SelectMany(e => e).Distinct().FirstOrDefault() ?? string.Empty;
+            return;
+        }
+
+        var emptyItems = Items.Where(i => i.SelectedProduct == null).ToList();
+        foreach (var empty in emptyItems) Items.Remove(empty);
+
+        var invoice = new Invoice
+        {
+            InvoiceID = _existingInvoiceId ?? 0,
+            BusinessID = _businessId,
+            CustomerID = SelectedCustomer!.CustomerID,
+            InvoiceNumber = InvoiceNumber,
+            InvoiceDate = InvoiceDate ?? DateTime.Now,
+            TotalAmount = TotalAmount,
+            TotalTax = TotalTax,
+            Discount = Discount,
+            GrandTotal = GrandTotal,
+            ShippingCharges = ShippingCharges,
+            PlaceOfSupply = PlaceOfSupply,
+            RoundOff = RoundOff,
+            TotalCGST = TotalCGST,
+            TotalSGST = TotalSGST,
+            TotalIGST = TotalIGST,
+            PaymentMethod = PaymentMethod,
+            PaymentTerms = PaymentTerms,
+            TermsAndConditions = TermsAndConditions,
+            Notes = Notes,
+            DeliveryStatus = "Pending",
+            PaymentStatus = "Unpaid",
+            TotalPaid = 0,
+            IsItemLevelDiscount = IsItemLevelDiscount,
+            DueDate = DueDate,
+            IsAutoRoundOff = IsAutoRoundOff,
+            IsDraft = true,
+            Items = Items.Select(i => new InvoiceItem
+            {
+                InvoiceItemID = i.InvoiceItemId,
+                ProductID = i.SelectedProduct!.ProductID,
+                Quantity = i.Quantity,
+                UnitPrice = i.UnitPrice,
+                TaxRate = i.TaxRate,
+                TaxAmount = i.TaxAmount,
+                CGST_Rate = i.TaxRate / 2,
+                CGST_Amount = i.CgstAmount,
+                SGST_Rate = i.TaxRate / 2,
+                SGST_Amount = i.SgstAmount,
+                IGST_Rate = i.TaxRate,
+                IGST_Amount = i.IgstAmount,
+                HSNCode = i.HsnCode,
+                Unit = i.Unit,
+                Discount = i.Discount,
+                TotalAmount = i.TotalAmount
+            }).ToList()
+        };
+
+        try
+        {
+            if (_existingInvoiceId.HasValue)
+            {
+                var updated = await _invoiceRepository.UpdateAsync(invoice);
+                if (!updated)
+                    throw new InvalidOperationException("Unable to update draft invoice.");
+            }
+            else
+            {
+                var added = await _invoiceRepository.AddAsync(invoice);
+                if (!added)
+                    throw new InvalidOperationException("Unable to save draft invoice.");
+            }
+
+            RequestClose?.Invoke(invoice);
+        }
+        catch (Exception ex)
+        {
+            GeneralErrorMessage = "Failed to save draft invoice: " + ex.Message;
+        }
+    }
+
+    private bool IsValidFinalDeliveryTransition(string original, string current)
+    {
+        if (original == current) return true;
+        if (original == "Pending")
+            return current == "Shipped" || current == "Returned" || current == "Cancelled";
+        if (original == "Shipped")
+            return current == "Returned" || current == "Cancelled";
+        return false;
+    }
+
+    private bool IsValidFinalPaymentTransition(string original, string current)
+    {
+        if (original == current) return true;
+        if (original == "Unpaid")
+            return current == "Partially Paid" || current == "Paid";
+        if (original == "Partially Paid")
+            return current == "Paid";
+        return false;
+    }
 
     private async Task SaveAsync()
     {
@@ -578,6 +741,21 @@ public partial class InvoiceFormViewModel : ViewModelBase, INotifyDataErrorInfo
             var allErrors = _errors.Values.SelectMany(e => e).Distinct().ToList();
             GeneralErrorMessage = string.Join(", ", allErrors);
             return;
+        }
+
+        if (_existingInvoiceId.HasValue && _isFinalized)
+        {
+            if (!IsValidFinalDeliveryTransition(_originalDeliveryStatus ?? string.Empty, DeliveryStatus))
+            {
+                GeneralErrorMessage = "Delivery status cannot be reverted once finalized.";
+                return;
+            }
+
+            if (!IsValidFinalPaymentTransition(_originalPaymentStatus ?? string.Empty, PaymentStatus))
+            {
+                GeneralErrorMessage = "Payment status cannot be reverted once finalized.";
+                return;
+            }
         }
 
         var invoice = new Invoice
@@ -607,6 +785,7 @@ public partial class InvoiceFormViewModel : ViewModelBase, INotifyDataErrorInfo
             IsItemLevelDiscount = IsItemLevelDiscount,
             DueDate = DueDate,
             IsAutoRoundOff = IsAutoRoundOff,
+            IsDraft = false,
             Items = Items.Select(i => new InvoiceItem
             {
                 InvoiceItemID = i.InvoiceItemId,
@@ -683,6 +862,7 @@ public partial class InvoiceItemViewModel : ObservableObject
 
     [ObservableProperty] private int _invoiceItemId;
     [ObservableProperty] private Product? _selectedProduct;
+    public string ProductType => SelectedProduct?.Type ?? string.Empty;
     [ObservableProperty] private int _quantity = 1;
     [ObservableProperty] private decimal _unitPrice;
     [ObservableProperty] private decimal _taxRate;
@@ -723,7 +903,8 @@ public partial class InvoiceItemViewModel : ObservableObject
             ? _allProducts.ToList()
             : _allProducts.Where(p =>
                 p.ProductName.ToLower().Contains(query) ||
-                (p.SKU?.ToLower().Contains(query) ?? false)).ToList();
+                (p.SKU?.ToLower().Contains(query) ?? false) ||
+                p.Type.ToLower().Contains(query)).ToList();
 
         // CRITICAL: Always keep SelectedProduct in the list to prevent de-selection
         if (SelectedProduct != null && !filteredList.Contains(SelectedProduct))
@@ -770,7 +951,8 @@ public partial class InvoiceItemViewModel : ObservableObject
                 ? _allProducts.ToList()
                 : _allProducts.Where(p =>
                     p.ProductName.ToLower().Contains(query) ||
-                    (p.SKU?.ToLower().Contains(query) ?? false)).ToList();
+                    (p.SKU?.ToLower().Contains(query) ?? false) ||
+                    p.Type.ToLower().Contains(query)).ToList();
 
             if (SelectedProduct != null && !filteredList.Contains(SelectedProduct))
                 filteredList.Insert(0, SelectedProduct);
@@ -809,6 +991,7 @@ public partial class InvoiceItemViewModel : ObservableObject
 
             EnsureSelectedProductInFiltered();
             IsDropDownOpen = false;
+            OnPropertyChanged(nameof(ProductType));
         }
     }
 }

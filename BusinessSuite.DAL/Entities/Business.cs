@@ -40,6 +40,9 @@ public class Business
     [MaxLength(100)]
     public string? BankName { get; set; }
 
+    [MaxLength(100)]
+    public string? AccountName { get; set; }
+
     [MaxLength(30)]
     public string? AccountNumber { get; set; }
 

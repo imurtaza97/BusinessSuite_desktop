@@ -31,6 +31,7 @@ public partial class PurchaseOrdersViewModel : ViewModelBase
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(PrintPOCommand))]
     [NotifyCanExecuteChangedFor(nameof(ViewBillCommand))]
+    [NotifyCanExecuteChangedFor(nameof(DeletePOCommand))]
     private PurchaseOrder? _selectedPO;
 
     [ObservableProperty]
@@ -64,7 +65,7 @@ public partial class PurchaseOrdersViewModel : ViewModelBase
         LoadPOsCommand = new AsyncRelayCommand(LoadPOsAsync);
         AddPOCommand = new AsyncRelayCommand(AddPOAsync);
         EditPOCommand = new AsyncRelayCommand(EditPOAsync);
-        DeletePOCommand = new AsyncRelayCommand(DeletePOAsync);
+        DeletePOCommand = new AsyncRelayCommand(DeletePOAsync, CanDeleteSelectedPO);
         PrintPOCommand = new AsyncRelayCommand(PrintPOAsync);
         ViewBillCommand = new RelayCommand(ViewBill, CanViewBill);
         RefreshCommand = new AsyncRelayCommand(() => { CurrentPage = 1; return LoadPOsAsync(); });
@@ -155,20 +156,39 @@ public partial class PurchaseOrdersViewModel : ViewModelBase
     {
         if (SelectedPO == null) return;
 
+        if (!SelectedPO.IsDraft)
+        {
+            SetStatusMessage("Cannot delete a finalized purchase order. Please cancel or return the PO instead.", "#B45309");
+            return;
+        }
+
+        ClearStatusMessage();
         IsBusy = true;
         try
         {
-            var success = await _ledgerService.DeletePurchaseOrderWithReversalAsync(SelectedPO.PurchaseOrderID);
+            var success = await _poRepository.DeleteAsync(SelectedPO.PurchaseOrderID);
+
             if (success)
             {
+                SetStatusMessage("Draft purchase order deleted successfully.", "#047857");
                 await LoadPOsAsync();
             }
+            else
+            {
+                SetStatusMessage("Failed to delete draft purchase order. Please try again.", "#B45309");
+            }
+        }
+        catch (Exception ex)
+        {
+            SetStatusMessage($"Purchase order delete failed: {ex.Message}", "#B45309");
         }
         finally
         {
             IsBusy = false;
         }
     }
+
+    private bool CanDeleteSelectedPO() => SelectedPO != null && SelectedPO.IsDraft;
 
     private async Task PrintPOAsync()
     {
@@ -199,7 +219,7 @@ public partial class PurchaseOrdersViewModel : ViewModelBase
                     var file = await topLevel.StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
                     {
                         Title = "Save Purchase Order PDF",
-                        SuggestedFileName = $"{fullPO.PONumber}.pdf",
+                        SuggestedFileName = $"{GetSafeFileName(fullPO.PONumber)}.pdf",
                         FileTypeChoices = new[] { new FilePickerFileType("PDF Files") { Patterns = new[] { "*.pdf" } } }
                     });
 
@@ -209,7 +229,7 @@ public partial class PurchaseOrdersViewModel : ViewModelBase
             }
             else
             {
-                finalPath = Path.Combine(Path.GetTempPath(), $"{fullPO.PONumber}_{DateTime.Now:yyyyMMddHHmmss}.pdf");
+                finalPath = Path.Combine(Path.GetTempPath(), $"{GetSafeFileName(fullPO.PONumber)}_{DateTime.Now:yyyyMMddHHmmss}.pdf");
             }
 
             if (string.IsNullOrEmpty(finalPath)) return;
@@ -225,6 +245,16 @@ public partial class PurchaseOrdersViewModel : ViewModelBase
         {
             IsBusy = false;
         }
+    }
+
+    private static string GetSafeFileName(string input)
+    {
+        if (string.IsNullOrWhiteSpace(input))
+            return "document";
+
+        var invalidChars = Path.GetInvalidFileNameChars().Concat(new[] { Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar }).Distinct().ToArray();
+        var safeName = string.Concat(input.Select(c => invalidChars.Contains(c) ? '_' : c));
+        return string.IsNullOrWhiteSpace(safeName) ? "document" : safeName;
     }
 
     private void ViewBill()
