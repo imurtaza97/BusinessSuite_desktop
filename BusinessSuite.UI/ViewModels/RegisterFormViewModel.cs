@@ -109,4 +109,32 @@ public partial class RegisterFormViewModel : ViewModelBase
             StatusColor = color;
         });
     }
+
+    public async Task RestoreDataAsync(string path)
+    {
+        try
+        {
+            var service = new BLL.Services.BackupService();
+            await service.RestoreDatabaseAsync(path);
+        }
+        catch (ApplicationException ex)
+            when (ex.Message == "RESTORE_SUCCESS_RESTART_REQUIRED")
+        {
+            SetStatus("Restore completed. Restarting application...", "#16A34A");
+
+            await Task.Delay(800); // allow UI to update
+
+            var exePath = Environment.ProcessPath;
+            if (!string.IsNullOrEmpty(exePath))
+            {
+                System.Diagnostics.Process.Start(exePath);
+            }
+
+            Environment.Exit(0);
+        }
+        catch (Exception ex)
+        {
+            SetStatus("Restore failed: " + ex.Message, "#DC2626");
+        }
+    }
 }

@@ -91,6 +91,18 @@
                     Height="40"
                     CornerRadius=""/>
 
+            <Button Content="Restore from Backup"
+                    Click="OnRestoreClicked"
+                    IsEnabled="{Binding !IsBusy}"
+                    HorizontalAlignment="Stretch" 
+                    HorizontalContentAlignment="Center"
+                    VerticalContentAlignment="Center" 
+                    Background="#10B981"
+                    Foreground="White"
+                    Padding="10"
+                    Height="40"
+                    CornerRadius=""/>
+
             <TextBlock Text="{Binding StatusMessage}"
                        Foreground="{Binding StatusColor}"
                        FontSize="12"

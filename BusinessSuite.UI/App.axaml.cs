@@ -1,3 +1,5 @@
+using System;
+using System.Data.Common;
 using System.Linq;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
@@ -35,6 +37,7 @@ public partial class App : Application
                 
                 var db = new AppDbContext();
                 db.Database.Migrate();
+                EnsureCompatibility(db);
 
                 bool licenseExists = db.LicenseActivations.Any(la => la.IsValid);
                 bool businessExists = db.Businesses.Any();
@@ -77,5 +80,42 @@ public partial class App : Application
         }
 
         base.OnFrameworkInitializationCompleted();
+    }
+
+    private static void EnsureCompatibility(AppDbContext db)
+    {
+        var conn = db.Database.GetDbConnection();
+        conn.Open();
+
+        AddColumnIfMissing(conn, "Invoices", "IsDraft", "INTEGER NOT NULL DEFAULT 0");
+        AddColumnIfMissing(conn, "PurchaseOrders", "IsDraft", "INTEGER NOT NULL DEFAULT 0");
+        AddColumnIfMissing(conn, "Products", "IsDraft", "INTEGER NOT NULL DEFAULT 0");
+
+        // Keep the connection open for EF Core after schema fix
+    }
+
+    private static void AddColumnIfMissing(DbConnection conn, string tableName, string columnName, string columnDefinition)
+    {
+        using var pragma = conn.CreateCommand();
+        pragma.CommandText = $"PRAGMA table_info('{tableName}')";
+
+        using var reader = pragma.ExecuteReader();
+        var columnExists = false;
+
+        while (reader.Read())
+        {
+            if (reader.GetString(reader.GetOrdinal("name")).Equals(columnName, StringComparison.OrdinalIgnoreCase))
+            {
+                columnExists = true;
+                break;
+            }
+        }
+
+        if (!columnExists)
+        {
+            using var alter = conn.CreateCommand();
+            alter.CommandText = $"ALTER TABLE {tableName} ADD COLUMN {columnName} {columnDefinition}";
+            alter.ExecuteNonQuery();
+        }
     }
 }
