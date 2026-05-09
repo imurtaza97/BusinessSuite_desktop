@@ -172,8 +172,12 @@ public partial class PurchaseOrderFormViewModel : ViewModelBase, INotifyDataErro
     public bool IsFinalized => _isFinalized;
     public bool CanEditCoreFields => !_isFinalized;
     public bool CanEditItems => !_isFinalized;
-    public bool CanEditPaymentStatus => !_isFinalized;
-    public bool CanEditDeliveryStatus => !_isFinalized || (DeliveryStatus != "Returned-to-Vendor" && DeliveryStatus != "Cancelled");
+    public bool CanEditItemsAndBasics => !_isFinalized; // Phase 2: Restrict core business fields
+    public bool CanEditPaymentStatus => true; // Always editable for tracking
+    public bool CanEditPaymentFields => true; // Amount paid is always editable
+    public bool CanEditDeliveryStatus => true; // Always editable for tracking
+    public bool CanEditDeliveryFields => true; // Status is always editable
+    public bool CanEditNotes => true; // Notes always editable
     public bool CanEditDiscountAmount => CanEditCoreFields && !IsItemLevelDiscount && !IsDiscountPercentage;
     public bool CanEditDiscountPercentage => CanEditCoreFields && !IsItemLevelDiscount;
 
@@ -587,7 +591,12 @@ public partial class PurchaseOrderFormViewModel : ViewModelBase, INotifyDataErro
     public event Action<PurchaseOrder?>? RequestClose;
 
     private async Task SaveDraftAsync()
-    {
+    {        // Phase 1: Prevent reverting finalized purchase orders to draft
+        if (_isFinalized)
+        {
+            GeneralErrorMessage = "Finalized purchase orders cannot be reverted to draft. Edit permitted fields only or create a new PO.";
+            return;
+        }
         ValidationVisible = true;
         ClearAllErrors();
 
@@ -604,6 +613,21 @@ public partial class PurchaseOrderFormViewModel : ViewModelBase, INotifyDataErro
 
         var emptyItems = Items.Where(i => i.SelectedProduct == null).ToList();
         foreach (var empty in emptyItems) Items.Remove(empty);
+
+        // Phase 3: Enforce status transitions even in draft mode
+        if (_existingPOId.HasValue)
+        {
+            if (!IsValidFinalDeliveryTransition(_originalDeliveryStatus ?? string.Empty, DeliveryStatus))
+            {
+                GeneralErrorMessage = "Delivery status cannot be moved backward in draft.";
+                return;
+            }
+            if (!IsValidFinalPaymentTransition(_originalPaymentStatus ?? string.Empty, PaymentStatus))
+            {
+                GeneralErrorMessage = "Payment status cannot be moved backward in draft.";
+                return;
+            }
+        }
 
         var po = new PurchaseOrder
         {
@@ -626,9 +650,9 @@ public partial class PurchaseOrderFormViewModel : ViewModelBase, INotifyDataErro
             PaymentTerms = PaymentTerms,
             TermsAndConditions = TermsAndConditions,
             Notes = Notes,
-            DeliveryStatus = "Pending",
-            PaymentStatus = "Unpaid",
-            TotalPaid = 0,
+            DeliveryStatus = _existingPOId.HasValue ? DeliveryStatus : "Pending",
+            PaymentStatus = _existingPOId.HasValue ? PaymentStatus : "Unpaid",
+            TotalPaid = _existingPOId.HasValue ? TotalPaid : 0,
             IsItemLevelDiscount = IsItemLevelDiscount,
             ExpectedDeliveryDate = ExpectedDeliveryDate,
             IsAutoRoundOff = IsAutoRoundOff,
@@ -713,17 +737,18 @@ public partial class PurchaseOrderFormViewModel : ViewModelBase, INotifyDataErro
             return;
         }
 
-        if (_existingPOId.HasValue && _isFinalized)
+        if (_existingPOId.HasValue)
         {
+            // Phase 3: Enforce status transitions - prevent reversals for BOTH draft and finalized
             if (!IsValidFinalDeliveryTransition(_originalDeliveryStatus ?? string.Empty, DeliveryStatus))
             {
-                GeneralErrorMessage = "Delivery status cannot be reverted once finalized.";
+                GeneralErrorMessage = "Delivery status cannot be moved backward. Current: " + _originalDeliveryStatus + " → Attempted: " + DeliveryStatus;
                 return;
             }
 
             if (!IsValidFinalPaymentTransition(_originalPaymentStatus ?? string.Empty, PaymentStatus))
             {
-                GeneralErrorMessage = "Payment status cannot be reverted once finalized.";
+                GeneralErrorMessage = "Payment status cannot be moved backward. Current: " + _originalPaymentStatus + " → Attempted: " + PaymentStatus;
                 return;
             }
         }

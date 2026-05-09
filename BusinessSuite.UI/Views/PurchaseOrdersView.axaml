@@ -41,6 +41,20 @@
                       GridLinesVisibility="All">
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="PO Number" Binding="{Binding PONumber}" Width="120"/>
+                    <DataGridTemplateColumn Header="Status" Width="110">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding IsDraft, Converter={x:Static conv:SafeDisplayConverter.Instance}, ConverterParameter='DRAFT|FINALIZED'}"
+                                           Background="{Binding IsDraft, Converter={x:Static conv:SafeDisplayConverter.Instance}, ConverterParameter='#FEE2E2|#E0E7FF'}"
+                                           Foreground="{Binding IsDraft, Converter={x:Static conv:SafeDisplayConverter.Instance}, ConverterParameter='#DC2626|#4F46E5'}"
+                                           FontSize="12"
+                                           FontWeight="SemiBold"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center"
+                                           Padding="8,4"/>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
                     <DataGridTextColumn Header="Date" Binding="{Binding PODate, Converter={x:Static conv:SafeDisplayConverter.Instance}, ConverterParameter=\{0:dd/MM/yyyy\}}" Width="120"/>
                     <DataGridTextColumn Header="Vendor" Binding="{Binding Vendor, Converter={x:Static conv:SafeDisplayConverter.Instance}, ConverterParameter=VendorName}" Width="*"/>
                     <DataGridTextColumn Header="Amount" Binding="{Binding TotalAmount, Converter={x:Static conv:SafeDisplayConverter.Instance}, ConverterParameter='₹ {0:N2}'}" Width="120"/>

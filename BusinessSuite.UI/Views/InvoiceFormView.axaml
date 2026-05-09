@@ -18,7 +18,13 @@
         <Grid RowDefinitions="Auto, *, Auto" Margin="30">
             <!-- Header Info -->
             <StackPanel Grid.Row="0" Spacing="20" Margin="0,0,0,20">
-                <TextBlock Text="{Binding Title}" FontSize="24" FontWeight="Bold" Foreground="#111827"/>
+                <Grid ColumnDefinitions="*, Auto">
+                    <TextBlock Text="{Binding Title}" FontSize="24" FontWeight="Bold" Foreground="#111827"/>
+                    <!-- Finalization Badge -->
+                    <Border Grid.Column="1" Background="#FEE2E2" BorderBrush="#EF4444" BorderThickness="1" CornerRadius="6" Padding="12,6" IsVisible="{Binding IsFinalized}">
+                        <TextBlock Text="🔒 FINALIZED - Read-only mode" Foreground="#DC2626" FontWeight="Bold" FontSize="12"/>
+                    </Border>
+                </Grid>
                 
                 <Border Background="White" BorderBrush="#E5E7EB" BorderThickness="1" CornerRadius="8" Padding="20">
                     <Grid ColumnDefinitions="*, *, *">
@@ -32,7 +38,8 @@
                                           MaxDropDownHeight="300"
                                           HorizontalAlignment="Stretch"
                                           IsEditable="True"
-                                          IsTextSearchEnabled="False">
+                                          IsTextSearchEnabled="False"
+                                          IsEnabled="{Binding CanEditItemsAndBasics}">
                                     <ComboBox.ItemTemplate>
                                         <DataTemplate>
                                             <StackPanel Orientation="Horizontal" Spacing="10">
@@ -71,19 +78,20 @@
                     <Grid ColumnDefinitions="*, *, *, *, *, *">
                         <StackPanel Grid.Column="0" Spacing="5" Margin="0,0,10,0">
                             <TextBlock Text="Date" FontWeight="Medium" Foreground="#374151"/>
-                            <CalendarDatePicker SelectedDate="{Binding InvoiceDate}" HorizontalAlignment="Stretch" SelectedDateFormat="Short"/>
+                            <CalendarDatePicker SelectedDate="{Binding InvoiceDate}" HorizontalAlignment="Stretch" SelectedDateFormat="Short" IsEnabled="{Binding CanEditItemsAndBasics}"/>
                         </StackPanel>
                         
                         <StackPanel Grid.Column="1" Spacing="5" Margin="10,0,10,0">
                             <TextBlock Text="Due Date" FontWeight="Medium" Foreground="#374151"/>
-                            <CalendarDatePicker SelectedDate="{Binding DueDate}" HorizontalAlignment="Stretch" SelectedDateFormat="Short"/>
+                            <CalendarDatePicker SelectedDate="{Binding DueDate}" HorizontalAlignment="Stretch" SelectedDateFormat="Short" IsEnabled="{Binding CanEditItemsAndBasics}"/>
                         </StackPanel>
 
                         <StackPanel Grid.Column="2" Spacing="5" Margin="10,0,10,0">
                             <TextBlock Text="Warehouse" FontWeight="Medium" Foreground="#374151"/>
                             <ComboBox ItemsSource="{Binding Warehouses}" 
                                       SelectedItem="{Binding SelectedWarehouse}" 
-                                      HorizontalAlignment="Stretch">
+                                      HorizontalAlignment="Stretch"
+                                      IsEnabled="{Binding CanEditItemsAndBasics}">
                                 <ComboBox.ItemTemplate>
                                     <DataTemplate>
                                         <TextBlock Text="{Binding WarehouseName}"/>
@@ -94,17 +102,17 @@
 
                         <StackPanel Grid.Column="3" Spacing="5" Margin="10,0,10,0">
                             <TextBlock Text="Delivery" FontWeight="Medium" Foreground="#374151"/>
-                            <ComboBox ItemsSource="{Binding DeliveryStatusOptions}" SelectedItem="{Binding DeliveryStatus}" HorizontalAlignment="Stretch"/>
+                            <ComboBox ItemsSource="{Binding DeliveryStatusOptions}" SelectedItem="{Binding DeliveryStatus}" HorizontalAlignment="Stretch" IsEnabled="{Binding CanEditDeliveryFields}"/>
                         </StackPanel>
                         
                         <StackPanel Grid.Column="4" Spacing="5" Margin="10,0,10,0">
                             <TextBlock Text="Payment" FontWeight="Medium" Foreground="#374151"/>
-                            <ComboBox ItemsSource="{Binding PaymentStatusOptions}" SelectedItem="{Binding PaymentStatus}" HorizontalAlignment="Stretch"/>
+                            <ComboBox ItemsSource="{Binding PaymentStatusOptions}" SelectedItem="{Binding PaymentStatus}" HorizontalAlignment="Stretch" IsEnabled="{Binding CanEditPaymentFields}"/>
                         </StackPanel>
 
                         <StackPanel Grid.Column="5" Spacing="5" Margin="10,0,0,0">
                             <TextBlock Text="Reverse Charge" FontWeight="Medium" Foreground="#374151"/>
-                            <ToggleSwitch OnContent="Yes" OffContent="No" IsChecked="{Binding ReverseCharge}"/>
+                            <ToggleSwitch OnContent="Yes" OffContent="No" IsChecked="{Binding ReverseCharge}" IsEnabled="{Binding CanEditItemsAndBasics}"/>
                         </StackPanel>
                     </Grid>
                 </Border>
@@ -123,6 +131,7 @@
                             Content="+ Add Item" 
                             Command="{Binding AddItemCommand}" 
                             Margin="20"
+                            IsEnabled="{Binding CanEditItems}"
                             Classes="Secondary"/>
                     
                     <DataGrid ItemsSource="{Binding Items}" 
@@ -144,7 +153,8 @@
                                                       HorizontalAlignment="Stretch"
                                                       BorderThickness="0"
                                                       IsTextSearchEnabled="False"
-                                                      IsEditable="True">
+                                                      IsEditable="True"
+                                                      IsEnabled="{Binding ((vm:InvoiceFormViewModel)DataContext).CanEditItems, RelativeSource={RelativeSource AncestorType=UserControl}}">
                                                 <ComboBox.ItemTemplate>
                                                     <DataTemplate>
                                                         <StackPanel Orientation="Horizontal" Spacing="10">
@@ -172,7 +182,8 @@
                                         <ComboBox ItemsSource="{Binding ((vm:InvoiceFormViewModel)DataContext).UnitNames, RelativeSource={RelativeSource AncestorType=UserControl}}" 
                                                   SelectedItem="{Binding Unit}"
                                                   HorizontalAlignment="Stretch"
-                                                  BorderThickness="0"/>
+                                                  BorderThickness="0"
+                                                  IsEnabled="{Binding ((vm:InvoiceFormViewModel)DataContext).CanEditItems, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
@@ -180,7 +191,7 @@
                             <DataGridTemplateColumn Header="Quantity" Width="80">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
-                                        <NumericUpDown Value="{Binding Quantity, Converter={StaticResource NullToZeroConverter}}" Minimum="1" BorderThickness="0" ShowButtonSpinner="False"/>
+                                        <NumericUpDown Value="{Binding Quantity, Converter={StaticResource NullToZeroConverter}}" Minimum="1" BorderThickness="0" ShowButtonSpinner="False" IsEnabled="{Binding ((vm:InvoiceFormViewModel)DataContext).CanEditItems, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
@@ -188,7 +199,7 @@
                             <DataGridTemplateColumn Header="Unit Price" Width="120">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
-                                        <NumericUpDown Value="{Binding UnitPrice, Converter={StaticResource NullToZeroConverter}}" Minimum="0" BorderThickness="0" ShowButtonSpinner="False"/>
+                                        <NumericUpDown Value="{Binding UnitPrice, Converter={StaticResource NullToZeroConverter}}" Minimum="0" BorderThickness="0" ShowButtonSpinner="False" IsEnabled="{Binding ((vm:InvoiceFormViewModel)DataContext).CanEditItems, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
@@ -196,7 +207,7 @@
                             <DataGridTemplateColumn Header="Discount" Width="100">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
-                                        <NumericUpDown Value="{Binding Discount, Converter={StaticResource NullToZeroConverter}}" Minimum="0" BorderThickness="0" ShowButtonSpinner="False"/>
+                                        <NumericUpDown Value="{Binding Discount, Converter={StaticResource NullToZeroConverter}}" Minimum="0" BorderThickness="0" ShowButtonSpinner="False" IsEnabled="{Binding ((vm:InvoiceFormViewModel)DataContext).CanEditItems, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
@@ -223,6 +234,7 @@
                                                 Content="✕" 
                                                 Foreground="#EF4444" 
                                                 Background="Transparent"
+                                                IsEnabled="{Binding ((vm:InvoiceFormViewModel)DataContext).CanEditItems, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                 HorizontalAlignment="Center"/>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
@@ -332,10 +344,10 @@
                         </StackPanel>
                     </Border>
  
-                    <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Right" Margin="0,20,0,0">
-                        <Button Content="Cancel" Command="{Binding CancelCommand}" Width="100" HorizontalContentAlignment="Center"/>
-                        <Button Content="Save as Draft" Command="{Binding SaveDraftCommand}" Width="120" HorizontalContentAlignment="Center"/>
-                        <Button Content="Save Invoice" Command="{Binding SaveCommand}" Width="140" HorizontalContentAlignment="Center" Classes="Primary"/>
+                    <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Right" Margin="0,20,0,0" VerticalAlignment="Center" MaxWidth="420">
+                        <Button Content="Cancel" Command="{Binding CancelCommand}" MinWidth="80" HorizontalContentAlignment="Center" Padding="10,8"/>
+                        <Button Content="Save as Draft" Command="{Binding SaveDraftCommand}" MinWidth="110" HorizontalContentAlignment="Center" IsVisible="{Binding !IsFinalized}" IsEnabled="{Binding !IsFinalized}" Padding="10,8"/>
+                        <Button Content="Save Invoice" Command="{Binding SaveCommand}" MinWidth="110" HorizontalContentAlignment="Center" Classes="Primary" Padding="10,8"/>
                     </StackPanel>
                 </StackPanel>
             </Grid>
@@ -352,6 +364,31 @@
             <Setter Property="Background" Value="#F3F4F6"/>
             <Setter Property="Foreground" Value="#374151"/>
             <Setter Property="Padding" Value="10,5"/>
+        </Style>
+        <!-- Disabled field styles for better visibility -->
+        <Style Selector="TextBox:disabled">
+            <Setter Property="Background" Value="#EAEEF7"/>
+            <Setter Property="Foreground" Value="#1F2937"/>
+            <Setter Property="BorderBrush" Value="#9CA3AF"/>
+            <Setter Property="Opacity" Value="1"/>
+        </Style>
+        <Style Selector="NumericUpDown:disabled">
+            <Setter Property="Background" Value="#EAEEF7"/>
+            <Setter Property="Foreground" Value="#1F2937"/>
+            <Setter Property="BorderBrush" Value="#9CA3AF"/>
+            <Setter Property="Opacity" Value="1"/>
+        </Style>
+        <Style Selector="ComboBox:disabled">
+            <Setter Property="Background" Value="#EAEEF7"/>
+            <Setter Property="Foreground" Value="#1F2937"/>
+            <Setter Property="BorderBrush" Value="#9CA3AF"/>
+            <Setter Property="Opacity" Value="1"/>
+        </Style>
+        <Style Selector="CalendarDatePicker:disabled">
+            <Setter Property="Background" Value="#EAEEF7"/>
+            <Setter Property="Foreground" Value="#1F2937"/>
+            <Setter Property="BorderBrush" Value="#9CA3AF"/>
+            <Setter Property="Opacity" Value="1"/>
         </Style>
     </UserControl.Styles>
 </UserControl>

@@ -23,6 +23,16 @@ public class SafeDisplayConverter : IValueConverter
                 return "-";
             }
 
+            // Handle boolean conditional formatting (e.g., "DRAFT|FINALIZED")
+            if (value is bool boolValue && parameter is string condFormat && condFormat.Contains("|"))
+            {
+                var parts = condFormat.Split('|');
+                if (parts.Length == 2)
+                {
+                    return boolValue ? parts[0].Trim() : parts[1].Trim();
+                }
+            }
+
             // Handle Customer entity directly
             if (value is Customer customer)
             {
