@@ -254,6 +254,11 @@ public partial class InvoiceFormViewModel : ViewModelBase, INotifyDataErrorInfo
     public List<string> DeliveryStatusOptions { get; } = new() { "Pending", "Shipped", "Returned", "Cancelled" };
     public List<string> PaymentStatusOptions { get; } = new() { "Unpaid", "Paid", "Partially Paid" };
     public List<decimal> TaxRatesList { get; } = new() { 0, 5, 12, 18, 28 };
+    
+    // Item Type Options
+    public List<string> ItemTypes { get; } = new() { "Product", "Service" };
+    public List<string> ProductUnits { get; } = new() { "Pieces", "KG", "Meters", "Liters", "Box", "Pack", "Kg", "nos", "nos." };
+    public List<string> ServiceUnits { get; } = new() { "Hours", "Days", "Week", "Month", "Project", "Call", "Consultation" };
 
     public IAsyncRelayCommand AddCustomerCommand { get; }
 
@@ -706,7 +711,8 @@ public partial class InvoiceFormViewModel : ViewModelBase, INotifyDataErrorInfo
                 HSNCode = i.HsnCode,
                 Unit = i.Unit,
                 Discount = i.Discount,
-                TotalAmount = i.TotalAmount
+                TotalAmount = i.TotalAmount,
+                ItemType = i.ItemType
             }).ToList()
         };
 
@@ -830,7 +836,8 @@ public partial class InvoiceFormViewModel : ViewModelBase, INotifyDataErrorInfo
                 HSNCode = i.HsnCode,
                 Unit = i.Unit,
                 Discount = i.Discount,
-                TotalAmount = i.TotalAmount
+                TotalAmount = i.TotalAmount,
+                ItemType = i.ItemType
             }).ToList()
         };
 
@@ -900,6 +907,8 @@ public partial class InvoiceItemViewModel : ObservableObject
     [ObservableProperty] private decimal _igstAmount;
     [ObservableProperty] private decimal _totalAmount;
     [ObservableProperty] private string? _hsnCode;
+    [ObservableProperty] private string _itemType = "Product"; // "Product" or "Service"
+    
     private string? _unit;
     public string? Unit
     {
@@ -1005,6 +1014,7 @@ public partial class InvoiceItemViewModel : ObservableObject
             HsnCode = value.HSNCode;
             Unit = value.Unit;
             Discount = 0; // Reset discount when product changes
+            ItemType = value.IsService ? "Service" : "Product"; // Auto-set type based on product
 
             _ignoreSearchUpdate = true;
             try

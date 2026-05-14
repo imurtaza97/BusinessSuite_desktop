@@ -48,6 +48,16 @@
                                Foreground="#1D4ED8" FontSize="12" TextWrapping="Wrap" />
                 </Border>
 
+                <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center" IsVisible="{Binding IsService}">
+                    <ToggleSwitch IsChecked="{Binding !IsInternalService}" OnContent="External" OffContent="Internal" Width="140"/>
+                    <TextBlock Text="Service Provider" VerticalAlignment="Center" FontWeight="Medium" Foreground="#374151"/>
+                </StackPanel>
+
+                <Border Background="#FEF3C7" CornerRadius="6" Padding="10" IsVisible="{Binding IsInternalService}">
+                    <TextBlock Text="Internal service provided by your business. No need to add provider or cost." 
+                               Foreground="#92400E" FontSize="12" TextWrapping="Wrap" />
+                </Border>
+
                 <StackPanel>
                     <TextBlock Text="Name *" Margin="0,0,0,5" FontWeight="Medium" Foreground="#374151"/>
                     <TextBox Text="{Binding ProductName}" Watermark="Enter item name"/>
@@ -85,7 +95,7 @@
                          <TextBox Text="{Binding NewCategoryName}" Watermark="Enter new category name if adding..." IsVisible="True"/> 
                     </StackPanel>
 
-                    <StackPanel Grid.Row="3" Grid.Column="0" Margin="0,0,10,10">
+                    <StackPanel Grid.Row="3" Grid.Column="0" Margin="0,0,10,10" IsVisible="{Binding ShowVendorAndCost}">
                         <TextBlock Text="{Binding PreferredVendorLabel}" Margin="0,0,0,5" FontWeight="Medium" Foreground="#374151"/>
                         <ComboBox ItemsSource="{Binding Vendors}" 
                                   SelectedItem="{Binding SelectedPreferredVendor}"
@@ -106,7 +116,7 @@
                                   HorizontalAlignment="Stretch"/>
                     </StackPanel>
 
-                    <StackPanel Grid.Row="4" Grid.Column="0" Margin="0,0,10,10">
+                    <StackPanel Grid.Row="4" Grid.Column="0" Margin="0,0,10,10" IsVisible="{Binding ShowVendorAndCost}">
                         <TextBlock Text="{Binding PurchasePriceLabel}" Margin="0,0,0,5" FontWeight="Medium" Foreground="#374151"/>
                         <NumericUpDown Value="{Binding PurchasePrice}" Minimum="0" FormatString="0.00"/>
                     </StackPanel>

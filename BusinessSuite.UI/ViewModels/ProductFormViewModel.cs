@@ -69,8 +69,14 @@ public partial class ProductFormViewModel : ViewModelBase, INotifyDataErrorInfo
         if (SelectedCategory == null)
             AddError(nameof(SelectedCategory), "Category is required");
 
-        if (PurchasePrice <= 0)
-            AddError(nameof(PurchasePrice), "Purchase Price must be greater than zero");
+        // Purchase price required only for products or external services
+        if (!IsService || !IsInternalService)
+        {
+            if (PurchasePrice < 0)
+                AddError(nameof(PurchasePrice), "Purchase Price cannot be negative");
+            else if (!IsService && PurchasePrice <= 0)
+                AddError(nameof(PurchasePrice), "Purchase Price must be greater than zero");
+        }
 
         if (SalePrice <= 0)
             AddError(nameof(SalePrice), "Sale Price must be greater than zero");
@@ -110,7 +116,12 @@ public partial class ProductFormViewModel : ViewModelBase, INotifyDataErrorInfo
     [ObservableProperty]
     private bool _isService;
 
+    [ObservableProperty]
+    private bool _isInternalService = true;
+
     public bool IsProduct => !IsService;
+
+    public bool ShowVendorAndCost => !IsService || !IsInternalService;
 
     public string SaveButtonText => IsService ? "Save Service" : "Save Product";
 
@@ -136,10 +147,27 @@ public partial class ProductFormViewModel : ViewModelBase, INotifyDataErrorInfo
         OnPropertyChanged(nameof(PreferredVendorLabel));
         OnPropertyChanged(nameof(PurchasePriceLabel));
         OnPropertyChanged(nameof(SalePriceLabel));
+        OnPropertyChanged(nameof(ShowVendorAndCost));
         if (value)
         {
             StockQty = 0;
             SelectedWarehouse = null;
+            if (IsInternalService)
+            {
+                SelectedPreferredVendor = null;
+                PurchasePrice = 0;
+            }
+        }
+        if (ValidationVisible) ValidateAll();
+    }
+
+    partial void OnIsInternalServiceChanged(bool value)
+    {
+        OnPropertyChanged(nameof(ShowVendorAndCost));
+        if (value && IsService)
+        {
+            SelectedPreferredVendor = null;
+            PurchasePrice = 0;
         }
         if (ValidationVisible) ValidateAll();
     }
@@ -364,6 +392,7 @@ public partial class ProductFormViewModel : ViewModelBase, INotifyDataErrorInfo
         TaxRate = product.TaxRate;
         Unit = product.Unit;
         IsService = product.IsService;
+        IsInternalService = product.IsInternalService;
     }
 
     private async Task LoadRatesAsync()
@@ -488,7 +517,8 @@ public partial class ProductFormViewModel : ViewModelBase, INotifyDataErrorInfo
             TaxRate = TaxRate,
             Unit = Unit,
             IsDraft = false,
-            IsService = IsService
+            IsService = IsService,
+            IsInternalService = IsInternalService
         };
 
         RequestClose?.Invoke(product);

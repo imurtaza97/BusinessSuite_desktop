@@ -58,6 +58,10 @@ public class InvoiceItem
     [Column(TypeName = "decimal(18, 2)")]
     public decimal IGST_Amount { get; set; }
 
+    // Item Type: Product or Service
+    [MaxLength(10)]
+    public string ItemType { get; set; } = "Product"; // "Product" or "Service"
+
     [ForeignKey("InvoiceID")]
     public Invoice? Invoice { get; set; }
 

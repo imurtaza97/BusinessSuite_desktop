@@ -50,6 +50,8 @@ public class Product
 
     public bool IsService { get; set; } = false;
 
+    public bool IsInternalService { get; set; } = true; // True = service provided by business; False = service purchased from provider
+
     [NotMapped]
     public string Type => IsService ? "Service" : "Product";
 

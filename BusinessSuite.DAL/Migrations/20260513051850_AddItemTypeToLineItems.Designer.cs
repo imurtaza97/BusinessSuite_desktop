@@ -3,6 +3,7 @@ using System;
 using BusinessSuite.DAL.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,12 +11,14 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BusinessSuite.DAL.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260513051850_AddItemTypeToLineItems")]
+    partial class AddItemTypeToLineItems
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "8.0.4");
+            modelBuilder.HasAnnotation("ProductVersion", "8.0.7");
 
             modelBuilder.Entity("BusinessSuite.DAL.Entities.Business", b =>
                 {
@@ -560,9 +563,6 @@ namespace BusinessSuite.DAL.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<bool>("IsDraft")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<bool>("IsInternalService")
                         .HasColumnType("INTEGER");
 
                     b.Property<bool>("IsService")

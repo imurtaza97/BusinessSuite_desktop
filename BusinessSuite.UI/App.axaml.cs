@@ -90,6 +90,13 @@ public partial class App : Application
         AddColumnIfMissing(conn, "Invoices", "IsDraft", "INTEGER NOT NULL DEFAULT 0");
         AddColumnIfMissing(conn, "PurchaseOrders", "IsDraft", "INTEGER NOT NULL DEFAULT 0");
         AddColumnIfMissing(conn, "Products", "IsDraft", "INTEGER NOT NULL DEFAULT 0");
+        
+        // Add ItemType columns for service/product differentiation
+        AddColumnIfMissing(conn, "InvoiceItems", "ItemType", "TEXT NOT NULL DEFAULT 'Product'");
+        AddColumnIfMissing(conn, "PurchaseOrderItems", "ItemType", "TEXT NOT NULL DEFAULT 'Product'");
+        
+        // Add IsInternalService flag for services
+        AddColumnIfMissing(conn, "Products", "IsInternalService", "INTEGER NOT NULL DEFAULT 1");
 
         // Keep the connection open for EF Core after schema fix
     }

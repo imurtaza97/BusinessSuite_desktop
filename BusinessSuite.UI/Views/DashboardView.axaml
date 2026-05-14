@@ -46,7 +46,7 @@
                         <TextBlock Text="MAIN MENU" FontSize="10" FontWeight="Bold" Foreground="#9CA3AF" Margin="12,10,0,8"/>
                         
                         <Button Classes="MenuButton" Classes.active="{Binding IsDashboardActive}" Command="{Binding NavigateCommand}" CommandParameter="Dashboard" Content="Dashboard"/>
-                        <Button Classes="MenuButton" Classes.active="{Binding IsProductsActive}" Command="{Binding NavigateCommand}" CommandParameter="Products" Content="Products"/>
+                        <Button Classes="MenuButton" Classes.active="{Binding IsProductsActive}" Command="{Binding NavigateCommand}" CommandParameter="Products" Content="Items"/>
                         <Button Classes="MenuButton" Classes.active="{Binding IsWarehousesActive}" Command="{Binding NavigateCommand}" CommandParameter="Warehouses" Content="Warehouses"/>
                         
                         <TextBlock Text="OPERATIONS" FontSize="10" FontWeight="Bold" Foreground="#9CA3AF" Margin="12,20,0,8"/>
