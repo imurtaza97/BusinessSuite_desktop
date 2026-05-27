@@ -88,11 +88,51 @@ public class PurchaseOrder
 
     public bool IsDraft { get; set; } = false;
 
+    // Audit Trail Fields
+    public int? CreatedByUserID { get; set; }
+
+    public DateTime? ModifiedAt { get; set; }
+    public int? ModifiedByUserID { get; set; }
+
+    public DateTime? PostedAt { get; set; }
+    public int? PostedByUserID { get; set; }
+
+    public DateTime? CancelledAt { get; set; }
+    public int? CancelledByUserID { get; set; }
+
+    [MaxLength(500)]
+    public string? CancellationReason { get; set; }
+
+    // Soft Delete Fields
+    public bool IsDeleted { get; set; } = false;
+
+    public DateTime? DeletedAt { get; set; }
+
+    public int? DeletedByUserID { get; set; }
+
+    [MaxLength(500)]
+    public string? DeletionReason { get; set; }
+
     [ForeignKey("BusinessId")]
     public Business? Business { get; set; }
 
     [ForeignKey("VendorId")]
     public Vendor? Vendor { get; set; }
+
+    [ForeignKey("CreatedByUserID")]
+    public User? CreatedByUser { get; set; }
+
+    [ForeignKey("ModifiedByUserID")]
+    public User? ModifiedByUser { get; set; }
+
+    [ForeignKey("PostedByUserID")]
+    public User? PostedByUser { get; set; }
+
+    [ForeignKey("CancelledByUserID")]
+    public User? CancelledByUser { get; set; }
+
+    [ForeignKey("DeletedByUserID")]
+    public User? DeletedByUser { get; set; }
 
     public ICollection<PurchaseOrderItem> Items { get; set; } = new List<PurchaseOrderItem>();
 }

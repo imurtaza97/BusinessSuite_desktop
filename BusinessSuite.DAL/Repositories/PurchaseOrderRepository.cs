@@ -29,7 +29,7 @@ public class PurchaseOrderRepository
     {
         return await _context.PurchaseOrders
             .Include(p => p.Vendor)
-            .Where(p => p.BusinessId == businessId)
+            .Where(p => p.BusinessId == businessId && !p.IsDeleted)
             .OrderByDescending(p => p.PODate)
             .ToListAsync();
     }
@@ -38,7 +38,7 @@ public class PurchaseOrderRepository
     {
         var query = _context.PurchaseOrders
             .Include(p => p.Vendor)
-            .Where(p => p.BusinessId == businessId);
+            .Where(p => p.BusinessId == businessId && !p.IsDeleted);
 
         if (!string.IsNullOrWhiteSpace(searchTerm))
         {
@@ -57,7 +57,7 @@ public class PurchaseOrderRepository
 
     public async Task<int> GetCountAsync(int businessId, string? searchTerm = null)
     {
-        var query = _context.PurchaseOrders.Where(p => p.BusinessId == businessId);
+        var query = _context.PurchaseOrders.Where(p => p.BusinessId == businessId && !p.IsDeleted);
 
         if (!string.IsNullOrWhiteSpace(searchTerm))
         {
@@ -77,7 +77,7 @@ public class PurchaseOrderRepository
             .Include(p => p.Vendor)
             .Include(p => p.Items)
                 .ThenInclude(i => i.Product)
-            .FirstOrDefaultAsync(p => p.PurchaseOrderID == id);
+            .FirstOrDefaultAsync(p => p.PurchaseOrderID == id && !p.IsDeleted);
     }
 
     // ✅ CREATE PO (NO STOCK)
@@ -202,5 +202,81 @@ public class PurchaseOrderRepository
 
         po.PaymentStatus = status;
         return await _context.SaveChangesAsync() > 0;
+    }
+
+    /* ============================
+       FINALIZE & UNPOST
+    ============================ */
+
+    public async Task<bool> FinalizePurchaseOrderAsync(int purchaseOrderId, int userId)
+    {
+        await using var transaction = await _context.Database.BeginTransactionAsync();
+        try
+        {
+            var po = await _context.PurchaseOrders.FindAsync(purchaseOrderId);
+            if (po == null)
+                return false;
+
+            if (!po.IsDraft)
+                return false; // Already finalized
+
+            po.IsDraft = false;
+            po.PostedAt = DateTime.Now;
+            po.PostedByUserID = userId;
+
+            var result = await _context.SaveChangesAsync() > 0;
+            await transaction.CommitAsync();
+            return result;
+        }
+        catch
+        {
+            await transaction.RollbackAsync();
+            throw;
+        }
+    }
+
+    public async Task<bool> UnpostPurchaseOrderAsync(int purchaseOrderId, string reason, int adminUserId)
+    {
+        await using var transaction = await _context.Database.BeginTransactionAsync();
+        try
+        {
+            var po = await _context.PurchaseOrders.FindAsync(purchaseOrderId);
+            if (po == null)
+                return false;
+
+            if (po.IsDraft)
+                return false; // Already in draft
+
+            // Unpost: Revert to draft for editing
+            po.IsDraft = true;
+            po.PostedAt = null;
+            po.PostedByUserID = null;
+
+            // Log the unpost action in AuditLog
+            var auditLog = new AuditLog
+            {
+                BusinessID = po.BusinessId,
+                DocumentType = "PurchaseOrder",
+                DocumentID = purchaseOrderId,
+                Action = "Unposted",
+                FieldName = "IsDraft",
+                OldValue = "false",
+                NewValue = "true",
+                ChangedByUserID = adminUserId,
+                ChangedAt = DateTime.Now,
+                Reason = reason
+            };
+
+            await _context.AuditLogs.AddAsync(auditLog);
+
+            var result = await _context.SaveChangesAsync() > 0;
+            await transaction.CommitAsync();
+            return result;
+        }
+        catch
+        {
+            await transaction.RollbackAsync();
+            throw;
+        }
     }
 }

@@ -1,0 +1,74 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="clr-namespace:BusinessSuite.UI.ViewModels"
+        x:Class="BusinessSuite.UI.Views.BomFormWindow"
+        x:DataType="vm:BomFormViewModel"
+        Title="{Binding Title}"
+        Width="480" Height="520"
+        WindowStartupLocation="CenterOwner"
+        CanResize="False"
+        Background="#F9FAFB">
+
+    <Grid RowDefinitions="Auto,*,Auto" Margin="24">
+        <TextBlock Grid.Row="0" Text="{Binding Title}" FontSize="22" FontWeight="Bold" Margin="0,0,0,16"/>
+
+        <StackPanel Grid.Row="1" Spacing="14">
+            <StackPanel Spacing="5">
+                <TextBlock Text="Finished product (output)" FontWeight="Medium"/>
+                <ComboBox ItemsSource="{Binding FinishedProducts}" SelectedItem="{Binding SelectedFinishedProduct}" HorizontalAlignment="Stretch">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding ProductName}"/>
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+            </StackPanel>
+
+            <StackPanel Spacing="5">
+                <TextBlock Text="Raw material (input)" FontWeight="Medium"/>
+                <ComboBox ItemsSource="{Binding RawMaterials}" SelectedItem="{Binding SelectedRawMaterial}" HorizontalAlignment="Stretch">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding ProductName}"/>
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+            </StackPanel>
+
+            <Grid ColumnDefinitions="*,*">
+                <StackPanel Grid.Column="0" Spacing="5" Margin="0,0,8,0">
+                    <TextBlock Text="Qty per unit" FontWeight="Medium"/>
+                    <NumericUpDown Value="{Binding Quantity}" Minimum="0.01" FormatString="N2"/>
+                </StackPanel>
+                <StackPanel Grid.Column="1" Spacing="5" Margin="8,0,0,0">
+                    <TextBlock Text="Unit" FontWeight="Medium"/>
+                    <ComboBox ItemsSource="{Binding UnitNames}" SelectedItem="{Binding UnitOfMeasure}" HorizontalAlignment="Stretch"/>
+                </StackPanel>
+            </Grid>
+
+            <StackPanel Spacing="5">
+                <TextBlock Text="Wastage %" FontWeight="Medium"/>
+                <NumericUpDown Value="{Binding WastagePercentage}" Minimum="0" Maximum="100" FormatString="N1"/>
+            </StackPanel>
+
+            <StackPanel Spacing="5">
+                <TextBlock Text="Notes" FontWeight="Medium"/>
+                <TextBox Text="{Binding Notes}" AcceptsReturn="True" Height="60"/>
+            </StackPanel>
+
+            <TextBlock Text="{Binding ErrorMessage}" Foreground="#DC2626" IsVisible="{Binding !!ErrorMessage}"/>
+        </StackPanel>
+
+        <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="10" HorizontalAlignment="Right" Margin="0,16,0,0">
+            <Button Content="Cancel" Click="Cancel_Click"/>
+            <Button Content="Save" Command="{Binding SaveCommand}" Classes="Primary"/>
+        </StackPanel>
+    </Grid>
+
+    <Window.Styles>
+        <Style Selector="Button.Primary">
+            <Setter Property="Background" Value="#2563EB"/>
+            <Setter Property="Foreground" Value="White"/>
+        </Style>
+    </Window.Styles>
+</Window>

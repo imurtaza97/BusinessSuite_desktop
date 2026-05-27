@@ -1,0 +1,108 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:BusinessSuite.UI.ViewModels"
+             x:Class="BusinessSuite.UI.Views.ProductionOrderFormView"
+             x:DataType="vm:ProductionOrderFormViewModel">
+
+    <Grid>
+        <ScrollViewer>
+            <Grid RowDefinitions="Auto,Auto,*" Margin="30" MaxWidth="1100">
+                <TextBlock Grid.Row="0" Text="{Binding Title}" FontSize="24" FontWeight="Bold" Margin="0,0,0,20"/>
+
+                <Border Grid.Row="1" Background="White" BorderBrush="#E5E7EB" BorderThickness="1" CornerRadius="8" Padding="20" Margin="0,0,0,16">
+                    <Grid ColumnDefinitions="*,*,*" RowDefinitions="Auto,Auto,Auto">
+                        <StackPanel Grid.Column="0" Spacing="5" Margin="0,0,10,10">
+                            <TextBlock Text="Order number" FontWeight="Medium"/>
+                            <TextBox Text="{Binding ProductionOrderNumber}" IsReadOnly="True" Background="#F9FAFB"/>
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Spacing="5" Margin="10,0,10,10">
+                            <TextBlock Text="Product to manufacture" FontWeight="Medium"/>
+                            <ComboBox ItemsSource="{Binding Products}" SelectedItem="{Binding SelectedProduct}" IsEnabled="{Binding CanEdit}" HorizontalAlignment="Stretch">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate><TextBlock Text="{Binding ProductName}"/></DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                        </StackPanel>
+                        <StackPanel Grid.Column="2" Spacing="5" Margin="10,0,0,10">
+                            <TextBlock Text="Warehouse" FontWeight="Medium"/>
+                            <ComboBox ItemsSource="{Binding Warehouses}" SelectedItem="{Binding SelectedWarehouse}" IsEnabled="{Binding CanEdit}" HorizontalAlignment="Stretch">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate><TextBlock Text="{Binding WarehouseName}"/></DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                        </StackPanel>
+
+                        <StackPanel Grid.Row="1" Grid.Column="0" Spacing="5" Margin="0,0,10,10">
+                            <TextBlock Text="Quantity to make" FontWeight="Medium"/>
+                            <NumericUpDown Value="{Binding QuantityToMake}" Minimum="0.01" IsEnabled="{Binding CanEdit}"/>
+                        </StackPanel>
+                        <StackPanel Grid.Row="1" Grid.Column="1" Spacing="5" Margin="10,0,10,10">
+                            <TextBlock Text="Unit" FontWeight="Medium"/>
+                            <TextBox Text="{Binding UnitOfMeasure}" IsReadOnly="True" Background="#F9FAFB"/>
+                        </StackPanel>
+                        <StackPanel Grid.Row="1" Grid.Column="2" Spacing="5" Margin="10,0,0,10">
+                            <TextBlock Text="Status" FontWeight="Medium"/>
+                            <TextBox Text="{Binding Status}" IsReadOnly="True" Background="#F9FAFB"/>
+                        </StackPanel>
+
+                        <StackPanel Grid.Row="2" Grid.Column="0" Spacing="5" Margin="0,0,10,0">
+                            <TextBlock Text="Start date" FontWeight="Medium"/>
+                            <CalendarDatePicker SelectedDate="{Binding StartDate}" IsEnabled="{Binding CanEdit}"/>
+                        </StackPanel>
+                        <StackPanel Grid.Row="2" Grid.Column="1" Spacing="5" Margin="10,0,10,0">
+                            <TextBlock Text="Expected end" FontWeight="Medium"/>
+                            <CalendarDatePicker SelectedDate="{Binding ExpectedEndDate}" IsEnabled="{Binding CanEdit}"/>
+                        </StackPanel>
+                        <StackPanel Grid.Row="2" Grid.Column="2" Spacing="5" Margin="10,0,0,0">
+                            <TextBlock Text="Estimated cost" FontWeight="Medium"/>
+                            <TextBox Text="{Binding EstimatedCost, StringFormat=₹ \{0:N2\}}" IsReadOnly="True" Background="#F9FAFB"/>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <Grid Grid.Row="2" ColumnDefinitions="*,280">
+                    <StackPanel Grid.Column="0" Spacing="16" Margin="0,0,20,0">
+                        <Border Background="White" BorderBrush="#E5E7EB" BorderThickness="1" CornerRadius="8" Padding="16" MinHeight="200">
+                            <DockPanel>
+                                <TextBlock DockPanel.Dock="Top" Text="Material requirements (from BOM)" FontWeight="SemiBold" Margin="0,0,0,10"/>
+                                <TextBlock DockPanel.Dock="Top" Text="Select product and quantity to calculate required raw materials." Foreground="#6B7280" FontSize="12" Margin="0,0,0,10"
+                                           IsVisible="{Binding !HasMaterialRequirements}"/>
+                                <DataGrid ItemsSource="{Binding MaterialRequirements}" IsReadOnly="True" IsVisible="{Binding HasMaterialRequirements}">
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Header="Material" Binding="{Binding MaterialName}" Width="*"/>
+                                        <DataGridTextColumn Header="Required" Binding="{Binding RequiredQty, StringFormat=N2}" Width="90"/>
+                                        <DataGridTextColumn Header="Available" Binding="{Binding AvailableStock, StringFormat=N2}" Width="90"/>
+                                        <DataGridTextColumn Header="UOM" Binding="{Binding Unit}" Width="60"/>
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                            </DockPanel>
+                        </Border>
+
+                        <StackPanel Spacing="5">
+                            <TextBlock Text="Notes" FontWeight="Medium"/>
+                            <TextBox Text="{Binding Notes}" AcceptsReturn="True" Height="60" IsEnabled="{Binding CanEdit}"/>
+                        </StackPanel>
+
+                        <TextBlock Text="{Binding ErrorMessage}" Foreground="#DC2626" IsVisible="{Binding !!ErrorMessage}"/>
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="1" Spacing="10">
+                        <Button Content="Save" Command="{Binding SaveCommand}" Classes="Primary" IsEnabled="{Binding CanEdit}"/>
+                        <Button Content="Start production" Command="{Binding StartProductionCommand}" IsEnabled="{Binding CanStart}"/>
+                        <Button Content="Complete &amp; post stock" Command="{Binding CompleteProductionCommand}" IsEnabled="{Binding CanComplete}" Background="#059669" Foreground="White"/>
+                        <Button Content="Cancel order" Command="{Binding CancelOrderCommand}" IsEnabled="{Binding CanCancel}" Foreground="#B45309"/>
+                        <Button Content="Close" Command="{Binding CloseCommand}"/>
+                    </StackPanel>
+                </Grid>
+            </Grid>
+        </ScrollViewer>
+        <ProgressBar IsIndeterminate="True" IsVisible="{Binding IsLoading}" VerticalAlignment="Top" Height="3"/>
+    </Grid>
+
+    <UserControl.Styles>
+        <Style Selector="Button.Primary">
+            <Setter Property="Background" Value="#2563EB"/>
+            <Setter Property="Foreground" Value="White"/>
+        </Style>
+    </UserControl.Styles>
+</UserControl>

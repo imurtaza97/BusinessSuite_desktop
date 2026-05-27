@@ -8,6 +8,7 @@ using System.Collections.ObjectModel;
 using BusinessSuite.DAL.Data;
 using BusinessSuite.DAL.Entities;
 using BusinessSuite.UI.Views;
+using BusinessSuite.UI.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using BusinessSuite.BLL.StaticData;
@@ -59,6 +60,10 @@ public partial class DashboardViewModel : ViewModelBase
     [NotifyPropertyChangedFor(nameof(IsCustomersActive))]
     [NotifyPropertyChangedFor(nameof(IsVendorsActive))]
     [NotifyPropertyChangedFor(nameof(IsSalesActive))]
+    [NotifyPropertyChangedFor(nameof(IsCreditNotesActive))]
+    [NotifyPropertyChangedFor(nameof(IsDebitNotesActive))]
+    [NotifyPropertyChangedFor(nameof(IsBillOfMaterialsActive))]
+    [NotifyPropertyChangedFor(nameof(IsProductionOrdersActive))]
     [NotifyPropertyChangedFor(nameof(IsPurchasesActive))]
     [NotifyPropertyChangedFor(nameof(IsReportsActive))]
     [NotifyPropertyChangedFor(nameof(IsFinanceLedgerActive))]
@@ -72,6 +77,10 @@ public partial class DashboardViewModel : ViewModelBase
     public bool IsCustomersActive => CurrentViewTitle == "Customers";
     public bool IsVendorsActive => CurrentViewTitle == "Vendors";
     public bool IsSalesActive => CurrentViewTitle == "Sales";
+    public bool IsCreditNotesActive => CurrentViewTitle == "CreditNotes";
+    public bool IsDebitNotesActive => CurrentViewTitle == "DebitNotes";
+    public bool IsBillOfMaterialsActive => CurrentViewTitle == "BillOfMaterials";
+    public bool IsProductionOrdersActive => CurrentViewTitle == "ProductionOrders";
     public bool IsPurchasesActive => CurrentViewTitle == "Purchases";
     public bool IsReportsActive => CurrentViewTitle == "Reports";
     public bool IsFinanceLedgerActive => CurrentViewTitle == "FinanceLedger";
@@ -93,6 +102,9 @@ public partial class DashboardViewModel : ViewModelBase
             BusinessName = business.BusinessName;
             _businessId = business.BusinessID;
             IsGstRegistered = business.IsGSTRegistered;
+            
+            // Initialize AppState with current user and business
+            AppState.Instance.Initialize(user, business.BusinessID);
         }
 
         Navigate("Dashboard");
@@ -167,14 +179,70 @@ public partial class DashboardViewModel : ViewModelBase
                 var ledgerServiceS = new LedgerService(_dbFactory);
                 var invoicesVm = new InvoicesViewModel(_businessId, ledgerServiceS);
                 invoicesVm.RequestInvoiceForm += (invoice) => NavigateInternal("InvoiceForm", invoice);
+                invoicesVm.RequestCreditNoteForm += (args) => NavigateInternal("CreditNoteForm", args);
+                invoicesVm.RequestDebitNoteForm += (args) => NavigateInternal("DebitNoteForm", args);
                 CurrentView = invoicesVm;
                 _ = invoicesVm.LoadInvoicesCommand.ExecuteAsync(null);
                 break;
+            case "CreditNotes":
+                var creditNotesVm = new CreditNotesViewModel(_businessId);
+                creditNotesVm.RequestCreditNoteForm += (args) => NavigateInternal("CreditNoteForm", args);
+                CurrentView = creditNotesVm;
+                _ = creditNotesVm.LoadCommand.ExecuteAsync(null);
+                break;
+            case "DebitNotes":
+                var debitNotesVm = new DebitNotesViewModel(_businessId);
+                debitNotesVm.RequestDebitNoteForm += (args) => NavigateInternal("DebitNoteForm", args);
+                CurrentView = debitNotesVm;
+                _ = debitNotesVm.LoadCommand.ExecuteAsync(null);
+                break;
+            case "CreditNoteForm":
+            {
+                var cnArgs = parameter as AmendmentFormArgs;
+                var cnFormVm = new CreditNoteFormViewModel(_businessId, cnArgs?.NoteId, cnArgs?.InvoiceId);
+                cnFormVm.RequestClose += () => NavigateInternal(cnArgs?.ReturnTo ?? "CreditNotes");
+                CurrentView = cnFormVm;
+                CurrentViewTitle = cnArgs?.NoteId.HasValue == true ? "Edit Credit Note" : "Credit Note";
+                break;
+            }
+            case "DebitNoteForm":
+            {
+                var dnArgs = parameter as AmendmentFormArgs;
+                var dnFormVm = new DebitNoteFormViewModel(_businessId, dnArgs?.NoteId, dnArgs?.InvoiceId);
+                dnFormVm.RequestClose += () => NavigateInternal(dnArgs?.ReturnTo ?? "DebitNotes");
+                CurrentView = dnFormVm;
+                CurrentViewTitle = dnArgs?.NoteId.HasValue == true ? "Edit Debit Note" : "Debit Note";
+                break;
+            }
             case "InvoiceForm":
                 var invoiceFormVm = new InvoiceFormViewModel(_businessId, parameter as Invoice);
                 invoiceFormVm.RequestClose += (result) => NavigateInternal("Sales");
                 CurrentView = invoiceFormVm;
                 break;
+            case "BillOfMaterials":
+                var bomVm = new BillOfMaterialsViewModel(_businessId);
+                CurrentView = bomVm;
+                _ = bomVm.LoadCommand.ExecuteAsync(null);
+                break;
+            case "ProductionOrders":
+                var prodOrdersVm = new ProductionOrdersViewModel(_businessId);
+                prodOrdersVm.RequestProductionOrderForm += (order) => NavigateInternal("ProductionOrderForm", order);
+                CurrentView = prodOrdersVm;
+                _ = prodOrdersVm.LoadCommand.ExecuteAsync(null);
+                break;
+            case "ProductionOrderForm":
+            {
+                var mfgService = new ManufacturingService(_dbFactory);
+                var existingOrder = parameter as ProductionOrder;
+                var prodFormVm = new ProductionOrderFormViewModel(
+                    _businessId, mfgService, existingOrder?.ProductionOrderID);
+                prodFormVm.RequestClose += () => NavigateInternal("ProductionOrders");
+                CurrentView = prodFormVm;
+                CurrentViewTitle = existingOrder != null
+                    ? $"Production - {existingOrder.ProductionOrderNumber}"
+                    : "New Production Order";
+                break;
+            }
             case "Purchases":
                 var ledgerServiceP2 = new LedgerService(_dbFactory);
                 var posVm = new PurchaseOrdersViewModel(_businessId, ledgerServiceP2);

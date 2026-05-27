@@ -70,6 +70,8 @@ public partial class InvoicesViewModel : ViewModelBase
         RefreshCommand = new AsyncRelayCommand(() => { CurrentPage = 1; return LoadInvoicesAsync(); });
         NextPageCommand = new AsyncRelayCommand(NextPageAsync);
         PreviousPageCommand = new AsyncRelayCommand(PreviousPageAsync);
+        CreateCreditNoteCommand = new RelayCommand(CreateCreditNote, CanCreateAmendment);
+        CreateDebitNoteCommand = new RelayCommand(CreateDebitNote, CanCreateAmendment);
     }
 
     public IAsyncRelayCommand NextPageCommand { get; }
@@ -81,8 +83,18 @@ public partial class InvoicesViewModel : ViewModelBase
     public IAsyncRelayCommand DeleteInvoiceCommand { get; }
     public IAsyncRelayCommand PrintInvoiceCommand { get; }
     public IAsyncRelayCommand RefreshCommand { get; }
+    public IRelayCommand CreateCreditNoteCommand { get; }
+    public IRelayCommand CreateDebitNoteCommand { get; }
+
+    partial void OnSelectedInvoiceChanged(Invoice? value)
+    {
+        CreateCreditNoteCommand.NotifyCanExecuteChanged();
+        CreateDebitNoteCommand.NotifyCanExecuteChanged();
+    }
 
     public event Action<Invoice?>? RequestInvoiceForm;
+    public event Action<AmendmentFormArgs>? RequestCreditNoteForm;
+    public event Action<AmendmentFormArgs>? RequestDebitNoteForm;
 
     private async Task LoadInvoicesAsync()
     {
@@ -130,6 +142,20 @@ public partial class InvoicesViewModel : ViewModelBase
         RequestInvoiceForm?.Invoke(null);
         await Task.CompletedTask;
     }
+
+    private void CreateCreditNote()
+    {
+        if (SelectedInvoice == null) return;
+        RequestCreditNoteForm?.Invoke(new AmendmentFormArgs { InvoiceId = SelectedInvoice.InvoiceID, ReturnTo = "Sales" });
+    }
+
+    private void CreateDebitNote()
+    {
+        if (SelectedInvoice == null) return;
+        RequestDebitNoteForm?.Invoke(new AmendmentFormArgs { InvoiceId = SelectedInvoice.InvoiceID, ReturnTo = "Sales" });
+    }
+
+    private bool CanCreateAmendment() => SelectedInvoice != null && !SelectedInvoice.IsDraft;
 
     private async Task EditInvoiceAsync()
     {

@@ -105,7 +105,12 @@ public class InvoicePdfService
                             c.Item().PaddingLeft(4).Text(invoice.Customer?.CustomerName ?? "").SemiBold();
                             c.Item().PaddingLeft(4).MaxWidth(220).Text(invoice.Customer?.BillingAddress ?? "");
                             c.Item().PaddingLeft(4).Text($"{invoice.Customer?.State}, India.");
-                            c.Item().PaddingLeft(4).Text(x => { x.Span("GSTIN: ").SemiBold(); x.Span(invoice.Customer?.GSTIN ?? "Unregistered"); });
+                            
+                            // Only show GSTIN if customer is registered for GST
+                            if (invoice.Customer?.GstTreatment != "Unregistered" && !string.IsNullOrWhiteSpace(invoice.Customer?.GSTIN))
+                            {
+                                c.Item().PaddingLeft(4).Text(x => { x.Span("GSTIN: ").SemiBold(); x.Span(invoice.Customer?.GSTIN ?? ""); });
+                            }
                         });
 
                         row.RelativeItem().BorderLeft(0.5f).Padding(5).Column(c =>

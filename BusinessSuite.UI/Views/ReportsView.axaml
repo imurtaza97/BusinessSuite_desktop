@@ -76,6 +76,91 @@
                     </DataGrid.Columns>
                 </DataGrid>
             </TabItem>
+
+            <TabItem Header="GSTR-1" FontSize="16" IsVisible="{Binding IsGstRegistered}">
+                <DataGrid ItemsSource="{Binding Gstr1Items}" Margin="0,20,0,0" IsReadOnly="True" GridLinesVisibility="All" BorderThickness="1" BorderBrush="#E5E7EB">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Invoice" Binding="{Binding InvoiceNumber}" Width="100"/>
+                        <DataGridTextColumn Header="Date" Binding="{Binding InvoiceDate, StringFormat='{}dd/MM/yyyy'}" Width="90"/>
+                        <DataGridTextColumn Header="Customer" Binding="{Binding CustomerName}" Width="150"/>
+                        <DataGridTextColumn Header="GSTIN" Binding="{Binding CustomerGstin}" Width="120"/>
+                        <DataGridTextColumn Header="State" Binding="{Binding CustomerState}" Width="80"/>
+                        <DataGridTextColumn Header="HSN" Binding="{Binding HsnCode}" Width="80"/>
+                        <DataGridTextColumn Header="Type" Binding="{Binding ItemType}" Width="80"/>
+                        <DataGridTextColumn Header="Qty" Binding="{Binding Quantity}" Width="60"/>
+                        <DataGridTextColumn Header="Taxable Amt" Binding="{Binding TaxableAmount, StringFormat='{}₹{0:N2}'}" Width="120"/>
+                        <DataGridTextColumn Header="Tax %" Binding="{Binding TaxRate, StringFormat={}{0:N0}%}" Width="70"/>
+                        <DataGridTextColumn Header="CGST" Binding="{Binding CgstAmount, StringFormat='{}₹{0:N2}'}" Width="100"/>
+                        <DataGridTextColumn Header="SGST" Binding="{Binding SgstAmount, StringFormat='{}₹{0:N2}'}" Width="100"/>
+                        <DataGridTextColumn Header="IGST" Binding="{Binding IgstAmount, StringFormat='{}₹{0:N2}'}" Width="100"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </TabItem>
+
+            <TabItem Header="GSTR-3B" FontSize="16" IsVisible="{Binding IsGstRegistered}">
+                <DataGrid ItemsSource="{Binding Gstr3BItems}" Margin="0,20,0,0" IsReadOnly="True" GridLinesVisibility="All" BorderThickness="1" BorderBrush="#E5E7EB">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Customer Type" Binding="{Binding CustomerType}" Width="120"/>
+                        <DataGridTextColumn Header="Tax Rate" Binding="{Binding TaxRate, StringFormat={}{0:N0}%}" Width="100"/>
+                        <DataGridTextColumn Header="Transactions" Binding="{Binding TransactionCount}" Width="100"/>
+                        <DataGridTextColumn Header="Taxable Amount" Binding="{Binding TaxableAmount, StringFormat='{}₹{0:N2}'}" Width="150"/>
+                        <DataGridTextColumn Header="CGST" Binding="{Binding CgstAmount, StringFormat='{}₹{0:N2}'}" Width="120"/>
+                        <DataGridTextColumn Header="SGST" Binding="{Binding SgstAmount, StringFormat='{}₹{0:N2}'}" Width="120"/>
+                        <DataGridTextColumn Header="IGST" Binding="{Binding IgstAmount, StringFormat='{}₹{0:N2}'}" Width="120"/>
+                        <DataGridTextColumn Header="Total Tax" Binding="{Binding TotalTaxAmount, StringFormat='{}₹{0:N2}'}" Width="120"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </TabItem>
+
+            <TabItem Header="Tax Liability" FontSize="16" IsVisible="{Binding IsGstRegistered}">
+                <Grid RowDefinitions="Auto, *" Margin="20">
+                    <StackPanel Orientation="Horizontal" Spacing="15" Margin="0,0,0,20">
+                        <TextBlock Text="Period:" VerticalAlignment="Center" FontWeight="Medium"/>
+                        <ComboBox ItemsSource="{Binding PeriodOptions}" 
+                                  SelectedItem="{Binding SelectedPeriod}"
+                                  Width="120"/>
+                    </StackPanel>
+                    
+                    <DataGrid Grid.Row="1" ItemsSource="{Binding TaxLiabilityItems}" IsReadOnly="True" GridLinesVisibility="All" BorderThickness="1" BorderBrush="#E5E7EB">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Period" Binding="{Binding Period}" Width="100"/>
+                            <DataGridTextColumn Header="Sales" Binding="{Binding SalesCount}" Width="80"/>
+                            <DataGridTextColumn Header="Sales Amount" Binding="{Binding SalesTaxableAmount, StringFormat='{}₹{0:N2}'}" Width="140"/>
+                            <DataGridTextColumn Header="Purchases" Binding="{Binding PurchaseCount}" Width="100"/>
+                            <DataGridTextColumn Header="Purchase Amount" Binding="{Binding PurchasesTaxableAmount, StringFormat='{}₹{0:N2}'}" Width="150"/>
+                            <DataGridTextColumn Header="Outgoing CGST" Binding="{Binding OutgoingCgst, StringFormat='{}₹{0:N2}'}" Width="130"/>
+                            <DataGridTextColumn Header="Outgoing SGST" Binding="{Binding OutgoingSgst, StringFormat='{}₹{0:N2}'}" Width="130"/>
+                            <DataGridTextColumn Header="Outgoing IGST" Binding="{Binding OutgoingIgst, StringFormat='{}₹{0:N2}'}" Width="130"/>
+                            <DataGridTextColumn Header="Incoming CGST" Binding="{Binding IncomingCgst, StringFormat='{}₹{0:N2}'}" Width="130"/>
+                            <DataGridTextColumn Header="Incoming SGST" Binding="{Binding IncomingSgst, StringFormat='{}₹{0:N2}'}" Width="130"/>
+                            <DataGridTextColumn Header="Incoming IGST" Binding="{Binding IncomingIgst, StringFormat='{}₹{0:N2}'}" Width="130"/>
+                            <DataGridTextColumn Header="Net CGST" Binding="{Binding NetCgstPayable, StringFormat='{}₹{0:N2}'}" Width="120"/>
+                            <DataGridTextColumn Header="Net SGST" Binding="{Binding NetSgstPayable, StringFormat='{}₹{0:N2}'}" Width="120"/>
+                            <DataGridTextColumn Header="Net IGST" Binding="{Binding NetIgstPayable, StringFormat='{}₹{0:N2}'}" Width="120"/>
+                            <DataGridTextColumn Header="Total Payable" Binding="{Binding TotalTaxPayable, StringFormat='{}₹{0:N2}'}" Width="130"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Grid>
+            </TabItem>
+
+            <TabItem Header="HSN Summary" FontSize="16" IsVisible="{Binding IsGstRegistered}">
+                <DataGrid ItemsSource="{Binding HsnSummaryItems}" Margin="0,20,0,0" IsReadOnly="True" GridLinesVisibility="All" BorderThickness="1" BorderBrush="#E5E7EB">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="HSN" Binding="{Binding HsnCode}" Width="100"/>
+                        <DataGridTextColumn Header="Type" Binding="{Binding ItemType}" Width="80"/>
+                        <DataGridTextColumn Header="Tax Rate" Binding="{Binding TaxRate, StringFormat={}{0:N0}%}" Width="100"/>
+                        <DataGridTextColumn Header="Qty" Binding="{Binding TotalQuantity}" Width="80"/>
+                        <DataGridTextColumn Header="Taxable Amount" Binding="{Binding TaxableAmount, StringFormat='{}₹{0:N2}'}" Width="140"/>
+                        <DataGridTextColumn Header="CGST Rate" Binding="{Binding CgstRate, StringFormat={}{0:N2}%}" Width="110"/>
+                        <DataGridTextColumn Header="CGST Amount" Binding="{Binding CgstAmount, StringFormat='{}₹{0:N2}'}" Width="130"/>
+                        <DataGridTextColumn Header="SGST Rate" Binding="{Binding SgstRate, StringFormat={}{0:N2}%}" Width="110"/>
+                        <DataGridTextColumn Header="SGST Amount" Binding="{Binding SgstAmount, StringFormat='{}₹{0:N2}'}" Width="130"/>
+                        <DataGridTextColumn Header="IGST Rate" Binding="{Binding IgstRate, StringFormat={}{0:N2}%}" Width="110"/>
+                        <DataGridTextColumn Header="IGST Amount" Binding="{Binding IgstAmount, StringFormat='{}₹{0:N2}'}" Width="130"/>
+                        <DataGridTextColumn Header="Total Tax" Binding="{Binding TotalTaxAmount, StringFormat='{}₹{0:N2}'}" Width="130"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </TabItem>
         </TabControl>
 
         <Border Grid.RowSpan="2" Background="#88FFFFFF" IsVisible="{Binding IsLoading}">

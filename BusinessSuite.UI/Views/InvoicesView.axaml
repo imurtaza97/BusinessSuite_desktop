@@ -23,6 +23,12 @@
                             Command="{Binding PrintInvoiceCommand}"
                             IsEnabled="{Binding !!SelectedInvoice}"
                             Background="#10B981" Foreground="White"/>
+                    <Button Content="Credit Note"
+                            Command="{Binding CreateCreditNoteCommand}"
+                            ToolTip.Tip="Create credit note for selected finalized invoice"/>
+                    <Button Content="Debit Note"
+                            Command="{Binding CreateDebitNoteCommand}"
+                            ToolTip.Tip="Create debit note for selected finalized invoice"/>
                 </StackPanel>
                 
                 <StackPanel Grid.Row="0" Grid.Column="1" Orientation="Horizontal" Spacing="10">

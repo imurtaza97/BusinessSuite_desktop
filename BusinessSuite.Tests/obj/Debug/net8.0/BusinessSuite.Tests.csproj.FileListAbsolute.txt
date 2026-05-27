@@ -1,0 +1,7 @@
+/Users/murtaza/Desktop/BusinessSuite_desktop/BusinessSuite.Tests/obj/Debug/net8.0/BusinessSuite.Tests.csproj.AssemblyReference.cache
+/Users/murtaza/Desktop/BusinessSuite_desktop/BusinessSuite.Tests/obj/Debug/net8.0/Avalonia/Resources.Inputs.cache
+/Users/murtaza/Desktop/BusinessSuite_desktop/BusinessSuite.Tests/obj/Debug/net8.0/BusinessSuite.Tests.GeneratedMSBuildEditorConfig.editorconfig
+/Users/murtaza/Desktop/BusinessSuite_desktop/BusinessSuite.Tests/obj/Debug/net8.0/BusinessSuite.Tests.AssemblyInfoInputs.cache
+/Users/murtaza/Desktop/BusinessSuite_desktop/BusinessSuite.Tests/obj/Debug/net8.0/BusinessSuite.Tests.AssemblyInfo.cs
+/Users/murtaza/Desktop/BusinessSuite_desktop/BusinessSuite.Tests/obj/Debug/net8.0/BusinessSuite.Tests.csproj.CoreCompileInputs.cache
+/Users/murtaza/Desktop/BusinessSuite_desktop/BusinessSuite.Tests/obj/Debug/net8.0/BusinessSuite.Tests.sourcelink.json

@@ -1,0 +1,70 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:BusinessSuite.UI.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="1000" d:DesignHeight="600"
+             x:Class="BusinessSuite.UI.Views.DebitNotesView"
+             x:DataType="vm:DebitNotesViewModel">
+
+    <Grid RowDefinitions="Auto, *, Auto">
+        <Border Grid.Row="0" Background="White" BorderBrush="#E5E7EB" BorderThickness="0,0,0,1" Padding="20,15">
+            <Grid RowDefinitions="Auto, Auto" ColumnDefinitions="*, Auto">
+                <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="15">
+                    <TextBox Width="300"
+                             Watermark="Search by debit note or invoice number..."
+                             Text="{Binding SearchQuery, UpdateSourceTrigger=PropertyChanged}"/>
+                    <Button Classes="Primary" Content="New Debit Note" Command="{Binding AddDebitNoteCommand}"/>
+                    <Button Content="Edit" Command="{Binding EditDebitNoteCommand}" IsEnabled="{Binding !!SelectedDebitNote}"/>
+                    <Button Content="Delete Draft" Command="{Binding DeleteDebitNoteCommand}" IsEnabled="{Binding !!SelectedDebitNote}" Background="#EF4444" Foreground="White"/>
+                </StackPanel>
+                <StackPanel Grid.Row="0" Grid.Column="1" Orientation="Horizontal" Spacing="10">
+                    <Button Content="Refresh" Command="{Binding RefreshCommand}"/>
+                </StackPanel>
+                <TextBlock Grid.Row="1" Grid.ColumnSpan="2" Text="{Binding StatusMessage}" Foreground="{Binding StatusMessageColor}" Margin="0,10,0,0"/>
+            </Grid>
+        </Border>
+
+        <Grid Grid.Row="1" Margin="20">
+            <DataGrid ItemsSource="{Binding DebitNotes}"
+                      SelectedItem="{Binding SelectedDebitNote}"
+                      IsReadOnly="True"
+                      CanUserReorderColumns="True"
+                      CanUserResizeColumns="True"
+                      BorderThickness="1"
+                      BorderBrush="#E5E7EB"
+                      GridLinesVisibility="All">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Debit Note #" Binding="{Binding DebitNoteNumber}" Width="140"/>
+                    <DataGridTextColumn Header="Invoice #" Binding="{Binding OriginalInvoice.InvoiceNumber}" Width="120"/>
+                    <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="100"/>
+                    <DataGridTextColumn Header="Date" Binding="{Binding DebitNoteDate, StringFormat=\{0:dd/MM/yyyy\}}" Width="110"/>
+                    <DataGridTextColumn Header="Reason" Binding="{Binding Reason}" Width="*"/>
+                    <DataGridTextColumn Header="Grand Total" Binding="{Binding GrandTotal, StringFormat=₹ \{0:N2\}}" Width="130"/>
+                </DataGrid.Columns>
+            </DataGrid>
+            <ProgressBar IsVisible="{Binding IsBusy}" IsIndeterminate="True" VerticalAlignment="Top"/>
+        </Grid>
+
+        <Border Grid.Row="2" Background="White" BorderBrush="#E5E7EB" BorderThickness="0,1,0,0" Padding="20,10">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="20">
+                <Button Content="Previous" Command="{Binding PreviousPageCommand}" IsEnabled="{Binding HasPreviousPage}"/>
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Spacing="5">
+                    <TextBlock Text="Page" VerticalAlignment="Center" Foreground="#6B7280"/>
+                    <TextBlock Text="{Binding CurrentPage}" FontWeight="Bold" VerticalAlignment="Center"/>
+                    <TextBlock Text="of" VerticalAlignment="Center" Foreground="#6B7280"/>
+                    <TextBlock Text="{Binding TotalPages}" FontWeight="Bold" VerticalAlignment="Center"/>
+                </StackPanel>
+                <Button Content="Next" Command="{Binding NextPageCommand}" IsEnabled="{Binding HasNextPage}"/>
+            </StackPanel>
+        </Border>
+    </Grid>
+
+    <UserControl.Styles>
+        <Style Selector="Button.Primary">
+            <Setter Property="Background" Value="#2563EB"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+        </Style>
+    </UserControl.Styles>
+</UserControl>

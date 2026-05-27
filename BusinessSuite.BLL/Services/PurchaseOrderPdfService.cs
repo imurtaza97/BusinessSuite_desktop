@@ -95,7 +95,12 @@ public class PurchaseOrderPdfService
                             c.Item().PaddingLeft(4).Text(po.Vendor?.VendorName ?? "").SemiBold();
                             c.Item().PaddingLeft(4).MaxWidth(220).Text(po.Vendor?.Address ?? "");
                             c.Item().PaddingLeft(4).Text($"{po.Vendor?.State}, India.");
-                            c.Item().PaddingLeft(4).Text(x => { x.Span("GSTIN: ").SemiBold(); x.Span(po.Vendor?.GSTIN ?? "Unregistered"); });
+                            
+                            // Only show GSTIN if vendor is registered for GST
+                            if (po.Vendor?.GstTreatment != "Unregistered" && !string.IsNullOrWhiteSpace(po.Vendor?.GSTIN))
+                            {
+                                c.Item().PaddingLeft(4).Text(x => { x.Span("GSTIN: ").SemiBold(); x.Span(po.Vendor?.GSTIN ?? ""); });
+                            }
                         });
 
                         row.RelativeItem().BorderLeft(0.5f).Padding(5).Column(c =>

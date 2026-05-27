@@ -1,0 +1,285 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:BusinessSuite.UI.ViewModels"
+             xmlns:conv="clr-namespace:BusinessSuite.UI.Converters"
+             mc:Ignorable="d" d:DesignWidth="1100" d:DesignHeight="700"
+             x:Class="BusinessSuite.UI.Views.CreditNoteFormView"
+             x:DataType="vm:CreditNoteFormViewModel"
+             Name="Root">
+
+    <UserControl.Resources>
+        <conv:DecimalToBoolConverter x:Key="DecimalToBoolConverter"/>
+        <conv:NullToZeroConverter x:Key="NullToZeroConverter"/>
+    </UserControl.Resources>
+
+    <Grid>
+    <ScrollViewer>
+        <Grid RowDefinitions="Auto, *, Auto" Margin="30">
+            <!-- Header Info -->
+            <StackPanel Grid.Row="0" Spacing="20" Margin="0,0,0,20">
+                <Grid ColumnDefinitions="*, Auto">
+                    <TextBlock Text="Credit Note (Amendment)" FontSize="24" FontWeight="Bold" Foreground="#111827"/>
+                    <Border Grid.Column="1" Background="#FEE2E2" BorderBrush="#EF4444" BorderThickness="1" CornerRadius="6" Padding="12,6" IsVisible="{Binding !CanEdit}">
+                        <TextBlock Text="🔒 FINALIZED - Read-only mode" Foreground="#DC2626" FontWeight="Bold" FontSize="12"/>
+                    </Border>
+                </Grid>
+                
+                <Border Background="White" BorderBrush="#E5E7EB" BorderThickness="1" CornerRadius="8" Padding="20">
+                    <Grid ColumnDefinitions="*, *, *, *">
+                        <StackPanel Grid.Column="0" Spacing="5" Margin="0,0,10,0">
+                            <TextBlock Text="Original Invoice" FontWeight="Medium" Foreground="#374151"/>
+                            <ComboBox ItemsSource="{Binding Invoices}" 
+                                      SelectedValue="{Binding SelectedInvoiceId}"
+                                      SelectedValueBinding="{Binding InvoiceID}"
+                                      HorizontalAlignment="Stretch"
+                                      IsEnabled="{Binding CanEdit}">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal" Spacing="10">
+                                            <TextBlock Text="{Binding InvoiceNumber}"/>
+                                            <TextBlock Text="{Binding Customer.CustomerName}" Foreground="Gray" FontSize="12"/>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="1" Spacing="5" Margin="10,0,10,0">
+                            <TextBlock Text="Credit Note Number" FontWeight="Medium" Foreground="#374151"/>
+                            <TextBox Text="{Binding CreditNoteNumber}" IsReadOnly="True" Background="#F9FAFB"/>
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="2" Spacing="5" Margin="10,0,10,0">
+                            <TextBlock Text="Credit Note Date" FontWeight="Medium" Foreground="#374151"/>
+                            <CalendarDatePicker SelectedDate="{Binding CreditNoteDate}" 
+                                                HorizontalAlignment="Stretch" 
+                                                SelectedDateFormat="Short"
+                                                IsEnabled="{Binding CanEdit}"/>
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="3" Spacing="5">
+                            <TextBlock Text="Status" FontWeight="Medium" Foreground="#374151"/>
+                            <TextBox Text="{Binding Status}" IsReadOnly="True" Background="#F9FAFB"/>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <Border Background="#F0F9FF" BorderBrush="#BFDBFE" BorderThickness="1" CornerRadius="8" Padding="16"
+                        Margin="0,10,0,0" IsVisible="{Binding HasSelectedInvoiceDetails}">
+                    <StackPanel Spacing="10">
+                        <TextBlock Text="Original invoice details (auto-loaded)" FontWeight="SemiBold" Foreground="#1E40AF"/>
+                        <Grid ColumnDefinitions="*,*,*,*">
+                            <StackPanel Grid.Column="0" Spacing="2" Margin="0,0,8,0">
+                                <TextBlock Text="Invoice #" FontSize="11" Foreground="#6B7280"/>
+                                <TextBlock Text="{Binding SourceInvoiceNumber}" FontWeight="Medium"/>
+                                <TextBlock Text="{Binding SourceInvoiceDate}" FontSize="12" Foreground="#6B7280"/>
+                            </StackPanel>
+                            <StackPanel Grid.Column="1" Spacing="2" Margin="8,0">
+                                <TextBlock Text="Customer" FontSize="11" Foreground="#6B7280"/>
+                                <TextBlock Text="{Binding SourceCustomerName}" FontWeight="Medium" TextWrapping="Wrap"/>
+                                <TextBlock Text="{Binding SourceCustomerGstin, StringFormat='GSTIN: {0}'}" FontSize="12" Foreground="#6B7280"/>
+                            </StackPanel>
+                            <StackPanel Grid.Column="2" Spacing="2" Margin="8,0">
+                                <TextBlock Text="Place of supply" FontSize="11" Foreground="#6B7280"/>
+                                <TextBlock Text="{Binding SourcePlaceOfSupply}" FontWeight="Medium"/>
+                                <TextBlock Text="{Binding SourcePaymentStatus, StringFormat='Payment: {0}'}" FontSize="12" Foreground="#6B7280"/>
+                            </StackPanel>
+                            <StackPanel Grid.Column="3" Spacing="2" Margin="8,0,0,0">
+                                <TextBlock Text="Invoice total" FontSize="11" Foreground="#6B7280"/>
+                                <TextBlock Text="{Binding SourceInvoiceTotal}" FontWeight="Bold" FontSize="16" Foreground="#1E40AF"/>
+                                <TextBlock Text="{Binding SourceLineItemCount, StringFormat='{}{0} line items imported'}" FontSize="12" Foreground="#059669"/>
+                            </StackPanel>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <Border Background="White" BorderBrush="#E5E7EB" BorderThickness="1" CornerRadius="8" Padding="20" Margin="0,10,0,0">
+                    <StackPanel Spacing="5">
+                        <TextBlock Text="Reason for Credit" FontWeight="Medium" Foreground="#374151"/>
+                        <TextBox Text="{Binding Reason, UpdateSourceTrigger=PropertyChanged}" 
+                                 AcceptsReturn="True" 
+                                 Height="50" 
+                                 Watermark="e.g., Return, Discount, Damaged goods..."
+                                 IsEnabled="{Binding CanEdit}"/>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+
+            <!-- Line Items -->
+            <Border Grid.Row="1" Background="White" BorderBrush="#E5E7EB" BorderThickness="1" CornerRadius="8" MinHeight="300" Margin="0,10,0,0">
+                <DockPanel>
+                    <Button DockPanel.Dock="Bottom" 
+                            Content="+ Add Item" 
+                            Command="{Binding AddItemCommand}" 
+                            Margin="20"
+                            IsEnabled="{Binding CanEdit}"
+                            Classes="Secondary"/>
+                    
+                    <DataGrid ItemsSource="{Binding Items}" 
+                              CanUserSortColumns="False" 
+                              CanUserResizeColumns="True"
+                              GridLinesVisibility="All"
+                              BorderThickness="0,0,0,1">
+                        <DataGrid.Columns>
+                            <DataGridTemplateColumn Header="Product" Width="*">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Grid ColumnDefinitions="*, Auto">
+                                            <ComboBox ItemsSource="{Binding FilteredProducts}"
+                                                      SelectedItem="{Binding SelectedProduct, Mode=TwoWay}"
+                                                      Text="{Binding SearchQuery, UpdateSourceTrigger=PropertyChanged}"
+                                                      IsDropDownOpen="{Binding IsDropDownOpen}"
+                                                      MaxDropDownHeight="300"
+                                                      HorizontalAlignment="Stretch"
+                                                      BorderThickness="0"
+                                                      IsTextSearchEnabled="False"
+                                                      IsEditable="True"
+                                                      IsEnabled="{Binding ((vm:CreditNoteFormViewModel)DataContext).CanEdit, RelativeSource={RelativeSource AncestorType=UserControl}}">
+                                                <ComboBox.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <StackPanel Orientation="Horizontal" Spacing="10">
+                                                            <TextBlock Text="{Binding ProductName}"/>
+                                                            <TextBlock Text="{Binding SKU}" Foreground="Gray" FontSize="12"/>
+                                                        </StackPanel>
+                                                    </DataTemplate>
+                                                </ComboBox.ItemTemplate>
+                                            </ComboBox>
+                                            <Button Grid.Column="1" 
+                                                    Content="+" 
+                                                    Command="{Binding ((vm:CreditNoteFormViewModel)DataContext).AddProductCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                    Padding="5,0"
+                                                    Margin="2,0"
+                                                    Background="Transparent"
+                                                    IsEnabled="{Binding ((vm:CreditNoteFormViewModel)DataContext).CanEdit, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                                        </Grid>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+
+                            <DataGridTextColumn Header="HSN" Binding="{Binding HsnCode}" Width="80"/>
+                            <DataGridTemplateColumn Header="UOM" Width="80">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <ComboBox ItemsSource="{Binding ((vm:CreditNoteFormViewModel)DataContext).UnitNames, RelativeSource={RelativeSource AncestorType=UserControl}}" 
+                                                  SelectedItem="{Binding Unit}"
+                                                  HorizontalAlignment="Stretch"
+                                                  BorderThickness="0"
+                                                  IsEnabled="{Binding ((vm:CreditNoteFormViewModel)DataContext).CanEdit, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+
+                            <DataGridTemplateColumn Header="Quantity" Width="80">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <NumericUpDown Value="{Binding Quantity, Converter={StaticResource NullToZeroConverter}}" Minimum="1" BorderThickness="0" ShowButtonSpinner="False" IsEnabled="{Binding ((vm:CreditNoteFormViewModel)DataContext).CanEdit, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+
+                            <DataGridTemplateColumn Header="Unit Price" Width="120">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <NumericUpDown Value="{Binding UnitPrice, Converter={StaticResource NullToZeroConverter}}" Minimum="0" BorderThickness="0" ShowButtonSpinner="False" IsEnabled="{Binding ((vm:CreditNoteFormViewModel)DataContext).CanEdit, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+
+                            <DataGridTemplateColumn Header="Tax %" Width="100">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <ComboBox ItemsSource="{Binding TaxRates}" 
+                                                  SelectedItem="{Binding TaxRate}" 
+                                                  HorizontalAlignment="Stretch"
+                                                  BorderThickness="0"
+                                                  IsEnabled="{Binding ((vm:CreditNoteFormViewModel)DataContext).CanEdit, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+
+                            <DataGridTextColumn Header="Tax Amt" Binding="{Binding TaxAmount, StringFormat=₹ \{0:N2\}}" IsReadOnly="True" Width="100"/>
+                            <DataGridTextColumn Header="Total" Binding="{Binding TotalAmount, StringFormat=₹ \{0:N2\}}" IsReadOnly="True" Width="120"/>
+
+                            <DataGridTemplateColumn Width="50">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Button Command="{Binding ((vm:CreditNoteFormViewModel)DataContext).RemoveItemCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" 
+                                                CommandParameter="{Binding}"
+                                                Content="✕" 
+                                                Foreground="#EF4444" 
+                                                Background="Transparent"
+                                                IsEnabled="{Binding ((vm:CreditNoteFormViewModel)DataContext).CanEdit, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                HorizontalAlignment="Center"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </DockPanel>
+            </Border>
+
+            <!-- Bottom Section: Notes & Totals -->
+            <Grid Grid.Row="2" ColumnDefinitions="*, Auto" Margin="0,20,0,0">
+                <!-- Left: Notes -->
+                <StackPanel Grid.Column="0" Spacing="15" Margin="0,0,30,0">
+                    <StackPanel Spacing="5">
+                        <TextBlock Text="Notes" FontWeight="Medium"/>
+                        <TextBox Text="{Binding Notes, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" Height="60" Watermark="Add internal notes..." IsEnabled="{Binding CanEdit}"/>
+                    </StackPanel>
+
+                    <TextBlock Text="{Binding ErrorMessage}" Foreground="#EF4444" IsVisible="{Binding !!ErrorMessage}"/>
+                </StackPanel>
+ 
+                <!-- Right: Totals -->
+                <StackPanel Grid.Column="1" Spacing="10" Width="300">
+                    <Grid ColumnDefinitions="*, Auto" Margin="0,5">
+                        <TextBlock Text="Taxable Amount:"/>
+                        <TextBlock Grid.Column="1" Text="{Binding Subtotal, StringFormat=₹ \{0:N2\}}" FontWeight="SemiBold"/>
+                    </Grid>
+
+                    <Separator Margin="0,5"/>
+                    
+                    <StackPanel>
+                        <StackPanel IsVisible="{Binding TotalCGST, Converter={StaticResource DecimalToBoolConverter}}">
+                            <TextBlock Text="Tax Type: CGST + SGST" FontSize="11" Foreground="#3B82F6" Margin="0,2"/>
+                            <Grid ColumnDefinitions="*, Auto">
+                                <TextBlock Text="CGST:" FontWeight="Medium"/>
+                                <TextBlock Grid.Column="1" Text="{Binding TotalCGST, StringFormat=₹ \{0:N2\}}" FontWeight="SemiBold"/>
+                            </Grid>
+                            <Grid ColumnDefinitions="*, Auto" Margin="0,2,0,5">
+                                <TextBlock Text="SGST:" FontWeight="Medium"/>
+                                <TextBlock Grid.Column="1" Text="{Binding TotalSGST, StringFormat=₹ \{0:N2\}}" FontWeight="SemiBold"/>
+                            </Grid>
+                        </StackPanel>
+                        
+                        <StackPanel IsVisible="{Binding TotalIGST, Converter={StaticResource DecimalToBoolConverter}}">
+                            <TextBlock Text="Tax Type: IGST" FontSize="11" Foreground="#3B82F6" Margin="0,2"/>
+                            <Grid ColumnDefinitions="*, Auto">
+                                <TextBlock Text="IGST:" FontWeight="Medium"/>
+                                <TextBlock Grid.Column="1" Text="{Binding TotalIGST, StringFormat=₹ \{0:N2\}}" FontWeight="SemiBold"/>
+                            </Grid>
+                        </StackPanel>
+                    </StackPanel>
+
+                    <Separator Margin="0,10"/>
+
+                    <Grid ColumnDefinitions="*, Auto">
+                        <TextBlock Text="Grand Total:" FontWeight="Bold" FontSize="14"/>
+                        <TextBlock Grid.Column="1" Text="{Binding GrandTotal, StringFormat=₹ \{0:N2\}}" FontWeight="Bold" FontSize="14" Foreground="#EF4444"/>
+                    </Grid>
+
+                    <StackPanel Orientation="Horizontal" Spacing="10" Margin="0,20,0,0">
+                        <Button Content="Save" Command="{Binding SaveCommand}" Classes="Primary" HorizontalAlignment="Stretch" IsEnabled="{Binding CanEdit}"/>
+                        <Button Content="Finalize" Command="{Binding FinalizeCommand}" Classes="Accent" HorizontalAlignment="Stretch" IsEnabled="{Binding CanEdit}"/>
+                        <Button Content="Void" Command="{Binding VoidNoteCommand}" Foreground="#B45309" HorizontalAlignment="Stretch"/>
+                        <Button Content="Close" Command="{Binding CloseCommand}" HorizontalAlignment="Stretch"/>
+                    </StackPanel>
+                </StackPanel>
+            </Grid>
+        </Grid>
+    </ScrollViewer>
+    <ProgressBar IsIndeterminate="True" IsVisible="{Binding IsLoading}" VerticalAlignment="Top" Height="3"/>
+    </Grid>
+</UserControl>

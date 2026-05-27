@@ -1,0 +1,53 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:BusinessSuite.UI.ViewModels"
+             x:Class="BusinessSuite.UI.Views.ProductionOrdersView"
+             x:DataType="vm:ProductionOrdersViewModel">
+
+    <Grid RowDefinitions="Auto,*,Auto">
+        <Border Grid.Row="0" Background="White" BorderBrush="#E5E7EB" BorderThickness="0,0,0,1" Padding="20,15">
+            <StackPanel Spacing="10">
+                <StackPanel Orientation="Horizontal" Spacing="12">
+                    <TextBox Width="280" Watermark="Search production orders..." Text="{Binding SearchQuery, UpdateSourceTrigger=PropertyChanged}"/>
+                    <Button Classes="Primary" Content="New Production Order" Command="{Binding AddOrderCommand}"/>
+                    <Button Content="Edit" Command="{Binding EditOrderCommand}" IsEnabled="{Binding !!SelectedOrder}"/>
+                    <Button Content="Delete" Command="{Binding DeleteOrderCommand}" IsEnabled="{Binding !!SelectedOrder}" Background="#EF4444" Foreground="White"/>
+                    <Button Content="Refresh" Command="{Binding RefreshCommand}"/>
+                </StackPanel>
+                <TextBlock Text="{Binding StatusMessage}" Foreground="{Binding StatusMessageColor}"/>
+            </StackPanel>
+        </Border>
+
+        <Grid Grid.Row="1" Margin="20">
+            <DataGrid ItemsSource="{Binding ProductionOrders}" SelectedItem="{Binding SelectedOrder}" IsReadOnly="True"
+                      BorderBrush="#E5E7EB" BorderThickness="1" GridLinesVisibility="All">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Order #" Binding="{Binding ProductionOrderNumber}" Width="110"/>
+                    <DataGridTextColumn Header="Product" Binding="{Binding Product.ProductName}" Width="*"/>
+                    <DataGridTextColumn Header="Qty" Binding="{Binding QuantityToMake, StringFormat=N2}" Width="80"/>
+                    <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="110"/>
+                    <DataGridTextColumn Header="Start" Binding="{Binding StartDate, StringFormat=\{0:dd/MM/yyyy\}}" Width="100"/>
+                    <DataGridTextColumn Header="Due" Binding="{Binding ExpectedEndDate, StringFormat=\{0:dd/MM/yyyy\}}" Width="100"/>
+                    <DataGridTextColumn Header="Est. Cost" Binding="{Binding EstimatedCost, StringFormat=₹ \{0:N2\}}" Width="100"/>
+                    <DataGridTextColumn Header="Actual Cost" Binding="{Binding ActualCost, StringFormat=₹ \{0:N2\}}" Width="100"/>
+                </DataGrid.Columns>
+            </DataGrid>
+            <ProgressBar IsIndeterminate="True" IsVisible="{Binding IsBusy}" VerticalAlignment="Top"/>
+        </Grid>
+
+        <Border Grid.Row="2" Background="White" BorderBrush="#E5E7EB" BorderThickness="0,1,0,0" Padding="20,10">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="20">
+                <Button Content="Previous" Command="{Binding PreviousPageCommand}" IsEnabled="{Binding HasPreviousPage}"/>
+                <TextBlock VerticalAlignment="Center" Text="{Binding CurrentPage, StringFormat='Page {0}'}"/>
+                <Button Content="Next" Command="{Binding NextPageCommand}" IsEnabled="{Binding HasNextPage}"/>
+            </StackPanel>
+        </Border>
+    </Grid>
+
+    <UserControl.Styles>
+        <Style Selector="Button.Primary">
+            <Setter Property="Background" Value="#2563EB"/>
+            <Setter Property="Foreground" Value="White"/>
+        </Style>
+    </UserControl.Styles>
+</UserControl>

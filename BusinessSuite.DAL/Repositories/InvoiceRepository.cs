@@ -25,7 +25,7 @@ public class InvoiceRepository
     {
         return await _context.Invoices
             .Include(i => i.Customer)
-            .Where(i => i.BusinessID == businessId)
+            .Where(i => i.BusinessID == businessId && !i.IsDeleted)
             .OrderByDescending(i => i.InvoiceDate)
             .ToListAsync();
     }
@@ -34,7 +34,7 @@ public class InvoiceRepository
     {
         var query = _context.Invoices
             .Include(i => i.Customer)
-            .Where(i => i.BusinessID == businessId);
+            .Where(i => i.BusinessID == businessId && !i.IsDeleted);
 
         if (!string.IsNullOrWhiteSpace(searchTerm))
         {
@@ -53,7 +53,7 @@ public class InvoiceRepository
 
     public async Task<int> GetCountAsync(int businessId, string? searchTerm = null)
     {
-        var query = _context.Invoices.Where(i => i.BusinessID == businessId);
+        var query = _context.Invoices.Where(i => i.BusinessID == businessId && !i.IsDeleted);
 
         if (!string.IsNullOrWhiteSpace(searchTerm))
         {
@@ -73,7 +73,7 @@ public class InvoiceRepository
             .Include(i => i.Customer)
             .Include(i => i.Items)
                 .ThenInclude(ii => ii.Product)
-            .FirstOrDefaultAsync(i => i.InvoiceID == id);
+            .FirstOrDefaultAsync(i => i.InvoiceID == id && !i.IsDeleted);
     }
 
     /* ============================
@@ -255,5 +255,81 @@ public class InvoiceRepository
         }
 
         return $"{prefix}{next.ToString().PadLeft(padLength, '0')}";
+    }
+
+    /* ============================
+       FINALIZE & UNPOST
+    ============================ */
+
+    public async Task<bool> FinalizeInvoiceAsync(int invoiceId, int userId)
+    {
+        await using var transaction = await _context.Database.BeginTransactionAsync();
+        try
+        {
+            var invoice = await _context.Invoices.FindAsync(invoiceId);
+            if (invoice == null)
+                return false;
+
+            if (!invoice.IsDraft)
+                return false; // Already finalized
+
+            invoice.IsDraft = false;
+            invoice.PostedAt = DateTime.Now;
+            invoice.PostedByUserID = userId;
+
+            var result = await _context.SaveChangesAsync() > 0;
+            await transaction.CommitAsync();
+            return result;
+        }
+        catch
+        {
+            await transaction.RollbackAsync();
+            throw;
+        }
+    }
+
+    public async Task<bool> UnpostInvoiceAsync(int invoiceId, string reason, int adminUserId)
+    {
+        await using var transaction = await _context.Database.BeginTransactionAsync();
+        try
+        {
+            var invoice = await _context.Invoices.FindAsync(invoiceId);
+            if (invoice == null)
+                return false;
+
+            if (invoice.IsDraft)
+                return false; // Already in draft
+
+            // Unpost: Revert to draft for editing
+            invoice.IsDraft = true;
+            invoice.PostedAt = null;
+            invoice.PostedByUserID = null;
+
+            // Log the unpost action in AuditLog
+            var auditLog = new AuditLog
+            {
+                BusinessID = invoice.BusinessID,
+                DocumentType = "Invoice",
+                DocumentID = invoiceId,
+                Action = "Unposted",
+                FieldName = "IsDraft",
+                OldValue = "false",
+                NewValue = "true",
+                ChangedByUserID = adminUserId,
+                ChangedAt = DateTime.Now,
+                Reason = reason
+            };
+
+            await _context.AuditLogs.AddAsync(auditLog);
+
+            var result = await _context.SaveChangesAsync() > 0;
+            await transaction.CommitAsync();
+            return result;
+        }
+        catch
+        {
+            await transaction.RollbackAsync();
+            throw;
+        }
     }
 }

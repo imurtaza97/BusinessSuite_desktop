@@ -24,6 +24,13 @@ public class AppDbContext : DbContext
     public DbSet<Stock> Stocks => Set<Stock>();
     public DbSet<FinanceLedger> FinanceLedgers => Set<FinanceLedger>();
     public DbSet<Payment> Payments => Set<Payment>();
+    public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
+    public DbSet<CreditNote> CreditNotes => Set<CreditNote>();
+    public DbSet<CreditNoteItem> CreditNoteItems => Set<CreditNoteItem>();
+    public DbSet<DebitNote> DebitNotes => Set<DebitNote>();
+    public DbSet<DebitNoteItem> DebitNoteItems => Set<DebitNoteItem>();
+    public DbSet<BillOfMaterials> BillOfMaterials => Set<BillOfMaterials>();
+    public DbSet<ProductionOrder> ProductionOrders => Set<ProductionOrder>();
 
     protected override void OnConfiguring(DbContextOptionsBuilder options)
     {

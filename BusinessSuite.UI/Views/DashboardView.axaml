@@ -15,6 +15,13 @@
         <DataTemplate DataType="vm:VendorsViewModel"><Views:VendorsView/></DataTemplate>
         <DataTemplate DataType="vm:InvoicesViewModel"><Views:InvoicesView/></DataTemplate>
         <DataTemplate DataType="vm:InvoiceFormViewModel"><Views:InvoiceFormView/></DataTemplate>
+        <DataTemplate DataType="vm:CreditNotesViewModel"><Views:CreditNotesView/></DataTemplate>
+        <DataTemplate DataType="vm:CreditNoteFormViewModel"><Views:CreditNoteFormView/></DataTemplate>
+        <DataTemplate DataType="vm:DebitNotesViewModel"><Views:DebitNotesView/></DataTemplate>
+        <DataTemplate DataType="vm:DebitNoteFormViewModel"><Views:DebitNoteFormView/></DataTemplate>
+        <DataTemplate DataType="vm:BillOfMaterialsViewModel"><Views:BillOfMaterialsView/></DataTemplate>
+        <DataTemplate DataType="vm:ProductionOrdersViewModel"><Views:ProductionOrdersView/></DataTemplate>
+        <DataTemplate DataType="vm:ProductionOrderFormViewModel"><Views:ProductionOrderFormView/></DataTemplate>
         <DataTemplate DataType="vm:PurchaseOrdersViewModel"><Views:PurchaseOrdersView/></DataTemplate>
         <DataTemplate DataType="vm:PurchaseOrderFormViewModel"><Views:PurchaseOrderFormView/></DataTemplate>
         <DataTemplate DataType="vm:ReportsViewModel"><Views:ReportsView/></DataTemplate>
@@ -51,7 +58,13 @@
                         
                         <TextBlock Text="OPERATIONS" FontSize="10" FontWeight="Bold" Foreground="#9CA3AF" Margin="12,20,0,8"/>
                         <Button Classes="MenuButton" Classes.active="{Binding IsSalesActive}" Command="{Binding NavigateCommand}" CommandParameter="Sales" Content="Sales Invoices"/>
+                        <Button Classes="MenuButton" Classes.active="{Binding IsCreditNotesActive}" Command="{Binding NavigateCommand}" CommandParameter="CreditNotes" Content="Credit Notes"/>
+                        <Button Classes="MenuButton" Classes.active="{Binding IsDebitNotesActive}" Command="{Binding NavigateCommand}" CommandParameter="DebitNotes" Content="Debit Notes"/>
                         <Button Classes="MenuButton" Classes.active="{Binding IsPurchasesActive}" Command="{Binding NavigateCommand}" CommandParameter="Purchases" Content="Purchase Orders"/>
+
+                        <TextBlock Text="MANUFACTURING" FontSize="10" FontWeight="Bold" Foreground="#9CA3AF" Margin="12,20,0,8"/>
+                        <Button Classes="MenuButton" Classes.active="{Binding IsBillOfMaterialsActive}" Command="{Binding NavigateCommand}" CommandParameter="BillOfMaterials" Content="Bill of Materials"/>
+                        <Button Classes="MenuButton" Classes.active="{Binding IsProductionOrdersActive}" Command="{Binding NavigateCommand}" CommandParameter="ProductionOrders" Content="Production Orders"/>
                         
                         <TextBlock Text="RELATIONS" FontSize="10" FontWeight="Bold" Foreground="#9CA3AF" Margin="12,20,0,8"/>
                         <Button Classes="MenuButton" Classes.active="{Binding IsCustomersActive}" Command="{Binding NavigateCommand}" CommandParameter="Customers" Content="Customers"/>
@@ -61,6 +74,8 @@
                         <Button Classes="MenuButton" Classes.active="{Binding IsFinanceLedgerActive}" Command="{Binding NavigateCommand}" CommandParameter="FinanceLedger" Content="Finance Ledger"/>
                         <Button Classes="MenuButton" Classes.active="{Binding IsStockLedgerActive}" Command="{Binding NavigateCommand}" CommandParameter="StockLedger" Content="Stock Ledger"/>
                         
+                        <TextBlock Text="REPORTING" FontSize="10" FontWeight="Bold" Foreground="#9CA3AF" Margin="12,20,0,8"/>
+                        <Button Classes="MenuButton" Classes.active="{Binding IsReportsActive}" Command="{Binding NavigateCommand}" CommandParameter="Reports" Content="GST Reports"/>
 
                         <TextBlock Text="SYSTEM" FontSize="10" FontWeight="Bold" Foreground="#9CA3AF" Margin="12,20,0,8"/>
                         <Button Classes="MenuButton" Classes.active="{Binding IsSettingsActive}" Command="{Binding NavigateCommand}" CommandParameter="Settings" Content="Settings"/>
