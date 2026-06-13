@@ -85,7 +85,7 @@
                         <DataGridTextColumn Header="Customer" Binding="{Binding CustomerName}" Width="150"/>
                         <DataGridTextColumn Header="GSTIN" Binding="{Binding CustomerGstin}" Width="120"/>
                         <DataGridTextColumn Header="State" Binding="{Binding CustomerState}" Width="80"/>
-                        <DataGridTextColumn Header="HSN" Binding="{Binding HsnCode}" Width="80"/>
+                        <DataGridTextColumn Header="HSN / SAC" Binding="{Binding HsnCode}" Width="80"/>
                         <DataGridTextColumn Header="Type" Binding="{Binding ItemType}" Width="80"/>
                         <DataGridTextColumn Header="Qty" Binding="{Binding Quantity}" Width="60"/>
                         <DataGridTextColumn Header="Taxable Amt" Binding="{Binding TaxableAmount, StringFormat='{}₹{0:N2}'}" Width="120"/>
@@ -146,7 +146,7 @@
             <TabItem Header="HSN Summary" FontSize="16" IsVisible="{Binding IsGstRegistered}">
                 <DataGrid ItemsSource="{Binding HsnSummaryItems}" Margin="0,20,0,0" IsReadOnly="True" GridLinesVisibility="All" BorderThickness="1" BorderBrush="#E5E7EB">
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="HSN" Binding="{Binding HsnCode}" Width="100"/>
+                        <DataGridTextColumn Header="HSN / SAC" Binding="{Binding HsnCode}" Width="100"/>
                         <DataGridTextColumn Header="Type" Binding="{Binding ItemType}" Width="80"/>
                         <DataGridTextColumn Header="Tax Rate" Binding="{Binding TaxRate, StringFormat={}{0:N0}%}" Width="100"/>
                         <DataGridTextColumn Header="Qty" Binding="{Binding TotalQuantity}" Width="80"/>

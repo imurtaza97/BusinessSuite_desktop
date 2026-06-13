@@ -5,7 +5,9 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using BusinessSuite.BLL.Services;
 using BusinessSuite.DAL.Data;
 using BusinessSuite.DAL.Entities;
 using BusinessSuite.DAL.Repositories;
@@ -21,6 +23,8 @@ public partial class ProductFormViewModel : ViewModelBase, INotifyDataErrorInfo
     private readonly CategoryRepository _categoryRepository;
     private readonly VendorRepository _vendorRepository;
     private readonly WarehouseRepository _warehouseRepository;
+    private readonly ValidationService _validationService;
+    private bool _duplicateWarningShown = false;
     private readonly Dictionary<string, List<string>> _errors = new();
     private readonly int _businessId;
     
@@ -181,7 +185,11 @@ public partial class ProductFormViewModel : ViewModelBase, INotifyDataErrorInfo
         get => _productName;
         set 
         {
-            if (SetProperty(ref _productName, value))
+            // Normalize multi-line paste to a single line
+            var normalized = value == null 
+                ? string.Empty 
+                : Regex.Replace(value.Replace("\r\n", " ").Replace("\r", " ").Replace("\n", " "), @" {2,}", " ").Trim();
+            if (SetProperty(ref _productName, normalized))
             {
                 if (ValidationVisible) ValidateAll();
             }
@@ -299,8 +307,9 @@ public partial class ProductFormViewModel : ViewModelBase, INotifyDataErrorInfo
         _categoryRepository = new CategoryRepository(db);
         _vendorRepository = new VendorRepository(db);
         _warehouseRepository = new WarehouseRepository(db);
+        _validationService = new ValidationService(new AppDbContextFactory());
 
-        SaveCommand = new RelayCommand(Save);
+        SaveCommand = new AsyncRelayCommand(SaveAsync);
         SaveDraftCommand = new AsyncRelayCommand(SaveDraftAsync);
         CancelCommand = new RelayCommand(Cancel);
         AddCategoryCommand = new RelayCommand(AddCategory);
@@ -443,7 +452,7 @@ public partial class ProductFormViewModel : ViewModelBase, INotifyDataErrorInfo
     }
 
     public IAsyncRelayCommand SaveDraftCommand { get; }
-    public IRelayCommand SaveCommand { get; }
+    public IAsyncRelayCommand SaveCommand { get; }
     public IRelayCommand CancelCommand { get; }
 
     public event Action<Product?>? RequestClose;
@@ -485,7 +494,7 @@ public partial class ProductFormViewModel : ViewModelBase, INotifyDataErrorInfo
         return Task.CompletedTask;
     }
 
-    private void Save()
+    private async Task SaveAsync()
     {
         ValidationVisible = true;
         ValidateAll();
@@ -521,6 +530,18 @@ public partial class ProductFormViewModel : ViewModelBase, INotifyDataErrorInfo
             IsInternalService = IsInternalService
         };
 
+        // Duplicate check (first press shows warning, second press overrides)
+        if (!_duplicateWarningShown)
+        {
+            var (isDuplicate, dupMessage) = await _validationService.CheckProductDuplicateAsync(product);
+            if (isDuplicate)
+            {
+                _duplicateWarningShown = true;
+                GeneralErrorMessage = $"⚠ Duplicate detected: {dupMessage}\nClick 'Save Item' again to save anyway, or cancel to go back.";
+                return; // Stop — do not close window
+            }
+        }
+        _duplicateWarningShown = false;
         RequestClose?.Invoke(product);
     }
 

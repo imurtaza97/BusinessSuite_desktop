@@ -142,7 +142,7 @@ public class PurchaseOrderPdfService
                         {
                             header.Cell().Element(HeaderStyle).Text("Sr.");
                             header.Cell().Element(HeaderStyle).Text("Description of Goods");
-                            if (hasTax) header.Cell().Element(HeaderStyle).AlignCenter().Text("HSN");
+                            if (hasTax) header.Cell().Element(HeaderStyle).AlignCenter().Text("HSN/SAC");
                             header.Cell().Element(HeaderStyle).AlignCenter().Text("Qty");
                             header.Cell().Element(HeaderStyle).AlignCenter().Text("Unit");
                             header.Cell().Element(HeaderStyle).AlignRight().Text("Rate");

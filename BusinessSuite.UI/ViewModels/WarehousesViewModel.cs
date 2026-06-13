@@ -34,6 +34,7 @@ public partial class WarehousesViewModel : ViewModelBase
 
     [ObservableProperty] private ObservableCollection<Stock> _warehouseStock = new();
     [ObservableProperty] private bool _isBusy;
+    [ObservableProperty] private decimal _totalStockValue;
     
     [ObservableProperty] private int _currentPage = 1;
     [ObservableProperty] private int _pageSize = 15; // User specifically asked to limit or 15
@@ -133,11 +134,15 @@ public partial class WarehousesViewModel : ViewModelBase
         using var db = await _dbFactory.CreateDbContextAsync();
         var stock = await db.Stocks
             .Include(s => s.Product)
-            .Where(s => s.WarehouseID == warehouseId)
+            .Where(s => s.WarehouseID == warehouseId && (s.Product == null || !s.Product.IsService))
             .ToListAsync();
         
         await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() => {
             WarehouseStock = new ObservableCollection<Stock>(stock);
+            // Compute total value: Quantity × SalePrice
+            TotalStockValue = stock
+                .Where(s => s.Product != null)
+                .Sum(s => s.Quantity * (s.Product!.SalePrice));
         });
     }
 

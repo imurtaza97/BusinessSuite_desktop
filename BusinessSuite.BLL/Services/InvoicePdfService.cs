@@ -150,7 +150,7 @@ public class InvoicePdfService
                         {
                             header.Cell().Element(HeaderStyle).Text("Sr.");
                             header.Cell().Element(HeaderStyle).Text("Description of Goods");
-                            header.Cell().Element(HeaderStyle).AlignCenter().Text("HSN");
+                            header.Cell().Element(HeaderStyle).AlignCenter().Text("HSN/SAC");
                             header.Cell().Element(HeaderStyle).AlignCenter().Text("Qty");
                             header.Cell().Element(HeaderStyle).AlignCenter().Text("Unit");
                             header.Cell().Element(HeaderStyle).AlignRight().Text("Rate");

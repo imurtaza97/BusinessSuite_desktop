@@ -117,11 +117,20 @@
                     </Grid>
                 </Border>
 
-                <!-- Discount Mode Toggle -->
-                <StackPanel Orientation="Horizontal" Spacing="20" VerticalAlignment="Center" Margin="0,10">
-                    <TextBlock Text="Discount Mode:" VerticalAlignment="Center" FontWeight="Medium"/>
-                    <ToggleSwitch OnContent="Item-level" OffContent="Overall" IsChecked="{Binding IsItemLevelDiscount}"/>
-                </StackPanel>
+                <!-- Discount Mode -->
+                <Border Background="White" BorderBrush="#E5E7EB" BorderThickness="1" CornerRadius="8" Padding="15,10" Margin="0,10,0,0">
+                    <StackPanel Orientation="Horizontal" Spacing="20" VerticalAlignment="Center">
+                        <TextBlock Text="Discount Mode:" VerticalAlignment="Center" FontWeight="Medium" Foreground="#374151"/>
+                        <ToggleSwitch OnContent="Item-level" OffContent="Overall" IsChecked="{Binding IsItemLevelDiscount}" IsEnabled="{Binding CanEditCoreFields}"/>
+                        <!-- Overall discount sub-options (hidden when item-level) -->
+                        <StackPanel Orientation="Horizontal" Spacing="12" VerticalAlignment="Center"
+                                    IsVisible="{Binding !IsItemLevelDiscount}">
+                            <TextBlock Text="Type:" VerticalAlignment="Center" Foreground="#6B7280" FontSize="13"/>
+                            <RadioButton Content="Percentage (%)" IsChecked="{Binding IsDiscountPercentage}" GroupName="DiscountType" VerticalContentAlignment="Center"/>
+                            <RadioButton Content="Fixed Amount (₹)" IsChecked="{Binding IsDiscountAmountMode}" GroupName="DiscountType" VerticalContentAlignment="Center"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
             </StackPanel>
 
             <!-- Line Items -->
@@ -175,7 +184,7 @@
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
 
-                            <DataGridTextColumn Header="HSN" Binding="{Binding HsnCode}" Width="80" IsVisible="{Binding ((vm:InvoiceFormViewModel)DataContext).IsGstRegistered, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                            <DataGridTextColumn Header="HSN / SAC" Binding="{Binding HsnCode}" Width="80" IsVisible="{Binding ((vm:InvoiceFormViewModel)DataContext).IsGstRegistered, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
                             <DataGridTemplateColumn Header="UOM" Width="80">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
@@ -204,7 +213,8 @@
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
 
-                            <DataGridTemplateColumn Header="Discount" Width="100">
+                            <DataGridTemplateColumn Header="Discount (₹)" Width="100"
+                                                    IsVisible="{Binding ((vm:InvoiceFormViewModel)DataContext).IsItemLevelDiscount, RelativeSource={RelativeSource AncestorType=UserControl}}">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
                                         <NumericUpDown Value="{Binding Discount, Converter={StaticResource NullToZeroConverter}}" Minimum="0" BorderThickness="0" ShowButtonSpinner="False" IsEnabled="{Binding ((vm:InvoiceFormViewModel)DataContext).CanEditItems, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
@@ -311,9 +321,32 @@
                     </Grid>
                     <Separator Margin="0,5" IsVisible="{Binding IsRegularScheme}"/>
 
-                    <Grid ColumnDefinitions="*, Auto" Margin="0,5">
-                        <TextBlock Text="Discount:"/>
-                        <NumericUpDown Grid.Column="1" Value="{Binding Discount, Converter={StaticResource NullToZeroConverter}}" Width="120" ShowButtonSpinner="False" IsEnabled="{Binding !IsItemLevelDiscount}"/>
+                    <!-- Overall Discount (hidden when item-level) -->
+                    <Grid ColumnDefinitions="*, Auto" Margin="0,5" IsVisible="{Binding !IsItemLevelDiscount}">
+                        <TextBlock Text="{Binding IsDiscountPercentage, StringFormat={}{0}}"
+                                   IsVisible="False"/>
+                        <StackPanel Orientation="Horizontal" Spacing="5">
+                            <TextBlock Text="Discount" VerticalAlignment="Center"/>
+                            <TextBlock Text="(%):" VerticalAlignment="Center" IsVisible="{Binding IsDiscountPercentage}"/>
+                            <TextBlock Text="(₹):" VerticalAlignment="Center" IsVisible="{Binding !IsDiscountPercentage}"/>
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="5">
+                            <NumericUpDown Value="{Binding DiscountPercentage, Converter={StaticResource NullToZeroConverter}}" 
+                                           Width="100" ShowButtonSpinner="False"
+                                           IsVisible="{Binding IsDiscountPercentage}"
+                                           IsEnabled="{Binding CanEditCoreFields}"
+                                           Minimum="0" Maximum="100"/>
+                            <NumericUpDown Value="{Binding Discount, Converter={StaticResource NullToZeroConverter}}" 
+                                           Width="100" ShowButtonSpinner="False"
+                                           IsVisible="{Binding !IsDiscountPercentage}"
+                                           IsEnabled="{Binding CanEditCoreFields}"
+                                           Minimum="0"/>
+                        </StackPanel>
+                    </Grid>
+                    <!-- Item-level discount total (read-only summary) -->
+                    <Grid ColumnDefinitions="*, Auto" Margin="0,5" IsVisible="{Binding IsItemLevelDiscount}">
+                        <TextBlock Text="Item Discounts (total):"/>
+                        <TextBlock Grid.Column="1" Text="{Binding Discount, StringFormat=₹ \{0:N2\}}" FontWeight="SemiBold" Foreground="#EF4444"/>
                     </Grid>
                     
                     <Grid ColumnDefinitions="*, Auto" Margin="0,5">

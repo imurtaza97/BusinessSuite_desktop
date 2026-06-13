@@ -23,4 +23,8 @@ public class Stock
 
     [Required]
     public decimal Quantity { get; set; } = 0;
+
+    /// <summary>Computed: Quantity × SalePrice (not stored in DB)</summary>
+    [NotMapped]
+    public decimal TotalValue => Quantity * (Product?.SalePrice ?? 0);
 }

@@ -3,7 +3,10 @@ using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Threading.Tasks;
+using BusinessSuite.BLL.Services;
 using BusinessSuite.BLL.StaticData;
+using BusinessSuite.DAL.Data;
 using BusinessSuite.DAL.Entities;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -216,11 +219,14 @@ public partial class CustomerFormViewModel : ViewModelBase, INotifyDataErrorInfo
     [ObservableProperty] private string? _accountName;
     [ObservableProperty] private string? _accountNumber;
     [ObservableProperty] private string? _ifsc;
+    private readonly ValidationService _validationService;
+    private bool _duplicateWarningShown = false;
 
     public CustomerFormViewModel(int businessId)
     {
         _businessId = businessId;
-        SaveCommand = new RelayCommand(Save);
+        _validationService = new ValidationService(new AppDbContextFactory());
+        SaveCommand = new AsyncRelayCommand(SaveAsync);
         CancelCommand = new RelayCommand(Cancel);
     }
 
@@ -242,12 +248,12 @@ public partial class CustomerFormViewModel : ViewModelBase, INotifyDataErrorInfo
         Ifsc = customer.IFSC;
     }
 
-    public IRelayCommand SaveCommand { get; }
+    public IAsyncRelayCommand SaveCommand { get; }
     public IRelayCommand CancelCommand { get; }
 
     public event Action<Customer?>? RequestClose;
 
-    private void Save()
+    private async Task SaveAsync()
     {
         ValidationVisible = true;
         ValidateAll();
@@ -282,6 +288,18 @@ public partial class CustomerFormViewModel : ViewModelBase, INotifyDataErrorInfo
             IFSC = Ifsc
         };
 
+        // Duplicate check (first press shows warning, second press overrides)
+        if (!_duplicateWarningShown)
+        {
+            var (isDuplicate, dupMessage) = await _validationService.CheckCustomerDuplicateAsync(customer);
+            if (isDuplicate)
+            {
+                _duplicateWarningShown = true;
+                GeneralErrorMessage = $"⚠ Duplicate detected: {dupMessage}\nClick 'Save Customer' again to save anyway, or cancel to go back.";
+                return; // Stop — do not close window
+            }
+        }
+        _duplicateWarningShown = false;
         RequestClose?.Invoke(customer);
     }
 

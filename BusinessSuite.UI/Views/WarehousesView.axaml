@@ -59,7 +59,7 @@
 
             <!-- Right: Stock Details -->
             <Border Grid.Column="1" Margin="20,0,0,0" Background="White" CornerRadius="8" BorderBrush="#E5E7EB" BorderThickness="1">
-                <Grid RowDefinitions="Auto, *">
+                <Grid RowDefinitions="Auto, *, Auto">
                     <Border Grid.Row="0" Padding="15" Background="#F9FAFB" CornerRadius="8,8,0,0" BorderBrush="#E5E7EB" BorderThickness="0,0,0,1">
                         <StackPanel>
                             <TextBlock Text="Inventory in Warehouse" FontSize="12" Foreground="#6B7280"/>
@@ -71,6 +71,7 @@
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="Product" Binding="{Binding Product.ProductName}" Width="*"/>
                             <DataGridTextColumn Header="Stock" Binding="{Binding Quantity}" Width="80"/>
+                            <DataGridTextColumn Header="Value (₹)" Binding="{Binding TotalValue, StringFormat='{}{0:N2}'}" Width="100"/>
                             <DataGridTemplateColumn Header="Actions" Width="100">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
@@ -87,6 +88,15 @@
 
                     <TextBlock Grid.Row="1" Text="No stock in this warehouse" IsVisible="{Binding !WarehouseStock.Count}" 
                                HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#9CA3AF"/>
+
+                    <!-- Total Items Value Banner (row 2, always at bottom) -->
+                    <Border Grid.Row="2" Padding="15,10" Background="#EFF6FF" CornerRadius="0,0,8,8" BorderBrush="#BFDBFE" BorderThickness="0,1,0,0"
+                            IsVisible="{Binding SelectedWarehouse, Converter={x:Static ObjectConverters.IsNotNull}}">
+                        <Grid ColumnDefinitions="*, Auto">
+                            <TextBlock Text="Total Inventory Value (Sale Price)" FontWeight="SemiBold" Foreground="#1D4ED8" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Column="1" Text="{Binding TotalStockValue, StringFormat='₹{0:N2}'}" FontWeight="Bold" FontSize="16" Foreground="#1D4ED8" VerticalAlignment="Center"/>
+                        </Grid>
+                    </Border>
                 </Grid>
             </Border>
         </Grid>

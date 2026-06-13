@@ -3,7 +3,11 @@ using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+using BusinessSuite.BLL.Services;
 using BusinessSuite.BLL.StaticData;
+using BusinessSuite.DAL.Data;
 using BusinessSuite.DAL.Entities;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -225,11 +229,14 @@ public partial class VendorFormViewModel : ViewModelBase, INotifyDataErrorInfo
     [ObservableProperty] private string? _ifsc;
 
     private readonly int _businessId;
+    private readonly ValidationService _validationService;
+    private bool _duplicateWarningShown = false;
 
     public VendorFormViewModel(int businessId)
     {
         _businessId = businessId;
-        SaveCommand = new RelayCommand(Save);
+        _validationService = new ValidationService(new AppDbContextFactory());
+        SaveCommand = new AsyncRelayCommand(SaveAsync);
         CancelCommand = new RelayCommand(Cancel);
     }
 
@@ -251,12 +258,12 @@ public partial class VendorFormViewModel : ViewModelBase, INotifyDataErrorInfo
         Ifsc = vendor.IFSC;
     }
 
-    public IRelayCommand SaveCommand { get; }
+    public IAsyncRelayCommand SaveCommand { get; }
     public IRelayCommand CancelCommand { get; }
 
     public event Action<Vendor?>? RequestClose;
 
-    private void Save()
+    private async Task SaveAsync()
     {
         ValidationVisible = true;
         ValidateAll();
@@ -290,6 +297,19 @@ public partial class VendorFormViewModel : ViewModelBase, INotifyDataErrorInfo
             BusinessId = _businessId
         };
 
+        // Duplicate check (first press shows warning, second press overrides)
+        if (!_duplicateWarningShown)
+        {
+            var (isDuplicate, dupMessage) = await _validationService.CheckVendorDuplicateAsync(vendor);
+            if (isDuplicate)
+            {
+                _duplicateWarningShown = true;
+                GeneralErrorMessage = $"⚠ Duplicate detected: {dupMessage}\nClick 'Save Vendor' again to save anyway, or cancel to go back.";
+                return; // Stop — do not close window
+            }
+        }
+        // Either no duplicate, or user confirmed by pressing save again
+        _duplicateWarningShown = false;
         RequestClose?.Invoke(vendor);
     }
 

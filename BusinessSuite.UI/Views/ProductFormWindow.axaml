@@ -60,7 +60,7 @@
 
                 <StackPanel>
                     <TextBlock Text="Name *" Margin="0,0,0,5" FontWeight="Medium" Foreground="#374151"/>
-                    <TextBox Text="{Binding ProductName}" Watermark="Enter item name"/>
+                    <TextBox Text="{Binding ProductName, UpdateSourceTrigger=PropertyChanged}" Watermark="Enter item name"/>
                 </StackPanel>
 
                 <Grid ColumnDefinitions="*, *" RowDefinitions="Auto, Auto, Auto, Auto, Auto, Auto">
