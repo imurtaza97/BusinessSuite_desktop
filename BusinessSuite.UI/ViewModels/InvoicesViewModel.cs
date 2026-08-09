@@ -8,6 +8,7 @@ using BusinessSuite.BLL.Services;
 using BusinessSuite.DAL.Data;
 using BusinessSuite.DAL.Entities;
 using BusinessSuite.DAL.Repositories;
+using BusinessSuite.UI.Services;
 using System.Diagnostics;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
@@ -23,6 +24,7 @@ public partial class InvoicesViewModel : ViewModelBase
     private readonly InvoiceRepository _invoiceRepository;
     private readonly InvoicePdfService _pdfService;
     private readonly LedgerService _ledgerService;
+    private readonly AuditTrailService _auditService;
     private readonly int _businessId;
 
     [ObservableProperty]
@@ -60,6 +62,7 @@ public partial class InvoicesViewModel : ViewModelBase
         _invoiceRepository = new InvoiceRepository(db);
         _pdfService = new InvoicePdfService();
         _ledgerService = ledgerService;
+        _auditService = new AuditTrailService(new AppDbContext());
         _businessId = businessId;
         
         LoadInvoicesCommand = new AsyncRelayCommand(LoadInvoicesAsync);
@@ -194,6 +197,10 @@ public partial class InvoicesViewModel : ViewModelBase
 
             if (success)
             {
+                _ = _auditService.LogDeletedAsync(
+                    _businessId, "Invoice", SelectedInvoice.InvoiceID,
+                    AppState.Instance.GetCurrentUserId(),
+                    $"Draft invoice {SelectedInvoice.InvoiceNumber} deleted");
                 SetStatusMessage("Draft invoice deleted successfully.", "#047857");
                 await LoadInvoicesAsync();
             }

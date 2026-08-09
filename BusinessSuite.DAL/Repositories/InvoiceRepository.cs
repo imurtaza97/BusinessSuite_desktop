@@ -114,55 +114,44 @@ public class InvoiceRepository
             if (existing == null)
                 return false;
 
-            // Phase 5: Database-level protection for finalized documents
-            if (!existing.IsDraft)
+            // Update all header fields (for both draft and finalized documents)
+            existing.InvoiceDate = invoice.InvoiceDate;
+            existing.DueDate = invoice.DueDate;
+            existing.CustomerID = invoice.CustomerID;
+            existing.DeliveryStatus = invoice.DeliveryStatus;
+            existing.PaymentStatus = invoice.PaymentStatus;
+            existing.TotalPaid = invoice.TotalPaid;
+
+            existing.TotalAmount = invoice.TotalAmount;
+            existing.TotalTax = invoice.TotalTax;
+            existing.Discount = invoice.Discount;
+            existing.GrandTotal = invoice.GrandTotal;
+            existing.RoundOff = invoice.RoundOff;
+
+            existing.TotalCGST = invoice.TotalCGST;
+            existing.TotalSGST = invoice.TotalSGST;
+            existing.TotalIGST = invoice.TotalIGST;
+
+            existing.ShippingCharges = invoice.ShippingCharges;
+            existing.PaymentMethod = invoice.PaymentMethod;
+            existing.PaymentTerms = invoice.PaymentTerms;
+
+            existing.PlaceOfSupply = invoice.PlaceOfSupply;
+            existing.ReverseCharge = invoice.ReverseCharge;
+            existing.IsAutoRoundOff = invoice.IsAutoRoundOff;
+            existing.IsItemLevelDiscount = invoice.IsItemLevelDiscount;
+
+            existing.TermsAndConditions = invoice.TermsAndConditions;
+            existing.Notes = invoice.Notes;
+            existing.IsDraft = invoice.IsDraft;
+
+            // ---- Items ----
+            _context.InvoiceItems.RemoveRange(existing.Items);
+
+            foreach (var item in invoice.Items)
             {
-                // Finalized invoice: Only allow updates to these fields
-                existing.DeliveryStatus = invoice.DeliveryStatus;
-                existing.PaymentStatus = invoice.PaymentStatus;
-                existing.TotalPaid = invoice.TotalPaid;
-                existing.Notes = invoice.Notes;
-            }
-            else
-            {
-                // Draft invoice: Allow all field updates
-                // ---- Header fields ----
-                existing.InvoiceDate = invoice.InvoiceDate;
-                existing.DueDate = invoice.DueDate;
-                existing.CustomerID = invoice.CustomerID;
-                existing.DeliveryStatus = invoice.DeliveryStatus;
-                existing.PaymentStatus = invoice.PaymentStatus;
-
-                existing.TotalAmount = invoice.TotalAmount;
-                existing.TotalTax = invoice.TotalTax;
-                existing.Discount = invoice.Discount;
-                existing.GrandTotal = invoice.GrandTotal;
-                existing.RoundOff = invoice.RoundOff;
-
-                existing.TotalCGST = invoice.TotalCGST;
-                existing.TotalSGST = invoice.TotalSGST;
-                existing.TotalIGST = invoice.TotalIGST;
-
-                existing.ShippingCharges = invoice.ShippingCharges;
-                existing.PaymentMethod = invoice.PaymentMethod;
-                existing.PaymentTerms = invoice.PaymentTerms;
-
-                existing.PlaceOfSupply = invoice.PlaceOfSupply;
-                existing.ReverseCharge = invoice.ReverseCharge;
-                existing.IsAutoRoundOff = invoice.IsAutoRoundOff;
-                existing.IsItemLevelDiscount = invoice.IsItemLevelDiscount;
-
-                existing.TermsAndConditions = invoice.TermsAndConditions;
-                existing.Notes = invoice.Notes;
-
-                // ---- Items ----
-                _context.InvoiceItems.RemoveRange(existing.Items);
-
-                foreach (var item in invoice.Items)
-                {
-                    item.InvoiceID = existing.InvoiceID;
-                    await _context.InvoiceItems.AddAsync(item);
-                }
+                item.InvoiceID = existing.InvoiceID;
+                await _context.InvoiceItems.AddAsync(item);
             }
 
             var result = await _context.SaveChangesAsync() > 0;

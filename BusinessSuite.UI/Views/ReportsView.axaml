@@ -14,7 +14,10 @@
             <TextBlock Text="Detailed insights into your business performance." Foreground="#6B7280" Margin="0,5,0,0"/>
         </StackPanel>
 
-        <TabControl Grid.Row="1" Margin="30,0,30,30">
+        <!-- SelectedIndex bound so non-GST businesses land on Top Vendors (index 1) by default -->
+        <TabControl Grid.Row="1" Margin="30,0,30,30" SelectedIndex="{Binding SelectedTabIndex}">
+
+            <!-- Tab 0: GST Report — hidden for non-GST businesses -->
             <TabItem Header="GST Report" FontSize="16" IsVisible="{Binding IsGstRegistered}">
                 <Grid RowDefinitions="Auto, *" Margin="0,20,0,0">
                     <StackPanel Orientation="Horizontal" Spacing="15" Margin="0,0,0,20">
@@ -26,7 +29,7 @@
                             <TextBlock Text="To Date" FontSize="12" Foreground="#6B7280" Margin="0,0,0,5"/>
                             <DatePicker SelectedDate="{Binding EndDate}"/>
                         </StackPanel>
-                        <Button Content="Generate Report" Command="{Binding LoadReportsCommand}" 
+                        <Button Content="Generate Report" Command="{Binding LoadReportsCommand}"
                                 Background="#2563EB" Foreground="White" VerticalAlignment="Bottom"/>
                     </StackPanel>
 
@@ -34,7 +37,7 @@
                         <StackPanel Spacing="20">
                             <TextBlock Text="GST Summary" FontSize="18" FontWeight="SemiBold"/>
                             <Separator Background="#E5E7EB" Height="1"/>
-                            
+
                             <Grid ColumnDefinitions="*, Auto" RowDefinitions="Auto,Auto,Auto,Auto">
                                 <TextBlock Text="Total Taxable Value" Grid.Row="0" Margin="0,10"/>
                                 <TextBlock Text="{Binding GstReport.TaxableValue, StringFormat='{}₹{0:N2}'}" Grid.Row="0" Grid.Column="1" FontWeight="SemiBold"/>
@@ -47,7 +50,7 @@
 
                                 <Separator Background="#E5E7EB" Height="1" Grid.Row="3" Grid.ColumnSpan="2" Margin="0,10"/>
                             </Grid>
-                            
+
                             <Grid ColumnDefinitions="*, Auto">
                                 <TextBlock Text="Net Tax Liability" FontWeight="Bold" FontSize="16"/>
                                 <TextBlock Text="{Binding GstReport.NetTaxLiability, StringFormat='{}₹{0:N2}'}" Grid.Column="1" FontWeight="Bold" FontSize="16"/>
@@ -57,6 +60,7 @@
                 </Grid>
             </TabItem>
 
+            <!-- Tab 1: Top Vendors — always visible, default for non-GST -->
             <TabItem Header="Top Vendors" FontSize="16">
                 <DataGrid ItemsSource="{Binding TopVendors}" Margin="0,20,0,0" IsReadOnly="True" GridLinesVisibility="Horizontal">
                     <DataGrid.Columns>
@@ -67,6 +71,7 @@
                 </DataGrid>
             </TabItem>
 
+            <!-- Tab 2: Top Customers — always visible -->
             <TabItem Header="Top Customers" FontSize="16">
                 <DataGrid ItemsSource="{Binding TopCustomers}" Margin="0,20,0,0" IsReadOnly="True" GridLinesVisibility="Horizontal">
                     <DataGrid.Columns>
@@ -77,6 +82,7 @@
                 </DataGrid>
             </TabItem>
 
+            <!-- Tab 3: GSTR-1 — hidden for non-GST -->
             <TabItem Header="GSTR-1" FontSize="16" IsVisible="{Binding IsGstRegistered}">
                 <DataGrid ItemsSource="{Binding Gstr1Items}" Margin="0,20,0,0" IsReadOnly="True" GridLinesVisibility="All" BorderThickness="1" BorderBrush="#E5E7EB">
                     <DataGrid.Columns>
@@ -97,6 +103,7 @@
                 </DataGrid>
             </TabItem>
 
+            <!-- Tab 4: GSTR-3B — hidden for non-GST -->
             <TabItem Header="GSTR-3B" FontSize="16" IsVisible="{Binding IsGstRegistered}">
                 <DataGrid ItemsSource="{Binding Gstr3BItems}" Margin="0,20,0,0" IsReadOnly="True" GridLinesVisibility="All" BorderThickness="1" BorderBrush="#E5E7EB">
                     <DataGrid.Columns>
@@ -112,15 +119,16 @@
                 </DataGrid>
             </TabItem>
 
+            <!-- Tab 5: Tax Liability — hidden for non-GST -->
             <TabItem Header="Tax Liability" FontSize="16" IsVisible="{Binding IsGstRegistered}">
                 <Grid RowDefinitions="Auto, *" Margin="20">
                     <StackPanel Orientation="Horizontal" Spacing="15" Margin="0,0,0,20">
                         <TextBlock Text="Period:" VerticalAlignment="Center" FontWeight="Medium"/>
-                        <ComboBox ItemsSource="{Binding PeriodOptions}" 
+                        <ComboBox ItemsSource="{Binding PeriodOptions}"
                                   SelectedItem="{Binding SelectedPeriod}"
                                   Width="120"/>
                     </StackPanel>
-                    
+
                     <DataGrid Grid.Row="1" ItemsSource="{Binding TaxLiabilityItems}" IsReadOnly="True" GridLinesVisibility="All" BorderThickness="1" BorderBrush="#E5E7EB">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="Period" Binding="{Binding Period}" Width="100"/>
@@ -143,6 +151,7 @@
                 </Grid>
             </TabItem>
 
+            <!-- Tab 6: HSN Summary — hidden for non-GST -->
             <TabItem Header="HSN Summary" FontSize="16" IsVisible="{Binding IsGstRegistered}">
                 <DataGrid ItemsSource="{Binding HsnSummaryItems}" Margin="0,20,0,0" IsReadOnly="True" GridLinesVisibility="All" BorderThickness="1" BorderBrush="#E5E7EB">
                     <DataGrid.Columns>

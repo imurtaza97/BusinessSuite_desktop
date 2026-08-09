@@ -1,0 +1,154 @@
+{
+  "format": 1,
+  "restore": {
+    "/Users/murtaza/Desktop/BusinessSuite_desktop/BusinessSuite.BLL/BusinessSuite.BLL.csproj": {}
+  },
+  "projects": {
+    "/Users/murtaza/Desktop/BusinessSuite_desktop/BusinessSuite.BLL/BusinessSuite.BLL.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "/Users/murtaza/Desktop/BusinessSuite_desktop/BusinessSuite.BLL/BusinessSuite.BLL.csproj",
+        "projectName": "BusinessSuite.BLL",
+        "projectPath": "/Users/murtaza/Desktop/BusinessSuite_desktop/BusinessSuite.BLL/BusinessSuite.BLL.csproj",
+        "packagesPath": "/Users/murtaza/.nuget/packages/",
+        "outputPath": "/Users/murtaza/Desktop/BusinessSuite_desktop/BusinessSuite.BLL/obj/",
+        "projectStyle": "PackageReference",
+        "configFilePaths": [
+          "/Users/murtaza/.nuget/NuGet/NuGet.Config"
+        ],
+        "originalTargetFrameworks": [
+          "net8.0"
+        ],
+        "sources": {
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net8.0": {
+            "targetAlias": "net8.0",
+            "projectReferences": {
+              "/Users/murtaza/Desktop/BusinessSuite_desktop/BusinessSuite.DAL/BusinessSuite.DAL.csproj": {
+                "projectPath": "/Users/murtaza/Desktop/BusinessSuite_desktop/BusinessSuite.DAL/BusinessSuite.DAL.csproj"
+              }
+            }
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        }
+      },
+      "frameworks": {
+        "net8.0": {
+          "targetAlias": "net8.0",
+          "dependencies": {
+            "QuestPDF": {
+              "target": "Package",
+              "version": "[2025.12.3, )"
+            }
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/8.0.404/PortableRuntimeIdentifierGraph.json"
+        }
+      }
+    },
+    "/Users/murtaza/Desktop/BusinessSuite_desktop/BusinessSuite.DAL/BusinessSuite.DAL.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "/Users/murtaza/Desktop/BusinessSuite_desktop/BusinessSuite.DAL/BusinessSuite.DAL.csproj",
+        "projectName": "BusinessSuite.DAL",
+        "projectPath": "/Users/murtaza/Desktop/BusinessSuite_desktop/BusinessSuite.DAL/BusinessSuite.DAL.csproj",
+        "packagesPath": "/Users/murtaza/.nuget/packages/",
+        "outputPath": "/Users/murtaza/Desktop/BusinessSuite_desktop/BusinessSuite.DAL/obj/",
+        "projectStyle": "PackageReference",
+        "configFilePaths": [
+          "/Users/murtaza/.nuget/NuGet/NuGet.Config"
+        ],
+        "originalTargetFrameworks": [
+          "net8.0"
+        ],
+        "sources": {
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net8.0": {
+            "targetAlias": "net8.0",
+            "projectReferences": {}
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        }
+      },
+      "frameworks": {
+        "net8.0": {
+          "targetAlias": "net8.0",
+          "dependencies": {
+            "BCrypt.Net-Next": {
+              "target": "Package",
+              "version": "[4.0.3, )"
+            },
+            "Microsoft.EntityFrameworkCore": {
+              "target": "Package",
+              "version": "[8.0.4, )"
+            },
+            "Microsoft.EntityFrameworkCore.Design": {
+              "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[8.0.4, )"
+            },
+            "Microsoft.EntityFrameworkCore.Sqlite": {
+              "target": "Package",
+              "version": "[8.0.4, )"
+            }
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/8.0.404/PortableRuntimeIdentifierGraph.json"
+        }
+      }
+    }
+  }
+}

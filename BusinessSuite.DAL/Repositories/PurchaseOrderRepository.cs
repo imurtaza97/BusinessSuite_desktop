@@ -97,52 +97,41 @@ public class PurchaseOrderRepository
         if (existing == null)
             return false;
 
-        // Phase 5: Database-level protection for finalized documents
-        if (!existing.IsDraft)
-        {
-            // Finalized PO: Only allow updates to these fields
-            existing.DeliveryStatus = po.DeliveryStatus;
-            existing.PaymentStatus = po.PaymentStatus;
-            existing.TotalPaid = po.TotalPaid;
-            existing.Notes = po.Notes;
-        }
-        else
-        {
-            // Draft PO: Allow all field updates
-            // 🔹 Update header
-            existing.PODate = po.PODate;
-            existing.ExpectedDeliveryDate = po.ExpectedDeliveryDate;
-            existing.IsAutoRoundOff = po.IsAutoRoundOff;
-            existing.VendorId = po.VendorId;
-            existing.TotalAmount = po.TotalAmount;
-            existing.TotalTax = po.TotalTax;
-            existing.Discount = po.Discount;
-            existing.GrandTotal = po.GrandTotal;
-            existing.ShippingCharges = po.ShippingCharges;
-            existing.PaymentMethod = po.PaymentMethod;
-            existing.PaymentTerms = po.PaymentTerms;
-            existing.TermsAndConditions = po.TermsAndConditions;
-            existing.Notes = po.Notes;
-            existing.DeliveryStatus = po.DeliveryStatus;
-            existing.PaymentStatus = po.PaymentStatus;
-            existing.IsItemLevelDiscount = po.IsItemLevelDiscount;
-            existing.PlaceOfSupply = po.PlaceOfSupply;
-            existing.ReverseCharge = po.ReverseCharge;
-            existing.RoundOff = po.RoundOff;
-            existing.TotalCGST = po.TotalCGST;
-            existing.TotalSGST = po.TotalSGST;
-            existing.TotalIGST = po.TotalIGST;
-            existing.VendorBillPath = po.VendorBillPath;
+        // Update all header fields (for both draft and finalized documents)
+        existing.PODate = po.PODate;
+        existing.ExpectedDeliveryDate = po.ExpectedDeliveryDate;
+        existing.IsAutoRoundOff = po.IsAutoRoundOff;
+        existing.VendorId = po.VendorId;
+        existing.TotalAmount = po.TotalAmount;
+        existing.TotalTax = po.TotalTax;
+        existing.Discount = po.Discount;
+        existing.GrandTotal = po.GrandTotal;
+        existing.ShippingCharges = po.ShippingCharges;
+        existing.PaymentMethod = po.PaymentMethod;
+        existing.PaymentTerms = po.PaymentTerms;
+        existing.TermsAndConditions = po.TermsAndConditions;
+        existing.Notes = po.Notes;
+        existing.DeliveryStatus = po.DeliveryStatus;
+        existing.PaymentStatus = po.PaymentStatus;
+        existing.TotalPaid = po.TotalPaid;
+        existing.IsItemLevelDiscount = po.IsItemLevelDiscount;
+        existing.PlaceOfSupply = po.PlaceOfSupply;
+        existing.ReverseCharge = po.ReverseCharge;
+        existing.RoundOff = po.RoundOff;
+        existing.TotalCGST = po.TotalCGST;
+        existing.TotalSGST = po.TotalSGST;
+        existing.TotalIGST = po.TotalIGST;
+        existing.VendorBillPath = po.VendorBillPath;
+        existing.IsDraft = po.IsDraft;
 
-            // 🔹 Replace items (safe, no stock impact)
-            _context.PurchaseOrderItems.RemoveRange(existing.Items);
-            await _context.SaveChangesAsync();
+        // Replace items (safe, no stock impact)
+        _context.PurchaseOrderItems.RemoveRange(existing.Items);
+        await _context.SaveChangesAsync();
 
-            foreach (var item in po.Items)
-            {
-                item.PurchaseOrderID = existing.PurchaseOrderID;
-                _context.PurchaseOrderItems.Add(item);
-            }
+        foreach (var item in po.Items)
+        {
+            item.PurchaseOrderID = existing.PurchaseOrderID;
+            await _context.PurchaseOrderItems.AddAsync(item);
         }
 
         return await _context.SaveChangesAsync() > 0;

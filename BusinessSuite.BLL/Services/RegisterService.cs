@@ -1,6 +1,7 @@
+using System;
 using BusinessSuite.DAL.Entities;
 using BusinessSuite.BLL.DTOs;
-using BusinessSuite.DAL.Data; // Add '.Context' if that's where the file is
+using BusinessSuite.DAL.Data;
 using Microsoft.EntityFrameworkCore;
 
 namespace BusinessSuite.BLL.Services;
@@ -58,6 +59,7 @@ public class RegisterService
                 OwnerName = request.OwnerName,
                 Email = request.Email,
                 GSTIN = request.GSTIN,
+                PAN = request.PAN,
                 Address = request.Address,
                 ContactNo = request.ContactNo,
                 State = request.State,
@@ -100,6 +102,24 @@ public class RegisterService
                 DateFormat = request.DateFormat
             };
             context.Settings.Add(settings);
+
+            await context.SaveChangesAsync();
+
+            // 7. Write the very first audit log entry — business registration
+            var registrationAudit = new AuditLog
+            {
+                BusinessID = business.BusinessID,
+                DocumentType = "Business",
+                DocumentID = business.BusinessID,
+                Action = "Created",
+                FieldName = "All",
+                OldValue = null,
+                NewValue = $"{business.BusinessName} registered",
+                ChangedByUserID = adminUser.UserID,
+                ChangedAt = DateTime.Now,
+                Reason = "Initial business registration"
+            };
+            context.AuditLogs.Add(registrationAudit);
 
             await context.SaveChangesAsync();
             await transaction.CommitAsync();

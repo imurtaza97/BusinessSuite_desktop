@@ -45,10 +45,12 @@
                         <TextBlock Text="{Binding StatusMessage}" Foreground="#166534" FontSize="14"/>
                     </Border>
 
-                    <!-- Profile Section -->
+                    <!-- ════════════════════════════════════════════════════ -->
+                    <!-- PROFILE SECTION                                      -->
+                    <!-- ════════════════════════════════════════════════════ -->
                     <StackPanel Spacing="20" IsVisible="{Binding SelectedSection, Converter={x:Static conv:StringEqualityConverter.Instance}, ConverterParameter=Profile}">
                         <TextBlock Text="Business Profile" FontSize="22" FontWeight="Bold"/>
-                        <TextBlock Text="Update your business identity and location." Foreground="#6B7280"/>
+                        <TextBlock Text="Update your business identity and contact details." Foreground="#6B7280"/>
                         
                         <Border Background="White" BorderBrush="#E5E7EB" BorderThickness="1" CornerRadius="8" Padding="25">
                             <StackPanel Spacing="15">
@@ -74,11 +76,35 @@
                                               SelectedItem="{Binding State}"
                                               HorizontalAlignment="Stretch"/>
                                 </StackPanel>
+
+                                <!-- PAN Number -->
+                                <StackPanel Spacing="5">
+                                    <Grid ColumnDefinitions="*, Auto">
+                                        <TextBlock Text="PAN (Permanent Account Number)" FontWeight="Medium" VerticalAlignment="Center"/>
+                                        <Border Grid.Column="1" Background="#F3F4F6" CornerRadius="12" Padding="8,3">
+                                            <TextBlock Text="{Binding PanValidationIcon}"
+                                                       Foreground="{Binding PanValidationColor}"
+                                                       FontWeight="Bold" FontSize="13"/>
+                                        </Border>
+                                    </Grid>
+                                    <TextBox Text="{Binding Pan, UpdateSourceTrigger=PropertyChanged}"
+                                             Watermark="e.g. ABCDE1234F (optional)"
+                                             MaxLength="10"/>
+                                    <TextBlock Text="{Binding PanError}"
+                                               Foreground="#DC2626"
+                                               FontSize="11"
+                                               IsVisible="{Binding PanError, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+                                    <TextBlock Text="Format: 5 letters + 4 digits + 1 letter  |  Required for IT filings"
+                                               Foreground="#9CA3AF" FontSize="11"
+                                               IsVisible="{Binding PanError, Converter={x:Static StringConverters.IsNullOrEmpty}}"/>
+                                </StackPanel>
                             </StackPanel>
                         </Border>
                     </StackPanel>
 
-                    <!-- Tax & GST Section -->
+                    <!-- ════════════════════════════════════════════════════ -->
+                    <!-- TAX & GST SECTION                                    -->
+                    <!-- ════════════════════════════════════════════════════ -->
                     <StackPanel Spacing="20" IsVisible="{Binding SelectedSection, Converter={x:Static conv:StringEqualityConverter.Instance}, ConverterParameter='Tax &amp; GST'}">
                         <TextBlock Text="Tax &amp; GST Settings" FontSize="22" FontWeight="Bold"/>
                         <TextBlock Text="Configure your tax registration details." Foreground="#6B7280"/>
@@ -104,14 +130,16 @@
                                 </StackPanel>
 
                                 <Border IsVisible="{Binding !IsGstRegistered}" Background="#F3F4F6" Padding="15" CornerRadius="4">
-                                    <TextBlock Text="You are currently in Non-GST mode. GST related fields will be hidden on invoices." 
+                                    <TextBlock Text="You are in Non-GST mode. GST fields will be hidden on invoices." 
                                                FontStyle="Italic" Foreground="#4B5563" TextWrapping="Wrap"/>
                                 </Border>
                             </StackPanel>
                         </Border>
                     </StackPanel>
 
-                    <!-- Bank Details Section -->
+                    <!-- ════════════════════════════════════════════════════ -->
+                    <!-- BANK DETAILS SECTION                                 -->
+                    <!-- ════════════════════════════════════════════════════ -->
                     <StackPanel Spacing="20" IsVisible="{Binding SelectedSection, Converter={x:Static conv:StringEqualityConverter.Instance}, ConverterParameter='Bank Details'}">
                         <TextBlock Text="Bank Account Details" FontSize="22" FontWeight="Bold"/>
                         <TextBlock Text="These details will be printed on your invoices for payments." Foreground="#6B7280"/>
@@ -138,7 +166,173 @@
                         </Border>
                     </StackPanel>
 
-                    <!-- Units of Measure Section -->
+                    <!-- ════════════════════════════════════════════════════ -->
+                    <!-- FINANCIAL YEAR SECTION                               -->
+                    <!-- ════════════════════════════════════════════════════ -->
+                    <StackPanel Spacing="20" IsVisible="{Binding SelectedSection, Converter={x:Static conv:StringEqualityConverter.Instance}, ConverterParameter='Financial Year'}">
+                        <TextBlock Text="Financial Year Management" FontSize="22" FontWeight="Bold"/>
+                        <TextBlock Text="Create, activate, and close your accounting financial years (Indian fiscal: Apr – Mar)." Foreground="#6B7280"/>
+
+                        <!-- Active FY banner -->
+                        <Border Background="#EFF6FF" BorderBrush="#BFDBFE" BorderThickness="1" CornerRadius="8" Padding="16"
+                                IsVisible="{Binding ActiveFY, Converter={x:Static ObjectConverters.IsNotNull}}">
+                            <Grid ColumnDefinitions="Auto, *, Auto">
+                                <Border Background="#2563EB" CornerRadius="4" Padding="8,4" VerticalAlignment="Center">
+                                    <TextBlock Text="ACTIVE" Foreground="White" FontSize="10" FontWeight="Bold"/>
+                                </Border>
+                                <StackPanel Grid.Column="1" Margin="12,0,0,0">
+                                    <TextBlock Text="{Binding ActiveFY.Label}" FontSize="16" FontWeight="Bold" Foreground="#1D4ED8"/>
+                                    <TextBlock Text="{Binding ActiveFY.PeriodLabel}" FontSize="12" Foreground="#3B82F6"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
+                        <!-- FY Status Messages -->
+                        <Border Background="#DCFCE7" BorderBrush="#22C55E" BorderThickness="1" CornerRadius="6" Padding="12"
+                                IsVisible="{Binding FyStatusMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                            <TextBlock Text="{Binding FyStatusMessage}" Foreground="#166534" TextWrapping="Wrap"/>
+                        </Border>
+
+                        <!-- FY List -->
+                        <Border Background="White" BorderBrush="#E5E7EB" BorderThickness="1" CornerRadius="8" Padding="0">
+                            <StackPanel>
+                                <!-- Header row -->
+                                <Border Background="#F9FAFB" BorderBrush="#E5E7EB" BorderThickness="0,0,0,1" Padding="15,10">
+                                    <Grid ColumnDefinitions="*, 200, 120, Auto">
+                                        <TextBlock Grid.Column="0" Text="Financial Year" FontWeight="SemiBold" Foreground="#374151" FontSize="12"/>
+                                        <TextBlock Grid.Column="1" Text="Period" FontWeight="SemiBold" Foreground="#374151" FontSize="12"/>
+                                        <TextBlock Grid.Column="2" Text="Status" FontWeight="SemiBold" Foreground="#374151" FontSize="12"/>
+                                        <TextBlock Grid.Column="3" Text="Actions" FontWeight="SemiBold" Foreground="#374151" FontSize="12" MinWidth="160"/>
+                                    </Grid>
+                                </Border>
+
+                                <!-- FY Rows -->
+                                <ItemsControl ItemsSource="{Binding FinancialYears}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border BorderBrush="#F3F4F6" BorderThickness="0,0,0,1" Padding="15,12">
+                                                <Grid ColumnDefinitions="*, 200, 120, Auto">
+                                                    <TextBlock Grid.Column="0" Text="{Binding Label}"
+                                                               FontWeight="SemiBold" VerticalAlignment="Center"
+                                                               Foreground="{Binding IsClosed, Converter={x:Static conv:BoolToColorConverter.Instance}, ConverterParameter='#9CA3AF|#111827'}"/>
+                                                    <TextBlock Grid.Column="1" Text="{Binding PeriodLabel}"
+                                                               FontSize="12" Foreground="#6B7280" VerticalAlignment="Center"/>
+                                                    <Border Grid.Column="2" CornerRadius="10" Padding="8,3" VerticalAlignment="Center" HorizontalAlignment="Left"
+                                                            Background="{Binding IsClosed, Converter={x:Static conv:BoolToColorConverter.Instance}, ConverterParameter='#FEE2E2|#DCFCE7'}">
+                                                        <TextBlock Text="{Binding StatusLabel}" FontSize="11" FontWeight="Medium"
+                                                                   Foreground="{Binding IsClosed, Converter={x:Static conv:BoolToColorConverter.Instance}, ConverterParameter='#B91C1C|#166534'}"/>
+                                                    </Border>
+                                                    <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="8">
+                                                        <Button Content="Set Active"
+                                                                Command="{Binding $parent[UserControl].((vm:SettingsViewModel)DataContext).SetActiveFYCommand}"
+                                                                CommandParameter="{Binding}"
+                                                                IsVisible="{Binding IsClosed, Converter={x:Static BoolConverters.Not}}"
+                                                                IsEnabled="{Binding IsActive, Converter={x:Static BoolConverters.Not}}"
+                                                                Padding="8,4" FontSize="11"
+                                                                Background="#2563EB" Foreground="White"/>
+                                                        <Button Content="Close Year"
+                                                                Command="{Binding $parent[UserControl].((vm:SettingsViewModel)DataContext).RequestCloseFYCommand}"
+                                                                CommandParameter="{Binding}"
+                                                                IsVisible="{Binding IsClosed, Converter={x:Static BoolConverters.Not}}"
+                                                                Padding="8,4" FontSize="11"
+                                                                Background="#EF4444" Foreground="White"/>
+                                                        <Border Background="#F3F4F6" CornerRadius="4" Padding="8,4"
+                                                                IsVisible="{Binding IsClosed}">
+                                                            <TextBlock Text="🔒 Closed" FontSize="11" Foreground="#6B7280"/>
+                                                        </Border>
+                                                    </StackPanel>
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+
+                                <!-- Empty state -->
+                                <Border Padding="30" IsVisible="{Binding !FinancialYears.Count}">
+                                    <TextBlock Text="No financial years created yet. Create your first financial year below."
+                                               HorizontalAlignment="Center" Foreground="#9CA3AF" FontStyle="Italic"/>
+                                </Border>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- + New FY button -->
+                        <Button Content="+ Create New Financial Year"
+                                Command="{Binding ShowNewFYFormCommandCommand}"
+                                IsVisible="{Binding !ShowNewFYForm}"
+                                Classes="Primary" HorizontalAlignment="Left" Padding="15,10"/>
+
+                        <!-- New FY inline form -->
+                        <Border Background="White" BorderBrush="#2563EB" BorderThickness="1" CornerRadius="8" Padding="20"
+                                IsVisible="{Binding ShowNewFYForm}">
+                            <StackPanel Spacing="15">
+                                <TextBlock Text="Create New Financial Year" FontSize="16" FontWeight="Bold" Foreground="#1D4ED8"/>
+                                <TextBlock Text="{Binding NewFYLabel}" FontSize="18" FontWeight="Bold" Foreground="#2563EB"
+                                           IsVisible="{Binding NewFYLabel, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+
+                                <Grid ColumnDefinitions="*, 20, *">
+                                    <StackPanel Grid.Column="0" Spacing="5">
+                                        <TextBlock Text="Start Date" FontWeight="Medium" FontSize="13"/>
+                                        <DatePicker SelectedDate="{Binding NewFYStart}" HorizontalAlignment="Stretch"/>
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="2" Spacing="5">
+                                        <TextBlock Text="End Date" FontWeight="Medium" FontSize="13"/>
+                                        <DatePicker SelectedDate="{Binding NewFYEnd}" HorizontalAlignment="Stretch"/>
+                                    </StackPanel>
+                                </Grid>
+
+                                <TextBlock Text="{Binding FyStatusMessage}" Foreground="#EF4444" FontSize="12"
+                                           IsVisible="{Binding FyStatusMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+
+                                <StackPanel Orientation="Horizontal" Spacing="10">
+                                    <Button Content="✓ Create Financial Year"
+                                            Command="{Binding CreateFinancialYearCommand}"
+                                            Classes="Primary" Padding="15,10"/>
+                                    <Button Content="Cancel"
+                                            Command="{Binding CancelNewFYCommand}"
+                                            Padding="15,10"/>
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Close Year Confirm Dialog -->
+                        <Border Background="#FFF7ED" BorderBrush="#F59E0B" BorderThickness="2" CornerRadius="8" Padding="20"
+                                IsVisible="{Binding ShowCloseDialog}">
+                            <StackPanel Spacing="15">
+                                <TextBlock Text="⚠ Close Financial Year" FontSize="16" FontWeight="Bold" Foreground="#92400E"/>
+                                <TextBlock Text="{Binding FyToClose.Label, StringFormat='You are about to close {0}. This action cannot be undone.'}"
+                                           TextWrapping="Wrap" Foreground="#78350F"/>
+
+                                <StackPanel Spacing="8">
+                                    <TextBlock Text="Carry closing balance forward to:" FontWeight="Medium" Foreground="#374151"/>
+                                    <ComboBox ItemsSource="{Binding OpenFinancialYears}"
+                                              SelectedItem="{Binding SelectedNextFY}"
+                                              HorizontalAlignment="Stretch"
+                                              PlaceholderText="Select next FY (optional)">
+                                        <ComboBox.ItemTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Text="{Binding Label}"/>
+                                            </DataTemplate>
+                                        </ComboBox.ItemTemplate>
+                                    </ComboBox>
+                                    <TextBlock Text="Leave blank to close without carry-forward (you can do it later)."
+                                               Foreground="#9CA3AF" FontSize="11"/>
+                                </StackPanel>
+
+                                <StackPanel Orientation="Horizontal" Spacing="10">
+                                    <Button Content="Confirm Close Year"
+                                            Command="{Binding ConfirmCloseYearCommand}"
+                                            Background="#EF4444" Foreground="White" Padding="15,10"/>
+                                    <Button Content="Cancel"
+                                            Command="{Binding CancelCloseFYCommand}"
+                                            Padding="15,10"/>
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+
+                    <!-- ════════════════════════════════════════════════════ -->
+                    <!-- UNITS OF MEASURE SECTION                             -->
+                    <!-- ════════════════════════════════════════════════════ -->
                     <StackPanel Spacing="20" IsVisible="{Binding SelectedSection, Converter={x:Static conv:StringEqualityConverter.Instance}, ConverterParameter='Units of Measure'}">
                         <TextBlock Text="Units of Measure" FontSize="22" FontWeight="Bold"/>
                         <TextBlock Text="Manage the units used for your products (e.g. PCS, BOX, KG)." Foreground="#6B7280"/>
@@ -170,7 +364,9 @@
                         </Border>
                     </StackPanel>
 
-                    <!-- Data Management Section -->
+                    <!-- ════════════════════════════════════════════════════ -->
+                    <!-- DATA MANAGEMENT SECTION                              -->
+                    <!-- ════════════════════════════════════════════════════ -->
                     <StackPanel Spacing="20" IsVisible="{Binding SelectedSection, Converter={x:Static conv:StringEqualityConverter.Instance}, ConverterParameter='Data Management'}">
                         <TextBlock Text="Data Management" FontSize="22" FontWeight="Bold"/>
                         <TextBlock Text="Backup your data to a secure location or restore from a previous backup." Foreground="#6B7280"/>

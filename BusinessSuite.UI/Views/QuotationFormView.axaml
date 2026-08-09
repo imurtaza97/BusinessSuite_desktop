@@ -1,0 +1,436 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:BusinessSuite.UI.ViewModels"
+             xmlns:conv="clr-namespace:BusinessSuite.UI.Converters"
+             mc:Ignorable="d" d:DesignWidth="1100" d:DesignHeight="700"
+             x:Class="BusinessSuite.UI.Views.QuotationFormView"
+             x:DataType="vm:QuotationFormViewModel"
+             Name="Root">
+
+    <UserControl.Resources>
+        <conv:DecimalToBoolConverter x:Key="DecimalToBoolConverter"/>
+        <conv:NullToZeroConverter x:Key="NullToZeroConverter"/>
+    </UserControl.Resources>
+
+    <ScrollViewer>
+        <Grid RowDefinitions="Auto, *, Auto" Margin="30">
+            <!-- Header Info -->
+            <StackPanel Grid.Row="0" Spacing="20" Margin="0,0,0,20">
+                <Grid ColumnDefinitions="*, Auto">
+                    <TextBlock Text="{Binding Title}" FontSize="24" FontWeight="Bold" Foreground="#111827"/>
+                    <!-- Finalization Badge -->
+                    <Border Grid.Column="1" Background="#EFF6FF" BorderBrush="#3B82F6" BorderThickness="1" CornerRadius="6" Padding="12,6" IsVisible="{Binding IsFinalized}">
+                        <TextBlock Text="📝 FINALIZED" Foreground="#2563EB" FontWeight="Bold" FontSize="12"/>
+                    </Border>
+                </Grid>
+                
+                <Border Background="White" BorderBrush="#E5E7EB" BorderThickness="1" CornerRadius="8" Padding="20">
+                    <Grid ColumnDefinitions="*, *, *">
+                        <StackPanel Grid.Column="0" Spacing="5" Margin="0,0,10,0">
+                            <TextBlock Text="Customer" FontWeight="Medium" Foreground="#374151"/>
+                            <Grid ColumnDefinitions="*, Auto">
+                                <ComboBox ItemsSource="{Binding FilteredCustomers}" 
+                                          SelectedItem="{Binding SelectedCustomer}"
+                                          Text="{Binding CustomerSearchQuery, UpdateSourceTrigger=PropertyChanged}"
+                                          IsDropDownOpen="{Binding IsCustomerDropDownOpen}"
+                                          MaxDropDownHeight="300"
+                                          HorizontalAlignment="Stretch"
+                                          IsEditable="True"
+                                          IsTextSearchEnabled="False"
+                                          IsEnabled="{Binding CanEditItemsAndBasics}">
+                                    <ComboBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <StackPanel Orientation="Horizontal" Spacing="10">
+                                                <TextBlock Text="{Binding CustomerName}"/>
+                                                <TextBlock Text="{Binding ContactNo}" Foreground="Gray" FontSize="12"/>
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </ComboBox.ItemTemplate>
+                                </ComboBox>
+                                <Button Grid.Column="1" 
+                                        Content="+" 
+                                        Command="{Binding AddCustomerCommand}"
+                                        Padding="10,0"
+                                        Margin="5,0,0,0"
+                                        VerticalAlignment="Stretch"
+                                        VerticalContentAlignment="Center"
+                                        Background="#F3F4F6"/>
+                            </Grid>
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="1" Spacing="5" Margin="10,0,10,0">
+                            <TextBlock Text="Quotation Number" FontWeight="Medium" Foreground="#374151"/>
+                            <TextBox Text="{Binding QuotationNumber}" IsReadOnly="True" Background="#F9FAFB"/>
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="2" Spacing="5" Margin="10,0,0,0">
+                            <TextBlock Text="Place of Supply" FontWeight="Medium" Foreground="#374151"/>
+                            <ComboBox ItemsSource="{Binding ((vm:DashboardViewModel)DataContext).States, RelativeSource={RelativeSource AncestorType=Window}}"
+                                      SelectedItem="{Binding PlaceOfSupply}"
+                                      HorizontalAlignment="Stretch"/>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+                
+                <Border Background="White" BorderBrush="#E5E7EB" BorderThickness="1" CornerRadius="8" Padding="20" Margin="0,10,0,0">
+                    <Grid ColumnDefinitions="*, *, *, *, *, *">
+                        <StackPanel Grid.Column="0" Spacing="5" Margin="0,0,10,0">
+                            <TextBlock Text="Date" FontWeight="Medium" Foreground="#374151"/>
+                            <CalendarDatePicker SelectedDate="{Binding QuotationDate}" HorizontalAlignment="Stretch" SelectedDateFormat="Short" IsEnabled="{Binding CanEditItemsAndBasics}"/>
+                        </StackPanel>
+                        
+                        <StackPanel Grid.Column="1" Spacing="5" Margin="10,0,10,0">
+                            <TextBlock Text="Valid Until" FontWeight="Medium" Foreground="#374151"/>
+                            <CalendarDatePicker SelectedDate="{Binding DueDate}" HorizontalAlignment="Stretch" SelectedDateFormat="Short" IsEnabled="{Binding CanEditItemsAndBasics}"/>
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="2" Spacing="5" Margin="10,0,10,0">
+                            <TextBlock Text="Warehouse" FontWeight="Medium" Foreground="#374151"/>
+                            <ComboBox ItemsSource="{Binding Warehouses}" 
+                                      SelectedItem="{Binding SelectedWarehouse}" 
+                                      HorizontalAlignment="Stretch"
+                                      IsEnabled="{Binding CanEditItemsAndBasics}">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding WarehouseName}"/>
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="3" Spacing="5" Margin="10,0,10,0">
+                            <TextBlock Text="Status" FontWeight="Medium" Foreground="#374151"/>
+                            <ComboBox ItemsSource="{Binding DeliveryStatusOptions}" SelectedItem="{Binding DeliveryStatus}" HorizontalAlignment="Stretch" IsEnabled="{Binding CanEditDeliveryFields}"/>
+                        </StackPanel>
+                        
+                        <StackPanel Grid.Column="4" Spacing="5" Margin="10,0,10,0">
+                            <TextBlock Text="Payment Status" FontWeight="Medium" Foreground="#374151"/>
+                            <ComboBox ItemsSource="{Binding PaymentStatusOptions}" SelectedItem="{Binding PaymentStatus}" HorizontalAlignment="Stretch" IsEnabled="{Binding CanEditDeliveryFields}"/>
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="5" Spacing="5" Margin="10,0,0,0">
+                            <TextBlock Text="Reverse Charge" FontWeight="Medium" Foreground="#374151"/>
+                            <ToggleSwitch OnContent="Yes" OffContent="No" IsChecked="{Binding ReverseCharge}" IsEnabled="{Binding CanEditItemsAndBasics}"/>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <!-- Discount Mode -->
+                <Border Background="White" BorderBrush="#E5E7EB" BorderThickness="1" CornerRadius="8" Padding="15,10" Margin="0,10,0,0">
+                    <StackPanel Orientation="Horizontal" Spacing="20" VerticalAlignment="Center">
+                        <TextBlock Text="Discount Mode:" VerticalAlignment="Center" FontWeight="Medium" Foreground="#374151"/>
+                        <ToggleSwitch OnContent="Item-level" OffContent="Overall" IsChecked="{Binding IsItemLevelDiscount}" IsEnabled="{Binding CanEditCoreFields}"/>
+                        <!-- Overall discount sub-options (hidden when item-level) -->
+                        <StackPanel Orientation="Horizontal" Spacing="12" VerticalAlignment="Center"
+                                    IsVisible="{Binding !IsItemLevelDiscount}">
+                            <TextBlock Text="Type:" VerticalAlignment="Center" Foreground="#6B7280" FontSize="13"/>
+                            <RadioButton Content="Percentage (%)" IsChecked="{Binding IsDiscountPercentage}" GroupName="DiscountType" VerticalContentAlignment="Center"/>
+                            <RadioButton Content="Fixed Amount (₹)" IsChecked="{Binding IsDiscountAmountMode}" GroupName="DiscountType" VerticalContentAlignment="Center"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+
+            <!-- Line Items -->
+            <Border Grid.Row="1" Background="White" BorderBrush="#E5E7EB" BorderThickness="1" CornerRadius="8" MinHeight="300">
+                <DockPanel>
+                    <Button DockPanel.Dock="Bottom" 
+                            Content="+ Add Item" 
+                            Command="{Binding AddItemCommand}" 
+                            Margin="20"
+                            IsEnabled="{Binding CanEditItems}"
+                            Classes="Secondary"/>
+                    
+                    <DataGrid ItemsSource="{Binding Items}" 
+                              CanUserSortColumns="False" 
+                              CanUserResizeColumns="True"
+                              GridLinesVisibility="All"
+                              BorderThickness="0,0,0,1"
+                              x:Name="QuotationGrid">
+                        <DataGrid.Columns>
+                            <DataGridTemplateColumn Header="Product" Width="*">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Spacing="2" Margin="4,2">
+                                            <Grid ColumnDefinitions="*, Auto">
+                                                <ComboBox ItemsSource="{Binding FilteredProducts}"
+                                                          SelectedItem="{Binding SelectedProduct, Mode=TwoWay}"
+                                                          Text="{Binding SearchQuery, UpdateSourceTrigger=PropertyChanged}"
+                                                          IsDropDownOpen="{Binding IsDropDownOpen}"
+                                                          MaxDropDownHeight="300"
+                                                          HorizontalAlignment="Stretch"
+                                                          BorderThickness="0"
+                                                          IsTextSearchEnabled="False"
+                                                          IsEditable="True"
+                                                          IsEnabled="{Binding ((vm:QuotationFormViewModel)DataContext).CanEditItems, RelativeSource={RelativeSource AncestorType=UserControl}}">
+                                                    <ComboBox.ItemTemplate>
+                                                        <DataTemplate>
+                                                            <StackPanel Orientation="Horizontal" Spacing="10">
+                                                                <TextBlock Text="{Binding ProductName}"/>
+                                                                <TextBlock Text="{Binding SKU}" Foreground="Gray" FontSize="12"/>
+                                                            </StackPanel>
+                                                        </DataTemplate>
+                                                    </ComboBox.ItemTemplate>
+                                                </ComboBox>
+                                                <Button Grid.Column="1" 
+                                                        Content="+" 
+                                                        Command="{Binding ((vm:QuotationFormViewModel)DataContext).AddProductCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                        Padding="5,0"
+                                                        Margin="2,0"
+                                                        Background="Transparent"/>
+                                            </Grid>
+                                            <TextBox Watermark="Custom description / Notes / Serial No"
+                                                     Text="{Binding Description}"
+                                                     BorderThickness="0"
+                                                     Padding="2"
+                                                     FontSize="11"
+                                                     Foreground="Gray"
+                                                     IsEnabled="{Binding ((vm:QuotationFormViewModel)DataContext).CanEditItems, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+
+                            <DataGridTextColumn Header="HSN / SAC" Binding="{Binding HsnCode}" Width="80" IsVisible="{Binding ((vm:QuotationFormViewModel)DataContext).IsGstRegistered, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                            <DataGridTemplateColumn Header="UOM" Width="80">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <ComboBox ItemsSource="{Binding ((vm:QuotationFormViewModel)DataContext).UnitNames, RelativeSource={RelativeSource AncestorType=UserControl}}" 
+                                                  SelectedItem="{Binding Unit}"
+                                                  HorizontalAlignment="Stretch"
+                                                  BorderThickness="0"
+                                                  IsEnabled="{Binding ((vm:QuotationFormViewModel)DataContext).CanEditItems, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+
+                            <DataGridTemplateColumn Header="Quantity" Width="80">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <NumericUpDown Value="{Binding Quantity, Converter={StaticResource NullToZeroConverter}}" Minimum="1" BorderThickness="0" ShowButtonSpinner="False" IsEnabled="{Binding ((vm:QuotationFormViewModel)DataContext).CanEditItems, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+
+                            <DataGridTemplateColumn Header="Unit Price" Width="120">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <NumericUpDown Value="{Binding UnitPrice, Converter={StaticResource NullToZeroConverter}}" Minimum="0" BorderThickness="0" ShowButtonSpinner="False" IsEnabled="{Binding ((vm:QuotationFormViewModel)DataContext).CanEditItems, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+
+                            <DataGridTemplateColumn Header="Discount (₹)" Width="100"
+                                                    IsVisible="{Binding ((vm:QuotationFormViewModel)DataContext).IsItemLevelDiscount, RelativeSource={RelativeSource AncestorType=UserControl}}">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <NumericUpDown Value="{Binding Discount, Converter={StaticResource NullToZeroConverter}}" Minimum="0" BorderThickness="0" ShowButtonSpinner="False" IsEnabled="{Binding ((vm:QuotationFormViewModel)DataContext).CanEditItems, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+
+                            <DataGridTemplateColumn Header="Tax %" Width="100" IsVisible="{Binding IsRegularScheme}">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <ComboBox ItemsSource="{Binding TaxRates}" 
+                                                  SelectedItem="{Binding TaxRate}" 
+                                                  HorizontalAlignment="Stretch"
+                                                  BorderThickness="0"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+
+                            <DataGridTextColumn Header="Tax Amt" Binding="{Binding TaxAmount, StringFormat=₹ \{0:N2\}}" IsReadOnly="True" Width="100" IsVisible="{Binding IsRegularScheme}"/>
+                            <DataGridTextColumn Header="Total" Binding="{Binding TotalAmount, StringFormat=₹ \{0:N2\}}" IsReadOnly="True" Width="120"/>
+
+                            <DataGridTemplateColumn Width="50">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Button Command="{Binding ((vm:QuotationFormViewModel)DataContext).RemoveItemCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" 
+                                                CommandParameter="{Binding}"
+                                                Content="✕" 
+                                                Foreground="#EF4444" 
+                                                Background="Transparent"
+                                                IsEnabled="{Binding ((vm:QuotationFormViewModel)DataContext).CanEditItems, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                HorizontalAlignment="Center"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </DockPanel>
+            </Border>
+
+            <!-- Bottom Section: Terms & Totals -->
+            <Grid Grid.Row="2" ColumnDefinitions="*, Auto" Margin="0,20,0,0">
+                <!-- Left: Payment/Terms -->
+                <StackPanel Grid.Column="0" Spacing="15" Margin="0,0,30,0">
+                    <Grid ColumnDefinitions="*, *">
+                        <StackPanel Grid.Column="0" Spacing="5" Margin="0,0,10,0">
+                            <TextBlock Text="Payment Method" FontWeight="Medium"/>
+                            <ComboBox ItemsSource="{Binding PaymentMethodsList}" 
+                                      SelectedItem="{Binding PaymentMethod}" 
+                                      HorizontalAlignment="Stretch"/>
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Spacing="5" Margin="10,0,0,0">
+                            <TextBlock Text="Payment Terms" FontWeight="Medium"/>
+                            <TextBox Text="{Binding PaymentTerms}"/>
+                        </StackPanel>
+                    </Grid>
+                    
+                    <StackPanel Spacing="5">
+                        <TextBlock Text="Notes" FontWeight="Medium"/>
+                        <TextBox Text="{Binding Notes, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" Height="60" Watermark="Add internal notes..."/>
+                    </StackPanel>
+
+                    <StackPanel Spacing="5">
+                        <TextBlock Text="Terms and Conditions" FontWeight="Medium"/>
+                        <TextBox Text="{Binding TermsAndConditions, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" Height="60" Watermark="Add terms for customer..."/>
+                    </StackPanel>
+
+                    <TextBlock Text="{Binding GeneralErrorMessage}" Foreground="#EF4444" IsVisible="{Binding ValidationVisible}"/>
+                </StackPanel>
+ 
+                <!-- Right: Totals -->
+                <StackPanel Grid.Column="1" Spacing="10" Width="300">
+                    <Grid ColumnDefinitions="*, Auto" Margin="0,5" IsVisible="{Binding IsRegularScheme}">
+                        <TextBlock Text="Taxable Amount:"/>
+                        <TextBlock Grid.Column="1" Text="{Binding TotalAmount, StringFormat=₹ \{0:N2\}}" FontWeight="SemiBold"/>
+                    </Grid>
+
+                    <Separator Margin="0,5"/>
+                    
+                    <StackPanel IsVisible="{Binding IsRegularScheme}">
+                        <StackPanel IsVisible="{Binding TotalCGST, Converter={StaticResource DecimalToBoolConverter}}">
+                            <TextBlock Text="Tax Type: CGST + SGST" FontSize="11" Foreground="#3B82F6" Margin="0,2"/>
+                            <Grid ColumnDefinitions="*, Auto">
+                                <TextBlock Text="CGST:" FontWeight="Medium"/>
+                                <TextBlock Grid.Column="1" Text="{Binding TotalCGST, StringFormat=₹ \{0:N2\}}" FontWeight="SemiBold"/>
+                            </Grid>
+                            <Grid ColumnDefinitions="*, Auto" Margin="0,2,0,5">
+                                <TextBlock Text="SGST:" FontWeight="Medium"/>
+                                <TextBlock Grid.Column="1" Text="{Binding TotalSGST, StringFormat=₹ \{0:N2\}}" FontWeight="SemiBold"/>
+                            </Grid>
+                        </StackPanel>
+                        
+                        <StackPanel IsVisible="{Binding TotalIGST, Converter={StaticResource DecimalToBoolConverter}}">
+                            <TextBlock Text="Tax Type: IGST" FontSize="11" Foreground="#3B82F6" Margin="0,2"/>
+                            <Grid ColumnDefinitions="*, Auto" Margin="0,0,0,5">
+                                <TextBlock Text="IGST:" FontWeight="Medium"/>
+                                <TextBlock Grid.Column="1" Text="{Binding TotalIGST, StringFormat=₹ \{0:N2\}}" FontWeight="SemiBold"/>
+                            </Grid>
+                        </StackPanel>
+                    </StackPanel>
+
+                    <Grid ColumnDefinitions="*, Auto" Margin="0,5" IsVisible="{Binding IsRegularScheme}">
+                        <TextBlock Text="Total Tax:" FontWeight="Medium"/>
+                        <TextBlock Grid.Column="1" Text="{Binding TotalTax, StringFormat=₹ \{0:N2\}}" FontWeight="SemiBold"/>
+                    </Grid>
+                    <Separator Margin="0,5" IsVisible="{Binding IsRegularScheme}"/>
+
+                    <!-- Overall Discount (hidden when item-level) -->
+                    <Grid ColumnDefinitions="*, Auto" Margin="0,5" IsVisible="{Binding !IsItemLevelDiscount}">
+                        <TextBlock Text="{Binding IsDiscountPercentage, StringFormat={}{0}}"
+                                   IsVisible="False"/>
+                        <StackPanel Orientation="Horizontal" Spacing="5">
+                            <TextBlock Text="Discount" VerticalAlignment="Center"/>
+                            <TextBlock Text="(%):" VerticalAlignment="Center" IsVisible="{Binding IsDiscountPercentage}"/>
+                            <TextBlock Text="(₹):" VerticalAlignment="Center" IsVisible="{Binding !IsDiscountPercentage}"/>
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="5">
+                            <NumericUpDown Value="{Binding DiscountPercentage, Converter={StaticResource NullToZeroConverter}}" 
+                                           Width="100" ShowButtonSpinner="False"
+                                           IsVisible="{Binding IsDiscountPercentage}"
+                                           IsEnabled="{Binding CanEditCoreFields}"
+                                           Minimum="0" Maximum="100"/>
+                            <NumericUpDown Value="{Binding Discount, Converter={StaticResource NullToZeroConverter}}" 
+                                           Width="100" ShowButtonSpinner="False"
+                                           IsVisible="{Binding !IsDiscountPercentage}"
+                                           IsEnabled="{Binding CanEditCoreFields}"
+                                           Minimum="0"/>
+                        </StackPanel>
+                    </Grid>
+                    <!-- Item-level discount total (read-only summary) -->
+                    <Grid ColumnDefinitions="*, Auto" Margin="0,5" IsVisible="{Binding IsItemLevelDiscount}">
+                        <TextBlock Text="Item Discounts (total):"/>
+                        <TextBlock Grid.Column="1" Text="{Binding Discount, StringFormat=₹ \{0:N2\}}" FontWeight="SemiBold" Foreground="#EF4444"/>
+                    </Grid>
+                    
+                    <Grid ColumnDefinitions="*, Auto" Margin="0,5">
+                        <TextBlock Text="Shipping Charges:"/>
+                        <NumericUpDown Grid.Column="1" Value="{Binding ShippingCharges, Converter={StaticResource NullToZeroConverter}}" Width="120" ShowButtonSpinner="False"/>
+                    </Grid>
+
+                    <Grid ColumnDefinitions="*, Auto" Margin="0,5">
+                        <TextBlock Text="Round Off:"/>
+                        <StackPanel Orientation="Horizontal" Spacing="10" Grid.Column="1" VerticalAlignment="Center">
+                            <CheckBox Content="Round off" IsChecked="{Binding IsAutoRoundOff}" VerticalAlignment="Center"/>
+                            <TextBlock Text="{Binding RoundOff, StringFormat=₹ \{0:N2\}}" VerticalAlignment="Center" FontWeight="SemiBold" Foreground="#6B7280"/>
+                        </StackPanel>
+                    </Grid>
+                    <Grid ColumnDefinitions="*, Auto" Margin="0,5">
+                        <TextBlock Text="Total Paid:" FontWeight="Bold" VerticalAlignment="Center"/>
+                        <NumericUpDown Grid.Column="1" Value="{Binding TotalPaid, Converter={StaticResource NullToZeroConverter}}" Width="120" ShowButtonSpinner="False" Foreground="#059669" FontWeight="Bold"/>
+                    </Grid>
+
+                    <Separator/>
+                    <Border Background="#2563EB" CornerRadius="4" Padding="10" Margin="0,5">
+                        <StackPanel Grid.ColumnSpan="2">
+                            <Grid ColumnDefinitions="*, Auto">
+                                <TextBlock Text="Grand Total" Foreground="White" FontSize="16" FontWeight="Bold"/>
+                                <TextBlock Grid.Column="1" Text="{Binding GrandTotal, StringFormat=₹ \{0:N2\}}" Foreground="White" FontSize="16" FontWeight="Bold"/>
+                            </Grid>
+                            <TextBlock Text="{Binding TotalInWords}" Foreground="#BFDBFE" FontSize="10" TextWrapping="Wrap" Margin="0,5,0,0" FontStyle="Italic"/>
+                        </StackPanel>
+                    </Border>
+ 
+                    <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Right" Margin="0,20,0,0" VerticalAlignment="Center" MaxWidth="420">
+                        <Button Content="Cancel" Command="{Binding CancelCommand}" MinWidth="80" HorizontalContentAlignment="Center" Padding="10,8"/>
+                        <Button Content="Save as Draft" Command="{Binding SaveDraftCommand}" MinWidth="110" HorizontalContentAlignment="Center" IsVisible="{Binding !IsFinalized}" IsEnabled="{Binding !IsFinalized}" Padding="10,8"/>
+                        <Button Content="Save Quotation" Command="{Binding SaveCommand}" MinWidth="110" HorizontalContentAlignment="Center" Classes="Primary" Padding="10,8"/>
+                    </StackPanel>
+                </StackPanel>
+            </Grid>
+        </Grid>
+    </ScrollViewer>
+
+    <UserControl.Styles>
+        <Style Selector="Button.Primary">
+            <Setter Property="Background" Value="#2563EB"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Padding" Value="10,8"/>
+        </Style>
+        <Style Selector="Button.Secondary">
+            <Setter Property="Background" Value="#F3F4F6"/>
+            <Setter Property="Foreground" Value="#374151"/>
+            <Setter Property="Padding" Value="10,5"/>
+        </Style>
+        <!-- Disabled field styles for better visibility -->
+        <Style Selector="TextBox:disabled">
+            <Setter Property="Background" Value="#EAEEF7"/>
+            <Setter Property="Foreground" Value="#1F2937"/>
+            <Setter Property="BorderBrush" Value="#9CA3AF"/>
+            <Setter Property="Opacity" Value="1"/>
+        </Style>
+        <Style Selector="NumericUpDown:disabled">
+            <Setter Property="Background" Value="#EAEEF7"/>
+            <Setter Property="Foreground" Value="#1F2937"/>
+            <Setter Property="BorderBrush" Value="#9CA3AF"/>
+            <Setter Property="Opacity" Value="1"/>
+        </Style>
+        <Style Selector="ComboBox:disabled">
+            <Setter Property="Background" Value="#EAEEF7"/>
+            <Setter Property="Foreground" Value="#1F2937"/>
+            <Setter Property="BorderBrush" Value="#9CA3AF"/>
+            <Setter Property="Opacity" Value="1"/>
+        </Style>
+        <Style Selector="CalendarDatePicker:disabled">
+            <Setter Property="Background" Value="#EAEEF7"/>
+            <Setter Property="Foreground" Value="#1F2937"/>
+            <Setter Property="BorderBrush" Value="#9CA3AF"/>
+            <Setter Property="Opacity" Value="1"/>
+        </Style>
+    </UserControl.Styles>
+</UserControl>

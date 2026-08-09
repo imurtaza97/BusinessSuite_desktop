@@ -15,7 +15,7 @@ namespace BusinessSuite.DAL.Migrations
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "8.0.4");
+            modelBuilder.HasAnnotation("ProductVersion", "8.0.7");
 
             modelBuilder.Entity("BusinessSuite.DAL.Entities.AuditLog", b =>
                 {
@@ -726,6 +726,48 @@ namespace BusinessSuite.DAL.Migrations
                     b.ToTable("FinanceLedgers");
                 });
 
+            modelBuilder.Entity("BusinessSuite.DAL.Entities.FinancialYear", b =>
+                {
+                    b.Property<int>("FinancialYearID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("BusinessId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime?>("ClosedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("EndDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("IsClosed")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Label")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("OpeningBalanceCarriedForward")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("FinancialYearID");
+
+                    b.HasIndex("BusinessId");
+
+                    b.ToTable("FinancialYears");
+                });
+
             modelBuilder.Entity("BusinessSuite.DAL.Entities.GstRate", b =>
                 {
                     b.Property<int>("RateID")
@@ -941,6 +983,10 @@ namespace BusinessSuite.DAL.Migrations
 
                     b.Property<decimal>("CGST_Rate")
                         .HasColumnType("decimal(5, 2)");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("TEXT");
 
                     b.Property<decimal>("Discount")
                         .HasColumnType("decimal(18, 2)");
@@ -1409,6 +1455,10 @@ namespace BusinessSuite.DAL.Migrations
                     b.Property<decimal>("CGST_Rate")
                         .HasColumnType("decimal(5, 2)");
 
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("TEXT");
+
                     b.Property<decimal>("Discount")
                         .HasColumnType("decimal(18, 2)");
 
@@ -1465,6 +1515,234 @@ namespace BusinessSuite.DAL.Migrations
                     b.HasIndex("PurchaseOrderID");
 
                     b.ToTable("PurchaseOrderItems");
+                });
+
+            modelBuilder.Entity("BusinessSuite.DAL.Entities.Quotation", b =>
+                {
+                    b.Property<int>("QuotationID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("BusinessID")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("CancellationReason")
+                        .HasMaxLength(500)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("CancelledAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int?>("CancelledByUserID")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int?>("CreatedByUserID")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("CustomerID")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int?>("DeletedByUserID")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("DeletionReason")
+                        .HasMaxLength(500)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("DeliveryStatus")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("Discount")
+                        .HasColumnType("decimal(18, 2)");
+
+                    b.Property<DateTime?>("DueDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("GrandTotal")
+                        .HasColumnType("decimal(18, 2)");
+
+                    b.Property<bool>("IsAutoRoundOff")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("IsDraft")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("IsItemLevelDiscount")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime?>("ModifiedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int?>("ModifiedByUserID")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(500)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("PaymentMethod")
+                        .HasMaxLength(50)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("PaymentStatus")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("PaymentTerms")
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("PlaceOfSupply")
+                        .HasMaxLength(50)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("PostedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int?>("PostedByUserID")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("QuotationDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("QuotationNumber")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("ReverseCharge")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<decimal>("RoundOff")
+                        .HasColumnType("decimal(18, 2)");
+
+                    b.Property<decimal>("ShippingCharges")
+                        .HasColumnType("decimal(18, 2)");
+
+                    b.Property<string>("TermsAndConditions")
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("TotalAmount")
+                        .HasColumnType("decimal(18, 2)");
+
+                    b.Property<decimal>("TotalCGST")
+                        .HasColumnType("decimal(18, 2)");
+
+                    b.Property<decimal>("TotalIGST")
+                        .HasColumnType("decimal(18, 2)");
+
+                    b.Property<decimal>("TotalPaid")
+                        .HasColumnType("decimal(18, 2)");
+
+                    b.Property<decimal>("TotalSGST")
+                        .HasColumnType("decimal(18, 2)");
+
+                    b.Property<decimal>("TotalTax")
+                        .HasColumnType("decimal(18, 2)");
+
+                    b.HasKey("QuotationID");
+
+                    b.HasIndex("BusinessID");
+
+                    b.HasIndex("CancelledByUserID");
+
+                    b.HasIndex("CreatedByUserID");
+
+                    b.HasIndex("CustomerID");
+
+                    b.HasIndex("DeletedByUserID");
+
+                    b.HasIndex("ModifiedByUserID");
+
+                    b.HasIndex("PostedByUserID");
+
+                    b.ToTable("Quotations");
+                });
+
+            modelBuilder.Entity("BusinessSuite.DAL.Entities.QuotationItem", b =>
+                {
+                    b.Property<int>("QuotationItemID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<decimal>("CGST_Amount")
+                        .HasColumnType("decimal(18, 2)");
+
+                    b.Property<decimal>("CGST_Rate")
+                        .HasColumnType("decimal(5, 2)");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("Discount")
+                        .HasColumnType("decimal(18, 2)");
+
+                    b.Property<string>("HSNCode")
+                        .HasMaxLength(20)
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("IGST_Amount")
+                        .HasColumnType("decimal(18, 2)");
+
+                    b.Property<decimal>("IGST_Rate")
+                        .HasColumnType("decimal(5, 2)");
+
+                    b.Property<string>("ItemType")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("ProductID")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("QuotationID")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<decimal>("SGST_Amount")
+                        .HasColumnType("decimal(18, 2)");
+
+                    b.Property<decimal>("SGST_Rate")
+                        .HasColumnType("decimal(5, 2)");
+
+                    b.Property<decimal>("TaxAmount")
+                        .HasColumnType("decimal(18, 2)");
+
+                    b.Property<decimal>("TaxRate")
+                        .HasColumnType("decimal(5, 2)");
+
+                    b.Property<decimal>("TotalAmount")
+                        .HasColumnType("decimal(18, 2)");
+
+                    b.Property<string>("Unit")
+                        .HasMaxLength(10)
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("UnitPrice")
+                        .HasColumnType("decimal(18, 2)");
+
+                    b.HasKey("QuotationItemID");
+
+                    b.HasIndex("ProductID");
+
+                    b.HasIndex("QuotationID");
+
+                    b.ToTable("QuotationItems");
                 });
 
             modelBuilder.Entity("BusinessSuite.DAL.Entities.Settings", b =>
@@ -2171,6 +2449,17 @@ namespace BusinessSuite.DAL.Migrations
                     b.Navigation("Business");
                 });
 
+            modelBuilder.Entity("BusinessSuite.DAL.Entities.FinancialYear", b =>
+                {
+                    b.HasOne("BusinessSuite.DAL.Entities.Business", "Business")
+                        .WithMany()
+                        .HasForeignKey("BusinessId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Business");
+                });
+
             modelBuilder.Entity("BusinessSuite.DAL.Entities.Invoice", b =>
                 {
                     b.HasOne("BusinessSuite.DAL.Entities.Business", "Business")
@@ -2392,6 +2681,74 @@ namespace BusinessSuite.DAL.Migrations
                     b.Navigation("PurchaseOrder");
                 });
 
+            modelBuilder.Entity("BusinessSuite.DAL.Entities.Quotation", b =>
+                {
+                    b.HasOne("BusinessSuite.DAL.Entities.Business", "Business")
+                        .WithMany()
+                        .HasForeignKey("BusinessID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("BusinessSuite.DAL.Entities.User", "CancelledByUser")
+                        .WithMany()
+                        .HasForeignKey("CancelledByUserID");
+
+                    b.HasOne("BusinessSuite.DAL.Entities.User", "CreatedByUser")
+                        .WithMany()
+                        .HasForeignKey("CreatedByUserID");
+
+                    b.HasOne("BusinessSuite.DAL.Entities.Customer", "Customer")
+                        .WithMany()
+                        .HasForeignKey("CustomerID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("BusinessSuite.DAL.Entities.User", "DeletedByUser")
+                        .WithMany()
+                        .HasForeignKey("DeletedByUserID");
+
+                    b.HasOne("BusinessSuite.DAL.Entities.User", "ModifiedByUser")
+                        .WithMany()
+                        .HasForeignKey("ModifiedByUserID");
+
+                    b.HasOne("BusinessSuite.DAL.Entities.User", "PostedByUser")
+                        .WithMany()
+                        .HasForeignKey("PostedByUserID");
+
+                    b.Navigation("Business");
+
+                    b.Navigation("CancelledByUser");
+
+                    b.Navigation("CreatedByUser");
+
+                    b.Navigation("Customer");
+
+                    b.Navigation("DeletedByUser");
+
+                    b.Navigation("ModifiedByUser");
+
+                    b.Navigation("PostedByUser");
+                });
+
+            modelBuilder.Entity("BusinessSuite.DAL.Entities.QuotationItem", b =>
+                {
+                    b.HasOne("BusinessSuite.DAL.Entities.Product", "Product")
+                        .WithMany()
+                        .HasForeignKey("ProductID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("BusinessSuite.DAL.Entities.Quotation", "Quotation")
+                        .WithMany("Items")
+                        .HasForeignKey("QuotationID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Product");
+
+                    b.Navigation("Quotation");
+                });
+
             modelBuilder.Entity("BusinessSuite.DAL.Entities.Stock", b =>
                 {
                     b.HasOne("BusinessSuite.DAL.Entities.Product", "Product")
@@ -2480,6 +2837,11 @@ namespace BusinessSuite.DAL.Migrations
                 });
 
             modelBuilder.Entity("BusinessSuite.DAL.Entities.PurchaseOrder", b =>
+                {
+                    b.Navigation("Items");
+                });
+
+            modelBuilder.Entity("BusinessSuite.DAL.Entities.Quotation", b =>
                 {
                     b.Navigation("Items");
                 });

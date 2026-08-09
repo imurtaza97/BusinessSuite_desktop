@@ -42,6 +42,17 @@
             <TextBox Text="{Binding Request.Address}"
                      Watermark="Address Line 1 *"/>
 
+            <!-- PAN Number (optional) -->
+            <TextBlock Text="PAN (Permanent Account Number)"
+                       FontWeight="SemiBold" FontSize="13" Margin="0,5,0,0"/>
+            <TextBox Text="{Binding Pan, UpdateSourceTrigger=PropertyChanged}"
+                     Watermark="e.g. ABCDE1234F  (optional)"
+                     MaxLength="10"/>
+            <TextBlock Text="{Binding PanHint}"
+                       Foreground="{Binding PanHintColor}"
+                       FontSize="11"
+                       Margin="0,-5,0,0"/>
+
             <ComboBox ItemsSource="{Binding States}"
                       SelectedItem="{Binding Request.State}"
                       PlaceholderText="Select State *"

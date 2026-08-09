@@ -60,6 +60,7 @@ public partial class DashboardViewModel : ViewModelBase
     [NotifyPropertyChangedFor(nameof(IsCustomersActive))]
     [NotifyPropertyChangedFor(nameof(IsVendorsActive))]
     [NotifyPropertyChangedFor(nameof(IsSalesActive))]
+    [NotifyPropertyChangedFor(nameof(IsQuotationsActive))]
     [NotifyPropertyChangedFor(nameof(IsCreditNotesActive))]
     [NotifyPropertyChangedFor(nameof(IsDebitNotesActive))]
     [NotifyPropertyChangedFor(nameof(IsBillOfMaterialsActive))]
@@ -77,6 +78,7 @@ public partial class DashboardViewModel : ViewModelBase
     public bool IsCustomersActive => CurrentViewTitle == "Customers";
     public bool IsVendorsActive => CurrentViewTitle == "Vendors";
     public bool IsSalesActive => CurrentViewTitle == "Sales";
+    public bool IsQuotationsActive => CurrentViewTitle == "Quotations";
     public bool IsCreditNotesActive => CurrentViewTitle == "CreditNotes";
     public bool IsDebitNotesActive => CurrentViewTitle == "DebitNotes";
     public bool IsBillOfMaterialsActive => CurrentViewTitle == "BillOfMaterials";
@@ -184,6 +186,13 @@ public partial class DashboardViewModel : ViewModelBase
                 CurrentView = invoicesVm;
                 _ = invoicesVm.LoadInvoicesCommand.ExecuteAsync(null);
                 break;
+            case "Quotations":
+                var quotationsVm = new QuotationsViewModel(_businessId);
+                quotationsVm.RequestQuotationForm += (quotation) => NavigateInternal("QuotationForm", quotation);
+                quotationsVm.RequestInvoiceForm += (invoice) => NavigateInternal("InvoiceForm", invoice);
+                CurrentView = quotationsVm;
+                _ = quotationsVm.LoadQuotationsCommand.ExecuteAsync(null);
+                break;
             case "CreditNotes":
                 var creditNotesVm = new CreditNotesViewModel(_businessId);
                 creditNotesVm.RequestCreditNoteForm += (args) => NavigateInternal("CreditNoteForm", args);
@@ -218,6 +227,11 @@ public partial class DashboardViewModel : ViewModelBase
                 var invoiceFormVm = new InvoiceFormViewModel(_businessId, parameter as Invoice);
                 invoiceFormVm.RequestClose += (result) => NavigateInternal("Sales");
                 CurrentView = invoiceFormVm;
+                break;
+            case "QuotationForm":
+                var quotationFormVm = new QuotationFormViewModel(_businessId, parameter as Quotation);
+                quotationFormVm.RequestClose += (result) => NavigateInternal("Quotations");
+                CurrentView = quotationFormVm;
                 break;
             case "BillOfMaterials":
                 var bomVm = new BillOfMaterialsViewModel(_businessId);

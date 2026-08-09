@@ -9,6 +9,7 @@ using BusinessSuite.BLL.Services;
 using BusinessSuite.DAL.Data;
 using BusinessSuite.DAL.Entities;
 using BusinessSuite.DAL.Repositories;
+using BusinessSuite.UI.Services;
 using BusinessSuite.UI.Views;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
@@ -26,6 +27,7 @@ public partial class PurchaseOrderFormViewModel : ViewModelBase, INotifyDataErro
     private readonly WarehouseRepository _warehouseRepository;
     private readonly LedgerService _ledgerService;
     private readonly TaxCalculator _taxCalculator;
+    private readonly AuditTrailService _auditService;
     private readonly Business _business;
     private readonly int _businessId;
 
@@ -170,9 +172,9 @@ public partial class PurchaseOrderFormViewModel : ViewModelBase, INotifyDataErro
     public bool IsGstRegistered => _business?.IsGSTRegistered ?? false;
     public bool IsDiscountAmountMode => !IsDiscountPercentage;
     public bool IsFinalized => _isFinalized;
-    public bool CanEditCoreFields => !_isFinalized;
-    public bool CanEditItems => !_isFinalized;
-    public bool CanEditItemsAndBasics => !_isFinalized; // Phase 2: Restrict core business fields
+    public bool CanEditCoreFields => true;
+    public bool CanEditItems => true;
+    public bool CanEditItemsAndBasics => true; // Phase 2: Restrict core business fields
     public bool CanEditPaymentStatus => true; // Always editable for tracking
     public bool CanEditPaymentFields => true; // Amount paid is always editable
     public bool CanEditDeliveryStatus => true; // Always editable for tracking
@@ -194,6 +196,7 @@ public partial class PurchaseOrderFormViewModel : ViewModelBase, INotifyDataErro
         var dbFactory = new AppDbContextFactory();
         _ledgerService = new LedgerService(dbFactory);
         _taxCalculator = new TaxCalculator();
+        _auditService = new AuditTrailService(new AppDbContext());
 
         _business = db.Businesses.FirstOrDefault(b => b.BusinessID == businessId) ?? new Business();
 
@@ -358,6 +361,7 @@ public partial class PurchaseOrderFormViewModel : ViewModelBase, INotifyDataErro
                     itemVm.Discount = item.Discount;
                     itemVm.Unit = item.Unit;
                     itemVm.HsnCode = item.HSNCode;
+                    itemVm.Description = item.Description ?? itemVm.SelectedProduct?.ProductName;
                     Items.Add(itemVm);
                 }
                 CalculateTotals();
@@ -680,7 +684,9 @@ public partial class PurchaseOrderFormViewModel : ViewModelBase, INotifyDataErro
                 HSNCode = i.HsnCode,
                 Unit = i.Unit,
                 Discount = i.Discount,
-                TotalAmount = i.TotalAmount
+                TotalAmount = i.TotalAmount,
+                ItemType = i.ItemType,
+                Description = i.Description
             }).ToList()
         };
 
@@ -691,12 +697,19 @@ public partial class PurchaseOrderFormViewModel : ViewModelBase, INotifyDataErro
                 var updated = await _poRepository.UpdateAsync(po);
                 if (!updated)
                     throw new InvalidOperationException("Unable to update draft purchase order.");
+                _ = _auditService.LogFieldModifiedAsync(
+                    _businessId, "PurchaseOrder", po.PurchaseOrderID,
+                    "All", null, po.PONumber,
+                    AppState.Instance.GetCurrentUserId(), "Draft PO updated");
             }
             else
             {
                 var added = await _poRepository.AddAsync(po);
                 if (!added)
                     throw new InvalidOperationException("Unable to save draft purchase order.");
+                _ = _auditService.LogCreatedAsync(
+                    _businessId, "PurchaseOrder", po.PurchaseOrderID,
+                    AppState.Instance.GetCurrentUserId(), $"Draft PO {po.PONumber} created");
             }
 
             RequestClose?.Invoke(po);
@@ -805,7 +818,8 @@ public partial class PurchaseOrderFormViewModel : ViewModelBase, INotifyDataErro
                 Unit = i.Unit,
                 Discount = i.Discount,
                 TotalAmount = i.TotalAmount,
-                ItemType = i.ItemType
+                ItemType = i.ItemType,
+                Description = i.Description
             }).ToList()
         };
 
@@ -839,6 +853,16 @@ public partial class PurchaseOrderFormViewModel : ViewModelBase, INotifyDataErro
 
         if (success)
         {
+            _ = _auditService.LogFinalizedAsync(
+                _businessId, "PurchaseOrder", po.PurchaseOrderID,
+                AppState.Instance.GetCurrentUserId());
+            if (_existingPOId.HasValue)
+            {
+                _ = _auditService.LogFieldModifiedAsync(
+                    _businessId, "PurchaseOrder", po.PurchaseOrderID,
+                    "All", null, po.PONumber,
+                    AppState.Instance.GetCurrentUserId(), "Finalized PO updated");
+            }
             RequestClose?.Invoke(po);
         }
         else if (string.IsNullOrEmpty(GeneralErrorMessage))
@@ -887,6 +911,7 @@ public partial class PurchaseOrderItemViewModel : ObservableObject
     [ObservableProperty] private decimal _totalAmount;
     [ObservableProperty] private string? _hsnCode;
     [ObservableProperty] private bool _isTaxEditable = true;
+    [ObservableProperty] private string? _description;
     [ObservableProperty] private string _itemType = "Product"; // "Product" or "Service"
     
     private string? _unit;
@@ -906,7 +931,6 @@ public partial class PurchaseOrderItemViewModel : ObservableObject
         _allProducts = products;
         _filteredProducts = new ObservableCollection<Product>(products);
         Units = new ObservableCollection<UnitOfMeasure>(units);
-        TaxRates = new ObservableCollection<decimal>(taxRates);
         TaxRates = new ObservableCollection<decimal>(taxRates);
         _allProducts.CollectionChanged += (s, e) => Avalonia.Threading.Dispatcher.UIThread.Post(() => UpdateFilteredProducts(SearchQuery));
     }
@@ -990,6 +1014,7 @@ public partial class PurchaseOrderItemViewModel : ObservableObject
             Unit = value.Unit;
             Discount = 0;
             ItemType = value.IsService ? "Service" : "Product"; // Auto-set type based on product
+            Description = value.ProductName;
             
             _ignoreSearchUpdate = true;
             try

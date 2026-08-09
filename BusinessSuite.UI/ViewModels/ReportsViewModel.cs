@@ -30,6 +30,7 @@ public partial class ReportsViewModel : ViewModelBase
     [ObservableProperty] private bool _isLoading;
     [ObservableProperty] private bool _isGstRegistered;
     [ObservableProperty] private string _selectedPeriod = "month"; // month or quarter
+    [ObservableProperty] private int _selectedTabIndex; // 0 = first visible tab
 
     public ReportsViewModel(int businessId)
     {
@@ -41,6 +42,12 @@ public partial class ReportsViewModel : ViewModelBase
         // Load business GST status
         var business = db.Businesses.Find(businessId);
         IsGstRegistered = business?.IsGSTRegistered ?? false;
+
+        // For non-GST businesses: default to Top Vendors tab (index 1 in the tab order below).
+        // For GST businesses: default to GST Report tab (index 0).
+        // Tab order: 0=GST Report(GST only), 1=Top Vendors, 2=Top Customers,
+        //            3=GSTR-1(GST), 4=GSTR-3B(GST), 5=Tax Liability(GST), 6=HSN(GST)
+        SelectedTabIndex = IsGstRegistered ? 0 : 1;
     }
 
     public IAsyncRelayCommand LoadReportsCommand { get; }

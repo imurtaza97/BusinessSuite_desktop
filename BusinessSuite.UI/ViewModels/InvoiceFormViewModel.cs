@@ -9,6 +9,7 @@ using BusinessSuite.BLL.Services;
 using BusinessSuite.DAL.Data;
 using BusinessSuite.DAL.Entities;
 using BusinessSuite.DAL.Repositories;
+using BusinessSuite.UI.Services;
 using BusinessSuite.UI.Views;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
@@ -26,6 +27,7 @@ public partial class InvoiceFormViewModel : ViewModelBase, INotifyDataErrorInfo
     private readonly WarehouseRepository _warehouseRepository;
     private readonly LedgerService _ledgerService;
     private readonly TaxCalculator _taxCalculator;
+    private readonly AuditTrailService _auditService;
     private readonly Business _business;
     private readonly int _businessId;
 
@@ -169,9 +171,9 @@ public partial class InvoiceFormViewModel : ViewModelBase, INotifyDataErrorInfo
     public bool IsRegularScheme => IsGstRegistered && !IsComposition;
     public bool IsDiscountAmountMode => !IsDiscountPercentage;
     public bool IsFinalized => _isFinalized;
-    public bool CanEditCoreFields => !_isFinalized;
-    public bool CanEditItems => !_isFinalized;
-    public bool CanEditItemsAndBasics => !_isFinalized; // Phase 2: Restrict core business fields
+    public bool CanEditCoreFields => true;
+    public bool CanEditItems => true;
+    public bool CanEditItemsAndBasics => true; // Phase 2: Restrict core business fields
     public bool CanEditPaymentStatus => true; // Always editable for tracking
     public bool CanEditPaymentFields => true; // Amount paid is always editable
     public bool CanEditDeliveryStatus => true; // Always editable for tracking
@@ -201,6 +203,7 @@ public partial class InvoiceFormViewModel : ViewModelBase, INotifyDataErrorInfo
         var dbFactory = new AppDbContextFactory();
         _ledgerService = new LedgerService(dbFactory);
         _taxCalculator = new TaxCalculator();
+        _auditService = new AuditTrailService(new AppDbContext());
 
         _business = db.Businesses.FirstOrDefault(b => b.BusinessID == businessId) ?? new Business();
 
@@ -212,7 +215,7 @@ public partial class InvoiceFormViewModel : ViewModelBase, INotifyDataErrorInfo
         AddProductCommand = new AsyncRelayCommand(AddProductAsync);
         AddCustomerCommand = new AsyncRelayCommand(AddCustomerAsync);
 
-        if (existingInvoice != null)
+        if (existingInvoice != null && existingInvoice.InvoiceID > 0)
         {
             _existingInvoiceId = existingInvoice.InvoiceID;
             _isFinalized = !existingInvoice.IsDraft;
@@ -240,6 +243,26 @@ public partial class InvoiceFormViewModel : ViewModelBase, INotifyDataErrorInfo
         {
             PlaceOfSupply = _business.State;
             DueDate = DateTime.Now.AddDays(30);
+
+            if (existingInvoice != null && existingInvoice.InvoiceID == 0)
+            {
+                Title = "Create Invoice";
+                InvoiceDate = DateTime.Now;
+                PaymentMethod = existingInvoice.PaymentMethod ?? "Cash";
+                PaymentTerms = existingInvoice.PaymentTerms ?? "Due on Receipt";
+                TermsAndConditions = existingInvoice.TermsAndConditions;
+                Notes = existingInvoice.Notes;
+                ShippingCharges = existingInvoice.ShippingCharges;
+                Discount = existingInvoice.Discount;
+                DeliveryStatus = "Pending";
+                PaymentStatus = "Unpaid";
+                TotalPaid = 0;
+                PlaceOfSupply = existingInvoice.PlaceOfSupply ?? _business.State;
+                RoundOff = existingInvoice.RoundOff;
+                DueDate = existingInvoice.DueDate ?? DateTime.Now.AddDays(30);
+                IsAutoRoundOff = existingInvoice.IsAutoRoundOff;
+                IsItemLevelDiscount = existingInvoice.IsItemLevelDiscount;
+            }
         }
 
         // Don't use fire-and-forget in constructor if possible, 
@@ -306,7 +329,7 @@ public partial class InvoiceFormViewModel : ViewModelBase, INotifyDataErrorInfo
     private async Task InitializeAsync(Invoice? existing = null)
     {
         var nextNumber = "";
-        if (existing == null)
+        if (existing == null || existing.InvoiceID == 0)
         {
             var fy = GetFinancialYear(InvoiceDate ?? DateTime.Now);
 
@@ -326,7 +349,7 @@ public partial class InvoiceFormViewModel : ViewModelBase, INotifyDataErrorInfo
 
         await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
         {
-            if (existing == null)
+            if (existing == null || existing.InvoiceID == 0)
                 InvoiceNumber = nextNumber;
 
             Customers.Clear();
@@ -371,6 +394,7 @@ public partial class InvoiceFormViewModel : ViewModelBase, INotifyDataErrorInfo
                     itemVm.Discount = item.Discount;
                     itemVm.Unit = item.Unit;
                     itemVm.HsnCode = item.HSNCode;
+                    itemVm.Description = item.Description ?? itemVm.SelectedProduct?.ProductName;
                     Items.Add(itemVm);
                 }
                 CalculateTotals();
@@ -712,7 +736,8 @@ public partial class InvoiceFormViewModel : ViewModelBase, INotifyDataErrorInfo
                 Unit = i.Unit,
                 Discount = i.Discount,
                 TotalAmount = i.TotalAmount,
-                ItemType = i.ItemType
+                ItemType = i.ItemType,
+                Description = i.Description
             }).ToList()
         };
 
@@ -723,12 +748,19 @@ public partial class InvoiceFormViewModel : ViewModelBase, INotifyDataErrorInfo
                 var updated = await _invoiceRepository.UpdateAsync(invoice);
                 if (!updated)
                     throw new InvalidOperationException("Unable to update draft invoice.");
+                _ = _auditService.LogFieldModifiedAsync(
+                    _businessId, "Invoice", invoice.InvoiceID,
+                    "All", null, invoice.InvoiceNumber,
+                    AppState.Instance.GetCurrentUserId(), "Draft updated");
             }
             else
             {
                 var added = await _invoiceRepository.AddAsync(invoice);
                 if (!added)
                     throw new InvalidOperationException("Unable to save draft invoice.");
+                _ = _auditService.LogCreatedAsync(
+                    _businessId, "Invoice", invoice.InvoiceID,
+                    AppState.Instance.GetCurrentUserId(), $"Draft invoice {invoice.InvoiceNumber} created");
             }
 
             RequestClose?.Invoke(invoice);
@@ -837,7 +869,8 @@ public partial class InvoiceFormViewModel : ViewModelBase, INotifyDataErrorInfo
                 Unit = i.Unit,
                 Discount = i.Discount,
                 TotalAmount = i.TotalAmount,
-                ItemType = i.ItemType
+                ItemType = i.ItemType,
+                Description = i.Description
             }).ToList()
         };
 
@@ -872,6 +905,16 @@ public partial class InvoiceFormViewModel : ViewModelBase, INotifyDataErrorInfo
 
         if (success)
         {
+            _ = _auditService.LogFinalizedAsync(
+                _businessId, "Invoice", invoice.InvoiceID,
+                AppState.Instance.GetCurrentUserId());
+            if (_existingInvoiceId.HasValue)
+            {
+                _ = _auditService.LogFieldModifiedAsync(
+                    _businessId, "Invoice", invoice.InvoiceID,
+                    "All", null, invoice.InvoiceNumber,
+                    AppState.Instance.GetCurrentUserId(), "Finalized invoice updated");
+            }
             RequestClose?.Invoke(invoice);
         }
         else if (string.IsNullOrEmpty(GeneralErrorMessage))
@@ -907,6 +950,7 @@ public partial class InvoiceItemViewModel : ObservableObject
     [ObservableProperty] private decimal _igstAmount;
     [ObservableProperty] private decimal _totalAmount;
     [ObservableProperty] private string? _hsnCode;
+    [ObservableProperty] private string? _description;
     [ObservableProperty] private string _itemType = "Product"; // "Product" or "Service"
     
     private string? _unit;
@@ -1015,6 +1059,7 @@ public partial class InvoiceItemViewModel : ObservableObject
             Unit = value.Unit;
             Discount = 0; // Reset discount when product changes
             ItemType = value.IsService ? "Service" : "Product"; // Auto-set type based on product
+            Description = value.ProductName;
 
             _ignoreSearchUpdate = true;
             try

@@ -12,6 +12,8 @@ public class AppDbContext : DbContext
     public DbSet<Vendor> Vendors => Set<Vendor>();
     public DbSet<Invoice> Invoices => Set<Invoice>();
     public DbSet<InvoiceItem> InvoiceItems => Set<InvoiceItem>();
+    public DbSet<Quotation> Quotations => Set<Quotation>();
+    public DbSet<QuotationItem> QuotationItems => Set<QuotationItem>();
     public DbSet<PurchaseOrder> PurchaseOrders => Set<PurchaseOrder>();
     public DbSet<PurchaseOrderItem> PurchaseOrderItems => Set<PurchaseOrderItem>();
     public DbSet<GstRate> GstRates => Set<GstRate>();
@@ -31,6 +33,7 @@ public class AppDbContext : DbContext
     public DbSet<DebitNoteItem> DebitNoteItems => Set<DebitNoteItem>();
     public DbSet<BillOfMaterials> BillOfMaterials => Set<BillOfMaterials>();
     public DbSet<ProductionOrder> ProductionOrders => Set<ProductionOrder>();
+    public DbSet<FinancialYear> FinancialYears => Set<FinancialYear>();
 
     protected override void OnConfiguring(DbContextOptionsBuilder options)
     {

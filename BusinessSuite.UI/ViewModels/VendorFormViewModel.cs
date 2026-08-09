@@ -57,13 +57,21 @@ public partial class VendorFormViewModel : ViewModelBase, INotifyDataErrorInfo
         else if (VendorName.Length > 100)
             AddError(nameof(VendorName), "Vendor Name cannot exceed 100 characters");
 
-        if (!string.IsNullOrWhiteSpace(GSTIN) && GSTIN.Length != 15)
-            AddError(nameof(GSTIN), "GSTIN must be 15 characters long");
-
         if (IsGstRegistered)
         {
             if (string.IsNullOrWhiteSpace(GSTIN))
                 AddError(nameof(GSTIN), "GSTIN is required for registered vendors");
+            else if (GSTIN.Length != 15)
+                AddError(nameof(GSTIN), "GSTIN must be 15 characters long");
+            else if (!System.Text.RegularExpressions.Regex.IsMatch(GSTIN, @"^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$"))
+                AddError(nameof(GSTIN), "Invalid Indian GSTIN format (e.g. 24ABCDE1234F1Z5)");
+        }
+        else if (!string.IsNullOrWhiteSpace(GSTIN))
+        {
+            if (GSTIN.Length != 15)
+                AddError(nameof(GSTIN), "GSTIN must be 15 characters long");
+            else if (!System.Text.RegularExpressions.Regex.IsMatch(GSTIN, @"^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$"))
+                AddError(nameof(GSTIN), "Invalid Indian GSTIN format (e.g. 24ABCDE1234F1Z5)");
         }
 
         if (string.IsNullOrWhiteSpace(GstTreatment))

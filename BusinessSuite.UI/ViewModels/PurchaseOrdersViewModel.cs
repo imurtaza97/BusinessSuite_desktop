@@ -8,6 +8,7 @@ using BusinessSuite.BLL.Services;
 using BusinessSuite.DAL.Data;
 using BusinessSuite.DAL.Entities;
 using BusinessSuite.DAL.Repositories;
+using BusinessSuite.UI.Services;
 using System.Diagnostics;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
@@ -23,6 +24,7 @@ public partial class PurchaseOrdersViewModel : ViewModelBase
     private readonly PurchaseOrderRepository _poRepository;
     private readonly PurchaseOrderPdfService _pdfService;
     private readonly LedgerService _ledgerService;
+    private readonly AuditTrailService _auditService;
     private readonly int _businessId;
 
     [ObservableProperty]
@@ -60,6 +62,7 @@ public partial class PurchaseOrdersViewModel : ViewModelBase
         _poRepository = new PurchaseOrderRepository(db);
         _pdfService = new PurchaseOrderPdfService();
         _ledgerService = ledgerService;
+        _auditService = new AuditTrailService(new AppDbContext());
         _businessId = businessId;
         
         LoadPOsCommand = new AsyncRelayCommand(LoadPOsAsync);
@@ -170,6 +173,10 @@ public partial class PurchaseOrdersViewModel : ViewModelBase
 
             if (success)
             {
+                _ = _auditService.LogDeletedAsync(
+                    _businessId, "PurchaseOrder", SelectedPO.PurchaseOrderID,
+                    AppState.Instance.GetCurrentUserId(),
+                    $"Draft PO {SelectedPO.PONumber} deleted");
                 SetStatusMessage("Draft purchase order deleted successfully.", "#047857");
                 await LoadPOsAsync();
             }

@@ -14,6 +14,7 @@
             <NativeMenuItem Header="File">
                 <NativeMenu>
                     <NativeMenuItem Header="New Invoice" Command="{Binding NavigateCommand}" CommandParameter="InvoiceForm" />
+                    <NativeMenuItem Header="New Quotation" Command="{Binding NavigateCommand}" CommandParameter="QuotationForm" />
                     <NativeMenuItem Header="New Purchase Order" Command="{Binding NavigateCommand}" CommandParameter="PurchaseOrderForm" />
                     <NativeMenuItem Header="New Product" Command="{Binding NavigateCommand}" CommandParameter="ProductForm" />
                     <NativeMenuItemSeparator />
@@ -35,6 +36,7 @@
         <Menu DockPanel.Dock="Top" IsVisible="{OnPlatform Default=True, macOS=False}">
             <MenuItem Header="_File">
                 <MenuItem Header="_New Invoice" Command="{Binding NavigateCommand}" CommandParameter="InvoiceForm" HotKey="Ctrl+N" />
+                <MenuItem Header="_New Quotation" Command="{Binding NavigateCommand}" CommandParameter="QuotationForm" />
                 <MenuItem Header="_New Purchase Order" Command="{Binding NavigateCommand}" CommandParameter="PurchaseOrderForm" />
                 <MenuItem Header="_New Product" Command="{Binding NavigateCommand}" CommandParameter="ProductForm" />
                 <Separator />

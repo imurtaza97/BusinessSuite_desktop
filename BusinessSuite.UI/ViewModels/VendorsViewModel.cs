@@ -3,14 +3,15 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
+using BusinessSuite.BLL.Services;
 using BusinessSuite.DAL.Data;
 using BusinessSuite.DAL.Entities;
 using BusinessSuite.DAL.Repositories;
+using BusinessSuite.UI.Services;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using BusinessSuite.BLL.Services;
 
 namespace BusinessSuite.UI.ViewModels;
 
@@ -19,6 +20,7 @@ public partial class VendorsViewModel : ViewModelBase
     private readonly VendorRepository _vendorRepository;
     private readonly LedgerService _ledgerService;
     private readonly EntityDeletionService _deletionService;
+    private readonly AuditTrailService _auditService;
     private readonly int _businessId;
 
     [ObservableProperty] private ObservableCollection<Vendor> _vendors = new();
@@ -83,6 +85,7 @@ public partial class VendorsViewModel : ViewModelBase
         _vendorRepository = new VendorRepository(db);
         _ledgerService = ledgerService;
         _deletionService = new EntityDeletionService(new AppDbContextFactory());
+        _auditService = new AuditTrailService(new AppDbContext());
         _businessId = businessId;
         
         LoadVendorsCommand = new AsyncRelayCommand(LoadVendorsAsync);
@@ -165,6 +168,10 @@ public partial class VendorsViewModel : ViewModelBase
                     var success = await _vendorRepository.AddAsync(result);
                     if (success)
                     {
+                        _ = _auditService.LogCreatedAsync(
+                            _businessId, "Vendor", result.VendorID,
+                            AppState.Instance.GetCurrentUserId(),
+                            $"Vendor '{result.VendorName}' created");
                         await LoadVendorsAsync();
                         SetStatusMessage("Vendor added successfully.", "#047857");
                     }
@@ -199,6 +206,10 @@ public partial class VendorsViewModel : ViewModelBase
                     var success = await _vendorRepository.UpdateAsync(result);
                     if (success)
                     {
+                        _ = _auditService.LogFieldModifiedAsync(
+                            _businessId, "Vendor", result.VendorID,
+                            "All", SelectedVendor?.VendorName, result.VendorName,
+                            AppState.Instance.GetCurrentUserId());
                         await LoadVendorsAsync();
                         SelectedVendor = result;
                         SetStatusMessage("Vendor updated successfully.", "#047857");
@@ -242,6 +253,10 @@ public partial class VendorsViewModel : ViewModelBase
                 var (success, message) = await _deletionService.DeleteVendorAsync(vendor.VendorID);
                 if (success)
                 {
+                    _ = _auditService.LogDeletedAsync(
+                        _businessId, "Vendor", vendor.VendorID,
+                        AppState.Instance.GetCurrentUserId(),
+                        "Vendor deleted by user");
                     successCount++;
                     Vendors.Remove(vendor);
                 }

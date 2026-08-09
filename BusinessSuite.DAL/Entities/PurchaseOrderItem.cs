@@ -62,6 +62,9 @@ public class PurchaseOrderItem
     [MaxLength(10)]
     public string ItemType { get; set; } = "Product"; // "Product" or "Service"
 
+    [MaxLength(255)]
+    public string? Description { get; set; }
+
     [ForeignKey("PurchaseOrderID")]
     public PurchaseOrder? PurchaseOrder { get; set; }
 

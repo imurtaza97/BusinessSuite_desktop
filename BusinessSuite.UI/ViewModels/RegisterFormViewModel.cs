@@ -36,6 +36,22 @@ public partial class RegisterFormViewModel : ViewModelBase
     // Reactive property for GST Registered checkbox
     [ObservableProperty] private bool _isGstRegistered;
 
+    // PAN Number (optional but validated if non-empty)
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(PanHint))]
+    [NotifyPropertyChangedFor(nameof(PanHintColor))]
+    private string _pan = string.Empty;
+
+    public string PanHint =>
+        string.IsNullOrWhiteSpace(Pan) ? "Format: ABCDE1234F (optional)"
+        : ValidationService.ValidatePAN(Pan).IsValid
+            ? "✓ Valid PAN"
+            : ValidationService.ValidatePAN(Pan).Error;
+
+    public string PanHintColor =>
+        string.IsNullOrWhiteSpace(Pan) ? "#9CA3AF"
+        : ValidationService.ValidatePAN(Pan).IsValid ? "#16A34A" : "#DC2626";
+
     // Command for the Register Button
     public IAsyncRelayCommand RegisterCommand { get; }
 
@@ -69,6 +85,11 @@ public partial class RegisterFormViewModel : ViewModelBase
                 if (Request.GSTIN.Length != 15) { SetStatus("GSTIN must be 15 chars.", "#DC2626"); return; }
                 if (Request.GstType == null) { SetStatus("Select GST Type.", "#DC2626"); return; }
             }
+
+            // PAN validation (optional but must be valid format if provided)
+            var (panOk, normPan, panErr) = ValidationService.ValidatePAN(Pan);
+            if (!panOk) { SetStatus($"PAN error: {panErr}", "#DC2626"); return; }
+            Request.PAN = string.IsNullOrWhiteSpace(normPan) ? null : normPan;
 
             if (string.IsNullOrWhiteSpace(Request.UserName)) { SetStatus("Username is required.", "#DC2626"); return; }
             Request.UserName = Request.UserName.ToLower().Trim();

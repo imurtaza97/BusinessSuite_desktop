@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using BusinessSuite.DAL.Data;
 using BusinessSuite.DAL.Entities;
@@ -48,5 +49,31 @@ public class ValidationService
             (EF.Functions.Like(p.ProductName, product.ProductName) ||
              (!string.IsNullOrWhiteSpace(p.SKU) && p.SKU == product.SKU)));
         return exists ? (true, "A product/service with the same name or SKU already exists.") : (false, string.Empty);
+    }
+
+    // ── PAN Validation ───────────────────────────────────────────────────────
+
+    private static readonly Regex _panRegex =
+        new(@"^[A-Z]{5}[0-9]{4}[A-Z]{1}$", RegexOptions.Compiled);
+
+    /// <summary>
+    /// Validates a PAN number. Returns (isValid, normalisedUppercase, errorMessage).
+    /// An empty/null PAN is considered valid (PAN is optional).
+    /// </summary>
+    public static (bool IsValid, string Normalised, string Error) ValidatePAN(string? pan)
+    {
+        if (string.IsNullOrWhiteSpace(pan))
+            return (true, string.Empty, string.Empty);
+
+        var upper = pan.Trim().ToUpperInvariant();
+
+        if (upper.Length != 10)
+            return (false, upper, "PAN must be exactly 10 characters (e.g. ABCDE1234F).");
+
+        if (!_panRegex.IsMatch(upper))
+            return (false, upper,
+                "Invalid PAN format. Must be 5 letters, 4 digits, 1 letter (e.g. ABCDE1234F).");
+
+        return (true, upper, string.Empty);
     }
 }

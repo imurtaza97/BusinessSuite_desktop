@@ -3,14 +3,15 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
+using BusinessSuite.BLL.Services;
 using BusinessSuite.DAL.Data;
 using BusinessSuite.DAL.Entities;
 using BusinessSuite.DAL.Repositories;
+using BusinessSuite.UI.Services;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using BusinessSuite.BLL.Services;
 
 namespace BusinessSuite.UI.ViewModels;
 
@@ -19,6 +20,7 @@ public partial class CustomersViewModel : ViewModelBase
     private readonly CustomerRepository _customerRepository;
     private readonly LedgerService _ledgerService;
     private readonly EntityDeletionService _deletionService;
+    private readonly AuditTrailService _auditService;
     private readonly int _businessId;
 
     [ObservableProperty] private ObservableCollection<Customer> _customers = new();
@@ -83,6 +85,7 @@ public partial class CustomersViewModel : ViewModelBase
         _customerRepository = new CustomerRepository(db);
         _ledgerService = ledgerService;
         _deletionService = new EntityDeletionService(new AppDbContextFactory());
+        _auditService = new AuditTrailService(new AppDbContext());
         _businessId = businessId;
         
         LoadCustomersCommand = new AsyncRelayCommand(LoadCustomersAsync);
@@ -164,6 +167,10 @@ public partial class CustomersViewModel : ViewModelBase
                     var success = await _customerRepository.AddAsync(result);
                     if (success)
                     {
+                        _ = _auditService.LogCreatedAsync(
+                            _businessId, "Customer", result.CustomerID,
+                            AppState.Instance.GetCurrentUserId(),
+                            $"Customer '{result.CustomerName}' created");
                         await LoadCustomersAsync();
                         SetStatusMessage("Customer added successfully.", "#047857");
                     }
@@ -197,6 +204,10 @@ public partial class CustomersViewModel : ViewModelBase
                     var success = await _customerRepository.UpdateAsync(result);
                     if (success)
                     {
+                        _ = _auditService.LogFieldModifiedAsync(
+                            _businessId, "Customer", result.CustomerID,
+                            "All", SelectedCustomer?.CustomerName, result.CustomerName,
+                            AppState.Instance.GetCurrentUserId());
                         await LoadCustomersAsync();
                         SelectedCustomer = result;
                         SetStatusMessage("Customer updated successfully.", "#047857");
@@ -240,6 +251,10 @@ public partial class CustomersViewModel : ViewModelBase
                 var (success, message) = await _deletionService.DeleteCustomerAsync(customer.CustomerID);
                 if (success)
                 {
+                    _ = _auditService.LogDeletedAsync(
+                        _businessId, "Customer", customer.CustomerID,
+                        AppState.Instance.GetCurrentUserId(),
+                        "Customer deleted by user");
                     successCount++;
                     Customers.Remove(customer);
                 }

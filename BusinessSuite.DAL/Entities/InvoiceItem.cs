@@ -62,6 +62,9 @@ public class InvoiceItem
     [MaxLength(10)]
     public string ItemType { get; set; } = "Product"; // "Product" or "Service"
 
+    [MaxLength(255)]
+    public string? Description { get; set; }
+
     [ForeignKey("InvoiceID")]
     public Invoice? Invoice { get; set; }
 

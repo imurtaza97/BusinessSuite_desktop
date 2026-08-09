@@ -14,6 +14,7 @@ public class RegistrationRequest
     public bool IsGSTRegistered { get; set; } = false;
     public string? GSTIN { get; set; }   
     public BusinessGstType? GstType { get; set; }
+    public string? PAN { get; set; }
 
     // Admin User
     public string UserName { get; set; } = string.Empty;
